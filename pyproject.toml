@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ww4gridgen"
+version = "0.1.0"
+description = "WAVEWATCH IV Grid Generation Package in Pure Python with NetCDF-UGRID and Zarr support"
+readme = "README"
+requires-python = ">=3.9"
+license = {text = "Public Domain"}
+authors = [
+    {name = "Aldgisl (Agentic AI)"},
+    {name = "Hendrik Tolman"}
+]
+dependencies = [
+    "numpy>=1.20",
+    "scipy>=1.7",
+    "xarray>=2022.03",
+    "netCDF4>=1.5",
+    "zarr>=2.10",
+    "shapely>=2.0"
+]
+
+[project.scripts]
+ww4gridgen = "gridgen.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gridgen*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
