@@ -1,5 +1,13 @@
 # Assessment: Technology Choice for WW4 Gridgen Migration from MATLAB
 
+**Authors / Contributors:** Jules, Hendrik
+**Date:** May 20, 2024
+
+> **Decision Remark (Hendrik):**
+> Hendrik selects **Option 2 (Pure Python Architecture)** for the migration. The original MATLAB implementation was not prohibitively slow, and a single-language, pure Python application will be significantly easier to maintain, deploy, and contribute to across the scientific community.
+
+---
+
 ## Executive Summary
 
 This document provides a technical assessment for replacing the MATLAB-based WAVEWATCH III (WW3) `gridgen` software package with a modern technology stack for **WW4**.
@@ -8,12 +16,6 @@ The new system must support:
 1. **NetCDF-UGRID standard format** (conventions for unstructured/structured ocean mesh topologies, face/node connectivity, and metadata).
 2. **Zarr chunking & cloud-native storage** (chunked arrays, efficient parallel access, cloud-friendly metadata).
 3. **Decoupling from MATLAB** to ensure an open-source, scalable, and maintainable pipeline.
-
-### **Recommendation**
-We recommend adopting a **Hybrid approach (Python driver/interface + Python scientific stack with C++/Numba acceleration for compute kernels)** or a **Python-first architecture with GEOS/C++ bindings**.
-
-- **Python** provides unmatched ecosystem support for NetCDF-UGRID (`uxarray`, `xarray`) and Zarr chunking (`zarr`, `dask`).
-- **C++/Numba** provides C-level performance for heavy geometric operations (e.g., bathymetric cell averaging, in-polygon testing against high-resolution shoreline databases, and spatial meshing).
 
 ---
 
@@ -45,7 +47,7 @@ For **WW4**, the target output format requires **NetCDF-UGRID** compliance and *
 
 ---
 
-### Option 2: Pure Python Architecture
+### Option 2: Pure Python Architecture *(Selected Option)*
 
 #### **Pros**
 - **Gold Standard for UGRID & Zarr**: Python is the primary language of the Pangeo stack.
@@ -55,11 +57,11 @@ For **WW4**, the target output format requires **NetCDF-UGRID** compliance and *
   - `shapely` & `geopandas` (built on C++ GEOS) for fast STRtree spatial indexing and polygon clipping.
   - `scipy.spatial` / `scikit-learn` for KDTree and Delaunay triangulation.
   - `rasterio` / `rioxarray` for high-resolution bathymetry DEM raster operations.
-- **High Developer Velocity & Ecosystem Compatibility**: Easy testing, CI/CD, documentation, and interactive user scripting.
+- **High Developer Velocity & Single-Language Maintainability**: Easy testing, CI/CD, documentation, interactive user scripting, and easier long-term maintenance as a pure Python package.
 
 #### **Cons**
 - **Loop Overhead in Pure Python**: Explicit loops over millions of grid cells or bathymetry points in pure Python can be slow.
-- **Solution**: Heavy loops can be easily vectorized with `numpy` or compiled JIT using `numba`.
+- **Solution**: Heavy loops can be easily vectorized with `numpy` or compiled JIT using `numba` without introducing multi-language C++ build complexities.
 
 ---
 
@@ -73,7 +75,7 @@ For **WW4**, the target output format requires **NetCDF-UGRID** compliance and *
 - **Performance**: Achieves near-C++ speed for bottleneck algorithms while retaining Python's rich file format and cloud ecosystem.
 
 #### **Cons**
-- **Build System Complexity**: Requires managing C++ extension compilation (`scikit-build-core`, `CMake`) across target platforms if standard C++ modules are used (mitigated if using Numba or existing C-extension libraries like Shapely/GEOS).
+- **Build System Complexity**: Requires managing C++ extension compilation (`scikit-build-core`, `CMake`) across target platforms if standard C++ modules are used.
 
 ---
 
@@ -103,7 +105,7 @@ When structured properly using modern Python geospatial tools, Python will outpe
 
 ## Comparison Matrix
 
-| Criteria | C++ | Python | Hybrid (Python + C++/Numba) |
+| Criteria | C++ | Python (Selected) | Hybrid (Python + C++/Numba) |
 | :--- | :--- | :--- | :--- |
 | **NetCDF-UGRID Support** | ❌ Poor (Low-level manual formatting) | ✅ Excellent (`uxarray`, `xarray`) | ✅ Excellent (`uxarray`, `xarray`) |
 | **Zarr Chunking Support** | ❌ Limited / Immature C++ libraries | ✅ Native (`zarr`, `xarray`, `dask`) | ✅ Native (`zarr`, `xarray`, `dask`) |
@@ -116,12 +118,12 @@ When structured properly using modern Python geospatial tools, Python will outpe
 
 ## Recommended Architecture & Migration Roadmap for WW4
 
-We recommend adopting a **Python-first architecture with C++/Numba core optimizations (Hybrid approach)**.
+Based on Hendrik's decision, we will adopt a **Pure Python Architecture (Option 2)**.
 
 ### **Target Technology Stack**
 - **Data Structure & Storage**: `xarray`, `uxarray`, `zarr`, `netCDF4`.
 - **Geospatial & Spatial Indexing**: `shapely` (GEOS C-engine with STRtree), `pyproj`, `geopandas`, `scipy.spatial`.
-- **Compute Kernel Acceleration**: `numba` JIT or `pybind11` C++ extensions for cell-averaging, subgrid obstruction calculation, and polygon masking.
+- **Performance Acceleration**: `numpy` vectorization and `@numba.njit` JIT kernels where explicit loops are needed.
 - **CLI & Interface**: `click` or `typer` for command-line grid generation scripts.
 
 ### **Phased Migration Plan**
@@ -145,4 +147,4 @@ We recommend adopting a **Python-first architecture with C++/Numba core optimiza
 
 ## Conclusion
 
-A **Hybrid / Python-centric architecture** is the optimal choice for WW4 grid generation. It directly solves the requirement for NetCDF-UGRID compliance and Zarr chunking via mature Python Pangeo libraries, while ensuring performance for large-scale grids through C++ GEOS bindings and Numba acceleration.
+A **Pure Python Architecture (Option 2)** is selected as the target for WW4 grid generation. It directly solves the requirement for NetCDF-UGRID compliance and Zarr chunking via mature Python Pangeo libraries, achieves high performance through vectorization and Numba/GEOS C-bindings, and ensures maximum maintainability as a single-codebase application.
