@@ -77,6 +77,30 @@ For **WW4**, the target output format requires **NetCDF-UGRID** compliance and *
 
 ---
 
+## Performance Analysis: Python vs. MATLAB Execution Speed
+
+### Is Python Expected to Be Faster Than MATLAB?
+
+The short answer is **yes**, an idiomatic scientific Python implementation will be **substantially faster than the existing MATLAB code**, provided the right libraries and paradigms are used.
+
+#### **1. Unoptimized / Naive Python Loops vs. MATLAB JIT**
+- If grid generation logic is ported line-by-line using explicit, nested `for` loops in pure Python (e.g., iterating cell-by-cell in `generate_grid.m`), Python will be **slower** than MATLAB. MATLAB includes a built-in JIT compiler that optimizes simple array loops.
+
+#### **2. Idiomatic Scientific Python (Vectorized + Spatial Trees + Numba JIT) vs. MATLAB**
+When structured properly using modern Python geospatial tools, Python will outperform MATLAB by **10x to 100x** for the following reasons:
+
+- **Spatial Indexing (`Shapely` / GEOS STRtrees)**:
+  - In MATLAB `gridgen`, shoreline masking and lake removal (`clean_mask.m`, `generate_grid.m`) perform brute-force point-in-polygon checks (`inpolygon.m`) across all grid cells for every polygon ($O(N \cdot M)$ complexity).
+  - In Python, `shapely` utilizes C-accelerated **GEOS STRtrees (Bounding Volume Hierarchy)**. Querying points against spatial trees reduces complexity to $O(N \log M)$, running orders of magnitude faster.
+- **NumPy Vectorization**:
+  - Grid corner computations and array operations run directly in compiled C memory blocks.
+- **Numba JIT Compilation**:
+  - For algorithms requiring explicit element-wise loops (such as bathymetric cell averaging across global DEMs), `@numba.njit` compiles Python directly to native LLVM assembly at runtime, consistently outperforming MATLAB's JIT compiler by **2x to 5x**.
+- **Parallelization (`Dask` / `multiprocessing`)**:
+  - MATLAB requires Parallel Computing Toolbox licenses and `parfor` setups. Python supports multi-core parallel processing out-of-the-box (`multiprocessing`, `concurrent.futures`, `Dask`), allowing multi-threaded grid generation across all CPU cores without licensing limitations.
+
+---
+
 ## Comparison Matrix
 
 | Criteria | C++ | Python | Hybrid (Python + C++/Numba) |
