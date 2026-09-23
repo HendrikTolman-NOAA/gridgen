@@ -1,20 +1,19 @@
-# WAVEWATCH IV (WW4) Gridgen Package
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
 #
 # Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
 # NWS often uses Generative AI (GenAI) for code development and refactoring.
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI)
-# @author Hendrik Tolman
-# @date Initial: 2026-05-20
-# @date Update: 2026-05-20
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @date Initial: 2026-09-22
 #
 # Code Heritage:
 # Converted from generate_grid.m originally authored by NOAA/NCEP
 # (Arun Chawla, Stylianos Flampouris, Deanna Spindler).
 
-"""Bathymetry extraction and grid generation routines for WAVEWATCH IV."""
+"""Bathymetry extraction and grid generation routines for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4)."""
+
 from __future__ import annotations
 
 import os
@@ -46,7 +45,7 @@ def generate_grid(
         2D latitude grid array of shape (Ny, Nx).
     ref_dir : str
         Directory path containing reference NetCDF datasets.
-    bathy_source : Union[str, xr.Dataset]
+    bathy_source : str | xr.Dataset
         Name of bathymetry source ('etopo1', 'etopo2') or pre-loaded xarray Dataset.
     limit : float
         Fraction (0..1) of wet base cells required to mark target cell wet.

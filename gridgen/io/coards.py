@@ -1,20 +1,18 @@
-# WAVEWATCH IV (WW4) Gridgen Package
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
 #
 # Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
 # NWS often uses Generative AI (GenAI) for code development and refactoring.
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI)
-# @author Hendrik Tolman
-# @date Initial: 2026-05-20
-# @date Update: 2026-05-20
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @date Initial: 2026-09-22
 #
 # Code Heritage:
 # Converted from nc_ww3_grdwrite.m originally authored by Kelsey Jordahl
 # and NOAA/NCEP (Arun Chawla).
 
-"""Legacy GMT / NetCDF COARDS file writer for WAVEWATCH III."""
+"""Legacy GMT / NetCDF COARDS file writer for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4)."""
 
 from __future__ import annotations
 

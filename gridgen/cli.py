@@ -1,19 +1,19 @@
-# WAVEWATCH IV (WW4) Gridgen Package
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
 #
 # Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
 # NWS often uses Generative AI (GenAI) for code development and refactoring.
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI)
-# @author Hendrik Tolman
-# @date Initial: 2026-05-20
-# @date Update: 2026-05-20
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @date Initial: 2026-09-22
 #
 # Code Heritage:
-# WAVEWATCH IV Command Line Interface module.
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
 
-"""Command line interface for WAVEWATCH IV grid generation."""
+"""Command line interface for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) grid generation."""
+
+from __future__ import annotations
 
 import argparse
 
@@ -31,7 +31,7 @@ from .obstructions import create_obstr
 def main() -> None:
     """CLI driver for grid generation and multi-format export."""
     parser = argparse.ArgumentParser(
-        description="WAVEWATCH IV Grid Generation Tool"
+        description="WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid Generation Tool"
     )
     parser.add_argument("--name", type=str, default="ww4_grid", help="Grid prefix name")
     parser.add_argument("--dx", type=float, default=0.25, help="Grid lon increment dx")
