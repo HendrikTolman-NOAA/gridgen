@@ -1,90 +1,106 @@
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
 
-This software package has been created for generating grids for WAVEWATCH III using MATLAB. This
-package has been developed and tested on MATLAB v7 or higher.
+This software package generates computational grids, bathymetry, shoreline masks, and subgrid obstruction factors for **WAVEWATCH III (WW3)** and **WAVEWATCH IV (WW4)**.
 
-Documentation : Documentation is available at three levels. First, is the grid generation 
-                manual -- grid_generation.pdf -- that is included with the release of the 
-                software (download the images from ftp to compile tex: 
-                wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/gridgen.images.tar.gz).
-                The second, are the comments in the master scripts that explain
-                what the individual parts of the code are doing. And finally, there are 
-                brief explainations in each subroutine that can be read from the MATLAB
-                workspace by typing help <name>, where <name> is the subroutine. (NOTE: The
-                path to the subroutines should be set when trying this option).
+The package has been converted from its original MATLAB implementation to a pure Python architecture (`ww4gridgen`) offering high performance, modern NetCDF-UGRID compliance, and Zarr chunked storage capabilities while retaining full backward compatibility for legacy WW3 file formats.
 
-Installation  : To install the gridgen to your local system, including all the required binary 
-                files, run on your Matlab console:
-                `cd gridgen`
-                `setup_gridgen`
-                
-                It will take some time, depending on your internet connection, but the gridgen will
-                be added to your local path and the binary files will be downloaded automatically.
+---
 
-GIT users     : If for any reason you want to avoid the "Installation" steps above, follow the 
-                instructions below. If you are a developer and/or acquired this package through NCEP's 
-                git repository, you will need to download the binary files package gridgen.tgz. 
-                Large binary files are not available in the GIT repository, and need to be added to 
-                your griden local copy reference_data directory. After you cd to reference_data, get 
-                the binaries using:
+## Output Formats Supported
 
-                wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/gridgen_addit.tgz
+1. **WAVEWATCH III Legacy ASCII**: `.depth_ascii`, `.maskorig_ascii`, `.obstr_lev1`, `.meta`
+2. **WAVEWATCH III NetCDF COARDS**: `_coards.nc` (GMT/COARDS compliant)
+3. **WAVEWATCH IV NetCDF-UGRID 1.0**: `_ugrid.nc` (CF-1.8 UGRID-1.0 compliant unstructured mesh topology)
+4. **WAVEWATCH IV Zarr Chunked Store**: `_ugrid.zarr` (Cloud-native Zarr dataset store with configurable spatial chunking)
 
-                This will unpack the netcdf batymetry files:
-                  - etopo1.nc 
-                  - etopo2.nc 
-                and matlab binary files:
-                  - coastal_bound_coarse.mat
-                  - coastal_bound_high.mat   
-                  - coastal_bound_low.mat
-                  - coastal_bound_full.mat    
-                  - coastal_bound_inter.mat  
-                  - optional_coastal_polygons.mat
-.
+---
 
-Dependency    : Matlab and netcdf routines for matlab. 
-                Netcdf toolbox for Matlab can be obtained from (http://mexcdf.sourceforge.net/)
-                (NOTE: Netcdf toolbox is only used for reading the global bathymetry data files
-                 If you have your own independent set of routines for reading netcdf files then 
-                 only a few lines need to be changed in the 'generate_grid.m' routine. These lines
-                 have been marked)
+## Python Package Installation
 
-Files         :  There are 3 sub-directories
-                   bin/            -- this stores all the scripts used in the grid generation routine
-                   examples/       -- this stores 2 examples of master scripts that call the different
-                                      subroutines for creating grids. An example for a regional grid and
-                                      a global grid (which has some differences) have been shown, as well
-                                      as a script that is used to modify the traditional land - sea mask for
-                                      WAVE WATCH III to one for the multi-grid version (version 3.10 and 
-                                      higher). This is done for the regional grid assuming that it would
-                                      be nested with the global grid in the multi-grid version
-                   reference_data/ -- this stores all the reference data that is needed for creating grids
-                                      and includes two global grids, GSHHS shoreline polygon database and 
-                                      an optional user defined polygon database (combined with a flag file
-                                      that determines which of these polygons are to be used) for masking
-                                      out water bodies that do not play a critical role in wave propagation
+Install `ww4gridgen` using `pip`:
 
-Addendums     : 1. The generate_grid function now has two extra parameters that need to be set before the call can
-                   be made -- a cut-off depth and a representative depth for dry cells.
-                2. Matlab now has built in support for NETCDF and those have been incorporated in the generate_grid.m 
-                   routine
-                3. A series of bugs were cleaned up. These are 
-                   a) Getting rid of spurious NaN values in generate_grid
-                   b) Changing the algorithm in compute_boundary to remove errors associated with improper
-                      closing of certain boundaries
-                   c) Speed up in the clean_mask routine
-                   d) Generating grids only in the 0 - 360 lon range (this is the range in which the 
-                      boundaries are defined, and switching to -180 - 180 range was leading to improper
-                      treatment of boundary closure in certain cases.
+```bash
+# Standard installation
+pip install .
 
-IMPORTANT     : Gridgen now does not require the grids to be rectilinear to allow for development support for
-                curvilinear grids. Thus lat / lon arrays are now 2 dimensional to allow for varying 
-                resololution. Gridgen will not make the arrays needed for the grids. There are 
-                number of softwares available for that, but given the grids will generate all other 
-                features -- bathymetry, masks and obstruction grids. See examples for how to generate the
-                2D grids for rectilinear (constant spacing lat/lon) domains 
+# Editable development installation
+pip install -e .
+```
 
----------------------------------------------------------------------------------------------------------------
-Last updated  : 21/03/2021
+### Dependencies
+- Python >= 3.9
+- `numpy`, `scipy`, `xarray`, `netCDF4`, `zarr`, `shapely`
+
+---
+
+## Command Line Usage
+
+After installation, run the `ww4gridgen` command-line utility:
+
+```bash
+ww4gridgen --name Alaska_reg --dx 0.25 --dy 0.25 --lon-start 140.0 --lon-end 240.0 --lat-start 44.0 --lat-end 75.0 --out-dir ./OUTPUT/
+```
+
+### CLI Arguments
+- `--name`: Prefix name for output files (default: `ww4_grid`)
+- `--dx`: Longitude grid increment (default: `0.25`)
+- `--dy`: Latitude grid increment (default: `0.25`)
+- `--lon-start`: Minimum longitude (default: `140.0`)
+- `--lon-end`: Maximum longitude (default: `160.0`)
+- `--lat-start`: Minimum latitude (default: `44.0`)
+- `--lat-end`: Maximum latitude (default: `54.0`)
+- `--out-dir`: Output directory path (default: `.`)
+
+---
+
+## Python API Usage
+
+```python
+import numpy as np
+from gridgen.grid import generate_grid
+from gridgen.masking import clean_mask, remove_lake
+from gridgen.obstructions import create_obstr
+from gridgen.io.ascii import write_ww3file, write_ww3obstr, write_ww3meta
+from gridgen.io.coards import nc_ww3_grdwrite
+from gridgen.io.ugrid import create_ugrid_dataset, write_ugrid_nc
+from gridgen.io.zarr_store import write_ugrid_zarr
+
+# 1. Define grid coordinates
+lon1d = np.arange(140.0, 160.0, 0.25)
+lat1d = np.arange(44.0, 54.0, 0.25)
+lon, lat = np.meshgrid(lon1d, lat1d)
+
+# 2. Extract bathymetry & generate land/sea mask
+depth = generate_grid(lon, lat)
+mask = np.ones_like(depth, dtype=int)
+mask[depth == 999999.0] = 0
+
+mask_clean = clean_mask(lon, lat, mask, [])
+mask_final, _ = remove_lake(mask_clean, lake_tol=-1, igl=0)
+
+# 3. Calculate subgrid obstructions
+sx, sy = create_obstr(lon, lat, [], mask_final)
+
+# 4. Export to WAVEWATCH IV NetCDF-UGRID and Zarr
+ds_ugrid = create_ugrid_dataset(lon, lat, depth, mask_final, sx=sx, sy=sy, title="Alaska Regional Grid")
+write_ugrid_nc(ds_ugrid, "Alaska_reg_ugrid.nc")
+write_ugrid_zarr(ds_ugrid, "Alaska_reg_ugrid.zarr", chunks={"nMesh2_face": 1000})
+
+# 5. Export to WAVEWATCH III Legacy Formats
+write_ww3file("Alaska_reg.depth_ascii", np.round(depth * 1000))
+write_ww3file("Alaska_reg.maskorig_ascii", mask_final)
+write_ww3obstr("Alaska_reg.obstr_lev1", np.round(sx * 100), np.round(sy * 100))
+write_ww3meta("Alaska_reg", "RECT", lon, lat, 0.001, 0.01, 1.0)
+nc_ww3_grdwrite(lon, lat, depth, "Alaska_reg_coards.nc", mask=mask_final, sx=sx, sy=sy)
+```
+
+---
+
+## Legacy MATLAB Package Details
+
+The legacy MATLAB routines remain accessible in `bin/`, `examples/`, and `setup_gridgen.m`.
+
+---
 
 ## Disclaimer
 
@@ -100,4 +116,3 @@ endorsement, recommendation or favoring by the Department of Commerce. The
 Department of Commerce seal and logo, or the seal and logo of a DOC bureau,
 shall not be used in any manner to imply endorsement of any commercial product
 or activity by DOC or the United States Government.
-
