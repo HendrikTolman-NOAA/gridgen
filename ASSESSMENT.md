@@ -1,10 +1,10 @@
 # Assessment: Technology Choice for WW4 Gridgen Migration from MATLAB
 
-**Authors / Contributors:** Jules, Hendrik
+**Authors / Contributors:** Jules (Agentic AI), Hendrik Tolman
 **Date:** May 20, 2024
 
-> **Decision Remark (Hendrik):**
-> Hendrik selects **Option 2 (Pure Python Architecture)** for the migration. The original MATLAB implementation was not prohibitively slow, and a single-language, pure Python application will be significantly easier to maintain, deploy, and contribute to across the scientific community.
+> **Decision Remark (Hendrik Tolman):**
+> Hendrik Tolman selects **Option 2 (Pure Python Architecture)** for the migration. The original MATLAB implementation was not prohibitively slow, and a single-language, pure Python application will be significantly easier to maintain, deploy, and contribute to across the scientific community.
 
 ---
 
@@ -118,7 +118,7 @@ When structured properly using modern Python geospatial tools, Python will outpe
 
 ## Recommended Architecture & Migration Roadmap for WW4
 
-Based on Hendrik's decision, we will adopt a **Pure Python Architecture (Option 2)**.
+Based on Hendrik Tolman's decision, we will adopt a **Pure Python Architecture (Option 2)**.
 
 ### **Target Technology Stack**
 - **Data Structure & Storage**: `xarray`, `uxarray`, `zarr`, `netCDF4`.
