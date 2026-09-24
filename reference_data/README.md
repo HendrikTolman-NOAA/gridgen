@@ -55,6 +55,8 @@ Run `./populate_reference_data.sh --help` for full CLI options and dataset infor
   * **Usage**: Secondary reference bathymetry source used when lower resolution grid generation is specified.
 
 * **GSHHS Shoreline Polygon Databases (`coastal_bound_*.mat`)**
+  * **GSHHS Version**: Derived from **GSHHS v1.3** (Wessel & Smith, 1996; full resolution containing 188,606 polygons / 180,509 coastal polygons).
+  * **Origin & Maintenance**: These `coastal_bound_*.mat` files are **locally maintained MAT-file structures** derived and formatted specifically for WAVEWATCH grid generation pipelines. They are not part of the standard upstream GSHHS/GSHHG distribution (which is published in binary, NetCDF, and Shapefile formats).
   * **Files**:
     * `coastal_bound_full.mat` (~120 MB) - Full resolution (~0.04 km, 188,606 polygons)
     * `coastal_bound_high.mat` (~25 MB) - High resolution (~0.2 km, 153,539 polygons)
