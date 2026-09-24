@@ -57,3 +57,21 @@ def test_populate_script_target_dir(tmp_path: Path):
     assert target_dir.exists()
     assert "SUGGESTION: Newer Authoritative Bathymetry Source - GEBCO 2024" in result.stdout
     assert "SUGGESTION: Newer Authoritative Shoreline Source - GSHHG v2.3.7" in result.stdout
+
+
+def test_populate_script_defunct_legacy(tmp_path: Path):
+    """Verify that script outputs error when legacy option is selected and files are missing."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "populate_reference_data.sh"
+    target_dir = tmp_path / "legacy_ref_data"
+
+    result = subprocess.run(
+        [str(script_path), "-d", str(target_dir), "--legacy"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "defunct and unavailable" in result.stderr
+    assert "--etopo2022" in result.stderr

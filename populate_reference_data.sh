@@ -29,6 +29,7 @@ FETCH_ETOPO2022=false
 FETCH_GEBCO=false
 FETCH_GSHHG=false
 CLI_SPECIFIED=false
+HAD_LEGACY_ERROR=false
 
 usage() {
   cat << 'EOF'
@@ -46,12 +47,12 @@ Options:
   -h, --help             Display this help message and exit
 
 Default Behavior:
-  When run with no dataset options, the script pulls and extracts all needed and
-  optional legacy reference data (gridgen_addit.tar.gz from NCEP FTP) into target directory,
-  and prints suggestions for newer authoritative datasets.
+  When run with no dataset options, the script selects the legacy dataset option by default.
+  If legacy files are missing, an error message is output regarding the defunct server URL
+  along with suggestions for newer authoritative datasets.
 
 Authoritative External Data Sources:
-  1. Legacy NCEP Gridgen:
+  1. Legacy NCEP Gridgen (Defunct):
      ftp://polar.ncep.noaa.gov/waves/gridgen/gridgen_addit.tar.gz
      Provides: etopo1.nc, etopo2.nc, coastal_bound_*.mat, optional_coastal_polygons.mat
   2. ETOPO 2022 (NOAA NCEI):
@@ -154,13 +155,14 @@ if [ "$FETCH_LEGACY" = true ]; then
   echo "--> Processing Present / Legacy Datasets (NOAA NCEP Distribution)..."
   TARBALL="${TARGET_DIR}/gridgen_addit.tar.gz"
 
-  # Download archive if needed files are not already present
   if [ ! -f "${TARGET_DIR}/etopo1.nc" ] || [ ! -f "${TARGET_DIR}/coastal_bound_full.mat" ]; then
-    download_file "$NCEP_GRIDGEN_URL" "$TARBALL"
-    echo "Extracting ${TARBALL} into ${TARGET_DIR}..."
-    tar -xvf "$TARBALL" -C "$TARGET_DIR"
-    rm -f "$TARBALL"
-    echo "Legacy dataset extraction complete."
+    echo "ERROR: The legacy NCEP gridgen reference data server URL (${NCEP_GRIDGEN_URL}) is presently defunct and unavailable." >&2
+    echo "Please use newer authoritative data source options instead:" >&2
+    echo "  ./populate_reference_data.sh --etopo2022" >&2
+    echo "  ./populate_reference_data.sh --gebco" >&2
+    echo "  ./populate_reference_data.sh --gshhg" >&2
+    echo "  ./populate_reference_data.sh --all" >&2
+    HAD_LEGACY_ERROR=true
   else
     echo "Legacy reference data files (etopo1.nc, coastal_bound_*.mat) already present in ${TARGET_DIR}."
   fi
@@ -204,4 +206,9 @@ if [ "$FETCH_GSHHG" = true ] || [ "$CLI_SPECIFIED" = false ]; then
 fi
 
 echo ""
-echo "Reference data population task finished successfully."
+if [ "$HAD_LEGACY_ERROR" = true ]; then
+  echo "Reference data population task finished with errors (legacy source unavailable)." >&2
+  exit 1
+else
+  echo "Reference data population task finished successfully."
+fi
