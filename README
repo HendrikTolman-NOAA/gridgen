@@ -5,7 +5,7 @@ package has been developed and tested on MATLAB v7 or higher.
 Documentation : Documentation is available at three levels. First, is the grid generation 
                 manual -- grid_generation.pdf -- that is included with the release of the 
                 software (download the images from ftp to compile tex: 
-                wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/gridgen.images.tar.gz).
+                wget ftp://polar.ncep.noaa.gov/polar/waves/gridgen/gridgen.images.tar.gz).
                 The second, are the comments in the master scripts that explain
                 what the individual parts of the code are doing. And finally, there are 
                 brief explainations in each subroutine that can be read from the MATLAB
@@ -22,12 +22,12 @@ Installation  : To install the gridgen to your local system, including all the r
 
 GIT users     : If for any reason you want to avoid the "Installation" steps above, follow the 
                 instructions below. If you are a developer and/or acquired this package through NCEP's 
-                git repository, you will need to download the binary files package gridgen.tgz. 
+                git repository, you will need to download the binary files package gridgen_addit.tar.gz.
                 Large binary files are not available in the GIT repository, and need to be added to 
                 your griden local copy reference_data directory. After you cd to reference_data, get 
                 the binaries using:
 
-                wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/gridgen_addit.tgz
+                wget ftp://polar.ncep.noaa.gov/polar/waves/gridgen/gridgen_addit.tar.gz
 
                 This will unpack the netcdf batymetry files:
                   - etopo1.nc 

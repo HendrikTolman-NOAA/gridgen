@@ -42,7 +42,7 @@ path_bin='bin';                     % bin path
 path_exm='examples';                % examples path
 %
 ftp_svr='polar.ncep.noaa.gov';      % ftp server of reference data
-ftp_pth='/waves/gridgen';           % ftp path for reference data
+ftp_pth='/polar/waves/gridgen';     % ftp path for reference data
 bathy_file='gridgen_addit.tar.gz';     % reference data tarball
 %% Downloading
 if exist([home,'/',path_tar,'/etopo1.nc'], 'file') ~= 2
