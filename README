@@ -22,12 +22,12 @@ Installation  : To install the gridgen to your local system, including all the r
 
 GIT users     : If for any reason you want to avoid the "Installation" steps above, follow the 
                 instructions below. If you are a developer and/or acquired this package through NCEP's 
-                git repository, you will need to download the binary files package gridgen.tgz. 
+                git repository, you will need to download the binary files package gridgen_addit.tar.gz.
                 Large binary files are not available in the GIT repository, and need to be added to 
                 your griden local copy reference_data directory. After you cd to reference_data, get 
                 the binaries using:
 
-                wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/gridgen_addit.tgz
+                cp /home/ftp/polar/waves/gridgen/gridgen_addit.tar.gz .
 
                 This will unpack the netcdf batymetry files:
                   - etopo1.nc 
