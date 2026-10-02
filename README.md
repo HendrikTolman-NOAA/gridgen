@@ -1,3 +1,16 @@
+<!--
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+#
+# Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+# NWS often uses Generative AI (GenAI) for code development and refactoring.
+# Whenever GenAI is used, NWS requires a full human review of code before it
+# is added to its repositories.
+#
+# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
+# @date Initial: 2026-09-24
+# @date Update: 2026-10-02
+-->
+
 <p align="center">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/WW_tools_banner.jpg" alt="WW_tools_banner" height="100">
 </p>
@@ -15,34 +28,42 @@ Documentation is available at three levels:
 
 ## Installation
 
-To install `gridgen` to your local system, including all required binary files, run in your MATLAB console:
-
-```matlab
-cd gridgen
-setup_gridgen
-```
-
-It will take some time, depending on your internet connection, but `gridgen` will be added to your local path and the binary files will be downloaded automatically.
-
-## Git Users
-
-If for any reason you want to avoid the "Installation" steps above, follow the instructions below. If you are a developer and/or acquired this package through NCEP's git repository, you will need to download the binary files package `gridgen_addit.tar.gz`. Large binary files are not available in the git repository, and need to be added to your `gridgen` local copy `reference_data` directory. After you `cd` to `reference_data`, get the binaries using:
+To create a local clone of the repository:
 
 ```bash
-wget ftp://polar.ncep.noaa.gov/waves/gridgen/gridgen_addit.tar.gz
+git clone https://github.com/NOAA-EMC/gridgen.git
+cd gridgen
 ```
 
-This will unpack the NetCDF bathymetry files:
-- `etopo1.nc`
-- `etopo2.nc`
+To install the Python package (`ww4gridgen`) and its dependencies in editable mode:
 
-and MATLAB binary files:
-- `coastal_bound_coarse.mat`
-- `coastal_bound_high.mat`
-- `coastal_bound_low.mat`
-- `coastal_bound_full.mat`
-- `coastal_bound_inter.mat`
-- `optional_coastal_polygons.mat`
+```bash
+pip install -e .
+```
+
+### Reference Data Population
+
+Large binary reference data files (such as NetCDF bathymetry models and coastal polygon datasets) are excluded from version control and must be placed in the `reference_data/` directory.
+
+To pull in and populate the archive data, run the provided population script:
+
+```bash
+./populate_reference_data.sh
+```
+
+The script automatically verifies existing datasets in `reference_data/` and will not try to (re-) load or overwrite any file that is already present.
+
+The reference dataset files include:
+- NetCDF bathymetry files:
+  - `etopo1.nc`
+  - `etopo2.nc`
+- Shoreline boundary polygon datasets:
+  - `coastal_bound_coarse.mat`
+  - `coastal_bound_high.mat`
+  - `coastal_bound_low.mat`
+  - `coastal_bound_full.mat`
+  - `coastal_bound_inter.mat`
+  - `optional_coastal_polygons.mat`
 
 ## Dependency
 
@@ -75,7 +96,7 @@ Gridgen now does not require the grids to be rectilinear to allow for developmen
 
 ---
 
-**Last updated:** 21/03/2021
+**Last updated:** October 2, 2026
 
 ## Disclaimer
 
