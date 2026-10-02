@@ -89,6 +89,37 @@ The reference dataset files include:
   - `coastal_bound_inter.mat`
   - `optional_coastal_polygons.mat`
 
+### Running Grid Generation Tool (`run_gridgen.sh`)
+
+Once the reference data directory is populated, you can generate WAVEWATCH III and WAVEWATCH IV grid files using the provided `run_gridgen.sh` driver script:
+
+```bash
+./run_gridgen.sh [OPTIONS]
+```
+
+#### Script Options
+
+| Option | Description |
+| :--- | :--- |
+| `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). |
+| `--dx DX` | Longitude grid resolution increment in degrees (default: `0.25`). |
+| `--dy DY` | Latitude grid resolution increment in degrees (default: `0.25`). |
+| `--lon-start LON` | Minimum longitude in degrees (default: `140.0`). |
+| `--lon-end LON` | Maximum longitude in degrees (default: `160.0`). |
+| `--lat-start LAT` | Minimum latitude in degrees (default: `44.0`). |
+| `--lat-end LAT` | Maximum latitude in degrees (default: `54.0`). |
+| `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). |
+| `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). |
+| `-h, --help` | Display usage help message and exit. |
+
+#### Output Formats
+
+`run_gridgen.sh` invokes the Python grid generation pipeline (`gridgen.cli`) to generate the following grid file formats:
+1. **Legacy WW3 ASCII grid**: `.depth_ascii`, `.maskorig_ascii`, `.obstr_lev1`, `.meta`
+2. **Legacy GMT/NetCDF COARDS grid**: `_coards.nc`
+3. **WW4 NetCDF-UGRID 1.0 grid**: `_ugrid.nc`
+4. **WW4 Zarr Store grid**: `_ugrid.zarr`
+
 ## Dependencies
 
 The package requires Python 3.9+ and the following scientific Python libraries:
