@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-02
 
-"""Unit tests for Python grid generation runner script (run_python_gridgen.sh)."""
+"""Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
 from __future__ import annotations
 
@@ -17,12 +17,12 @@ import subprocess
 from pathlib import Path
 
 
-def test_run_python_gridgen_help():
-    """Verify that run_python_gridgen.sh executes and outputs help documentation."""
+def test_run_gridgen_help():
+    """Verify that run_gridgen.sh executes and outputs help documentation."""
     repo_root = Path(__file__).parent.parent
-    script_path = repo_root / "run_python_gridgen.sh"
+    script_path = repo_root / "run_gridgen.sh"
 
-    assert script_path.exists(), "run_python_gridgen.sh must exist"
+    assert script_path.exists(), "run_gridgen.sh must exist"
     assert os.access(script_path, os.X_OK), "script must be executable"
 
     result = subprocess.run(
@@ -33,15 +33,15 @@ def test_run_python_gridgen_help():
     )
 
     assert result.returncode == 0
-    assert "Usage: ./run_python_gridgen.sh" in result.stdout
+    assert "Usage: ./run_gridgen.sh" in result.stdout
     assert "Exported formats include:" in result.stdout
     assert "WW4 NetCDF-UGRID 1.0 grid" in result.stdout
 
 
-def test_run_python_gridgen_execution(tmp_path: Path):
-    """Verify that run_python_gridgen.sh generates all grid export formats."""
+def test_run_gridgen_execution(tmp_path: Path):
+    """Verify that run_gridgen.sh generates all grid export formats."""
     repo_root = Path(__file__).parent.parent
-    script_path = repo_root / "run_python_gridgen.sh"
+    script_path = repo_root / "run_gridgen.sh"
     out_dir = tmp_path / "grid_output"
 
     result = subprocess.run(

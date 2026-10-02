@@ -29,7 +29,7 @@ REF_DIR="${SCRIPT_DIR}/reference_data"
 
 usage() {
   cat << 'EOF'
-Usage: ./run_python_gridgen.sh [OPTIONS]
+Usage: ./run_gridgen.sh [OPTIONS]
 
 Utility script to manage and execute WAVEWATCH III / IV Python grid generation tools.
 
