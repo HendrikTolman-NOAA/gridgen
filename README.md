@@ -43,6 +43,12 @@ It may be handy to add the root `gridgen` directory to your Python search path (
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ```
 
+Additionally, to execute utility scripts and binaries directly from any directory, you can add the root `gridgen` directory and its `bin/` sub-directory to your general shell search path (`PATH`):
+
+```bash
+export PATH="${PATH}:$(pwd):$(pwd)/bin"
+```
+
 ### Reference Data Population
 
 Large binary reference data files (such as NetCDF bathymetry models and coastal polygon datasets) are excluded from version control and must be placed in the `reference_data/` directory.
@@ -50,10 +56,26 @@ Large binary reference data files (such as NetCDF bathymetry models and coastal 
 To pull in and populate the archive data, run the provided population script:
 
 ```bash
-./populate_reference_data.sh
+./populate_reference_data.sh [OPTIONS]
 ```
 
-The script automatically verifies existing datasets in `reference_data/` and will not try to (re-) load or overwrite any file that is already present.
+#### Script Options
+
+The `populate_reference_data.sh` script supports the following command-line options:
+
+| Option | Description |
+| :--- | :--- |
+| `-d, --target-dir DIR` | Specify target output directory (default: `./reference_data`). |
+| `--legacy` | Pull legacy reference datasets (`etopo1.nc`, `etopo2.nc`, `coastal_bound_*.mat`). |
+| `--etopo2022` | Pull newer NOAA NCEI ETOPO 2022 global relief model dataset (`ETOPO_2022_v1_60s_N90W180_bed.tif`). |
+| `--gebco` | Display instructions and links for GEBCO global bathymetry grid. |
+| `--gshhg` | Display instructions and links for GSHHG v2.3.7 vector shoreline database. |
+| `--all` | Pull all available external datasets (legacy + ETOPO 2022) and display source information. |
+| `-h, --help` | Display usage help message and exit. |
+
+#### Default Behavior and Sources
+
+When executed without dataset flags, the script defaults to retrieving legacy datasets. If legacy files are missing and the legacy server is unavailable, the script provides guidance and links for newer authoritative external sources (such as ETOPO 2022, GEBCO 2024, and GSHHG v2.3.7). The script automatically verifies existing datasets in the target directory and will not re-download or overwrite any file that is already present.
 
 The reference dataset files include:
 - NetCDF bathymetry files:
@@ -66,6 +88,37 @@ The reference dataset files include:
   - `coastal_bound_full.mat`
   - `coastal_bound_inter.mat`
   - `optional_coastal_polygons.mat`
+
+### Running Grid Generation Tool (`run_gridgen.sh`)
+
+Once the reference data directory is populated, you can generate WAVEWATCH III and WAVEWATCH IV grid files using the provided `run_gridgen.sh` driver script:
+
+```bash
+./run_gridgen.sh [OPTIONS]
+```
+
+#### Script Options
+
+| Option | Description |
+| :--- | :--- |
+| `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). |
+| `--dx DX` | Longitude grid resolution increment in degrees (default: `0.25`). |
+| `--dy DY` | Latitude grid resolution increment in degrees (default: `0.25`). |
+| `--lon-start LON` | Minimum longitude in degrees (default: `140.0`). |
+| `--lon-end LON` | Maximum longitude in degrees (default: `160.0`). |
+| `--lat-start LAT` | Minimum latitude in degrees (default: `44.0`). |
+| `--lat-end LAT` | Maximum latitude in degrees (default: `54.0`). |
+| `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). |
+| `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). |
+| `-h, --help` | Display usage help message and exit. |
+
+#### Output Formats
+
+`run_gridgen.sh` invokes the Python grid generation pipeline (`gridgen.cli`) to generate the following grid file formats:
+1. **Legacy WW3 ASCII grid**: `.depth_ascii`, `.maskorig_ascii`, `.obstr_lev1`, `.meta`
+2. **Legacy GMT/NetCDF COARDS grid**: `_coards.nc`
+3. **WW4 NetCDF-UGRID 1.0 grid**: `_ugrid.nc`
+4. **WW4 Zarr Store grid**: `_ugrid.zarr`
 
 ## Dependencies
 
