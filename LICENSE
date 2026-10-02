@@ -1,0 +1,10 @@
+WAVEWATCH IV (WW4) License
+
+Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+NWS often uses Generative AI (GenAI) for code development and refactoring.
+Whenever GenAI is used, NWS requires a full human review of code before it
+is added to its repositories.
+
+This software is provided "as is" without warranty of any kind, either express
+or implied, including, but not limited to, the implied warranties of
+merchantability and fitness for a particular purpose.

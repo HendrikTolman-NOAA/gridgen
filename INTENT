@@ -1,0 +1,7 @@
+WAVEWATCH IV (WW4) Statement of Intent
+
+The WAVEWATCH IV (WW4) Gridgen package is intended to provide Python-based
+grid generation software for numerical wave modeling workflows (WAVEWATCH III
+and WAVEWATCH IV). The project aims to provide open, accessible, efficient,
+and backend-agnostic software for the global ocean and coastal modeling
+community.
