@@ -7,6 +7,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
+# @date Update: 2026-10-02
 
 """Unit tests for reference data population script (populate_reference_data.sh)."""
 
@@ -14,6 +15,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import tarfile
 from pathlib import Path
 
 
@@ -59,8 +61,8 @@ def test_populate_script_target_dir(tmp_path: Path):
     assert "SUGGESTION: Newer Authoritative Shoreline Source - GSHHG v2.3.7" in result.stdout
 
 
-def test_populate_script_defunct_legacy(tmp_path: Path):
-    """Verify that script outputs error when legacy option is selected and files are missing."""
+def test_populate_script_legacy_download_or_defunct(tmp_path: Path):
+    """Verify that script attempts download/extraction or outputs error for legacy dataset."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "populate_reference_data.sh"
     target_dir = tmp_path / "legacy_ref_data"
@@ -72,6 +74,86 @@ def test_populate_script_defunct_legacy(tmp_path: Path):
         check=False,
     )
 
-    assert result.returncode == 1
-    assert "defunct and unavailable" in result.stderr
-    assert "--etopo2022" in result.stderr
+    if result.returncode == 0:
+        assert "Extraction complete." in result.stdout
+        assert (target_dir / "etopo1.nc").exists()
+    else:
+        assert "defunct and unavailable" in result.stderr
+        assert "--etopo2022" in result.stderr
+
+
+def test_populate_script_existing_legacy_files(tmp_path: Path):
+    """Verify that script skips download/extraction when files already exist."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "populate_reference_data.sh"
+    target_dir = tmp_path / "existing_ref_data"
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    legacy_files = [
+        "etopo1.nc",
+        "etopo2.nc",
+        "coastal_bound_coarse.mat",
+        "coastal_bound_high.mat",
+        "coastal_bound_low.mat",
+        "coastal_bound_full.mat",
+        "coastal_bound_inter.mat",
+        "optional_coastal_polygons.mat",
+    ]
+
+    for fname in legacy_files:
+        (target_dir / fname).write_text("dummy content")
+
+    result = subprocess.run(
+        [str(script_path), "-d", str(target_dir), "--legacy"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "already present" in result.stdout
+    assert "Skipping download and extraction" in result.stdout
+
+
+def test_populate_script_existing_tarball(tmp_path: Path):
+    """Verify that script extracts missing files from an existing tarball without re-downloading."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "populate_reference_data.sh"
+    target_dir = tmp_path / "tarball_ref_data"
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    tarball_path = target_dir / "gridgen_addit.tar.gz"
+    legacy_files = [
+        "etopo1.nc",
+        "etopo2.nc",
+        "coastal_bound_coarse.mat",
+        "coastal_bound_high.mat",
+        "coastal_bound_low.mat",
+        "coastal_bound_full.mat",
+        "coastal_bound_inter.mat",
+        "optional_coastal_polygons.mat",
+    ]
+
+    # Create dummy files and put into tarball
+    dummy_src = tmp_path / "src_files"
+    dummy_src.mkdir(parents=True, exist_ok=True)
+    for fname in legacy_files:
+        (dummy_src / fname).write_text(f"content of {fname}")
+
+    with tarfile.open(tarball_path, "w:gz") as tar:
+        for fname in legacy_files:
+            tar.add(dummy_src / fname, arcname=fname)
+
+    result = subprocess.run(
+        [str(script_path), "-d", str(target_dir), "--legacy"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "Extracting missing legacy reference data files" in result.stdout
+    assert "Extraction complete." in result.stdout
+
+    for fname in legacy_files:
+        assert (target_dir / fname).exists()

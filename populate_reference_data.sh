@@ -8,6 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
+# @date Update: 2026-10-02
 #
 # Utility tool to populate the reference_data directory with authoritative
 # bathymetry, shoreline, and regional polygon datasets required by WAVEWATCH.
@@ -155,16 +156,61 @@ if [ "$FETCH_LEGACY" = true ]; then
   echo "--> Processing Present / Legacy Datasets (NOAA NCEP Distribution)..."
   TARBALL="${TARGET_DIR}/gridgen_addit.tar.gz"
 
-  if [ ! -f "${TARGET_DIR}/etopo1.nc" ] || [ ! -f "${TARGET_DIR}/coastal_bound_full.mat" ]; then
-    echo "ERROR: The legacy NCEP gridgen reference data server URL (${NCEP_GRIDGEN_URL}) is presently defunct and unavailable." >&2
-    echo "Please use newer authoritative data source options instead:" >&2
-    echo "  ./populate_reference_data.sh --etopo2022" >&2
-    echo "  ./populate_reference_data.sh --gebco" >&2
-    echo "  ./populate_reference_data.sh --gshhg" >&2
-    echo "  ./populate_reference_data.sh --all" >&2
-    HAD_LEGACY_ERROR=true
+  # Expected legacy files
+  LEGACY_FILES=(
+    "etopo1.nc"
+    "etopo2.nc"
+    "coastal_bound_coarse.mat"
+    "coastal_bound_high.mat"
+    "coastal_bound_low.mat"
+    "coastal_bound_full.mat"
+    "coastal_bound_inter.mat"
+    "optional_coastal_polygons.mat"
+  )
+
+  MISSING_FILES=()
+  for file in "${LEGACY_FILES[@]}"; do
+    if [ ! -f "${TARGET_DIR}/${file}" ]; then
+      MISSING_FILES+=("$file")
+    fi
+  done
+
+  if [ ${#MISSING_FILES[@]} -eq 0 ]; then
+    echo "Legacy reference data files (etopo1.nc, coastal_bound_*.mat) already present in ${TARGET_DIR}. Skipping download and extraction."
   else
-    echo "Legacy reference data files (etopo1.nc, coastal_bound_*.mat) already present in ${TARGET_DIR}."
+    if [ ! -f "$TARBALL" ]; then
+      echo "Attempting to download legacy archive (${NCEP_GRIDGEN_URL})..."
+      if ! download_file "$NCEP_GRIDGEN_URL" "$TARBALL" 2>/dev/null; then
+        rm -f "$TARBALL"
+        echo "ERROR: The legacy NCEP gridgen reference data server URL (${NCEP_GRIDGEN_URL}) is presently defunct and unavailable." >&2
+        echo "Please use newer authoritative data source options instead:" >&2
+        echo "  ./populate_reference_data.sh --etopo2022" >&2
+        echo "  ./populate_reference_data.sh --gebco" >&2
+        echo "  ./populate_reference_data.sh --gshhg" >&2
+        echo "  ./populate_reference_data.sh --all" >&2
+        HAD_LEGACY_ERROR=true
+      fi
+    fi
+
+    if [ -f "$TARBALL" ]; then
+      echo "Extracting missing legacy reference data files from ${TARBALL}..."
+      tar -xzf "$TARBALL" -C "$TARGET_DIR" --skip-old-files 2>/dev/null || tar -xzf "$TARBALL" -C "$TARGET_DIR" -k 2>/dev/null || tar -xzf "$TARBALL" -C "$TARGET_DIR"
+      echo "Extraction complete."
+
+      STILL_MISSING=()
+      for file in "${MISSING_FILES[@]}"; do
+        if [ ! -f "${TARGET_DIR}/${file}" ]; then
+          STILL_MISSING+=("$file")
+        fi
+      done
+
+      if [ ${#STILL_MISSING[@]} -eq 0 ]; then
+        HAD_LEGACY_ERROR=false
+      else
+        echo "ERROR: Archive file ${TARBALL} was missing expected reference data files: ${STILL_MISSING[*]}" >&2
+        HAD_LEGACY_ERROR=true
+      fi
+    fi
   fi
 fi
 
