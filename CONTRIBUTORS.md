@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/WW4_banner.jpg" alt="WW4 banner" height="100">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/WW_tools_banner.jpg" alt="WW_tools_banner" height="100">
 </p>
 
 # Contributors
@@ -8,7 +8,7 @@
 
 ## Signed-off-by
 
-- Copyright 2025-2026 National Oceanic and Atmospheric Administration (NOAA), National Weather Service (NWS)
+- Copyright 2026 National Oceanic and Atmospheric Administration (NOAA), National Weather Service (NWS)
 - _Add the copyright date, your name, and email address here. (PLEASE KEEP THIS LINE)_
 
 ## Note for U.S. Federal Employees
@@ -17,7 +17,7 @@ If you're a U.S. Federal Government employee and use a `*.mil` or `*.gov` email 
 
 #
 <p align="right">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50"; width="55">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/nws.jpg" alt="NWS Logo" height="50" width="50">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/ncep_logo.gif" alt="NCEP Logo" height="50" width="75">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50"; width="55">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/nws.jpg" alt="NWS Logo" height="50" width="50">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/ncep_logo.gif" alt="NCEP Logo" height="50" width="75">
  </p>

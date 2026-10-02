@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/WW4_banner.jpg" alt="WW4 banner" height="100">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/WW_tools_banner.jpg" alt="WW_tools_banner" height="100">
 </p>
 
 # WAVEWATCH IV Software License
 
-© 2025-2026 National Weather Service, National Oceanic and Atmospheric Administration, U.S. Federal Government (in countries where recognized). WAVEWATCH IV and WW4 are trademarks of the National Weather Service (see also [INTENT.md](./INTENT.md), [CONTRIBUTORS.md](./CONTRIBUTORS.md) and [TRADEMARK.md](./TRADEMARK.md)).
+© 2026 National Weather Service, National Oceanic and Atmospheric Administration, U.S. Federal Government (in countries where recognized). WAVEWATCH IV and WW4 are trademarks of the National Weather Service (see also [INTENT.md](./INTENT.md), [CONTRIBUTORS.md](./CONTRIBUTORS.md) and [TRADEMARK.md](./TRADEMARK.md)).
 
 GNU LESSER GENERAL PUBLIC LICENSE
 Version 3.0, 29 June 2007 <https://opensource.org/license/lgpl-3-0>
@@ -174,7 +174,7 @@ Library.
 
 #
 <p align="right">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50"; width="55">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/nws.jpg" alt="NWS Logo" height="50" width="50">
-  <img src="https://github.com/NOAA-EMC/WW4/wiki/images/ncep_logo.gif" alt="NCEP Logo" height="50" width="75">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50"; width="55">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/nws.jpg" alt="NWS Logo" height="50" width="50">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/ncep_logo.gif" alt="NCEP Logo" height="50" width="75">
  </p>
