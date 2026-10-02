@@ -1,7 +1,7 @@
 # Assessment: Technology Choice for WW4 Gridgen Migration from MATLAB
 
 **Authors / Contributors:** Jules (Agentic AI), Hendrik Tolman
-**Date:** May 20, 2024
+**Date:** September 20, 2024
 
 > **Decision Remark (Hendrik Tolman):**
 > Hendrik Tolman selects **Option 2 (Pure Python Architecture)** for the migration. The original MATLAB implementation was not prohibitively slow, and a single-language, pure Python application will be significantly easier to maintain, deploy, and contribute to across the scientific community.
