@@ -12,11 +12,126 @@
 # Converted from write_ww3file.m, write_ww3obstr.m, write_ww3meta.m
 # originally authored by NOAA/NCEP (Arun Chawla).
 
-"""Legacy WAVEWATCH III ASCII file writers."""
+"""Legacy WAVEWATCH III ASCII file readers and writers."""
 
 from __future__ import annotations
 
 import numpy as np
+
+
+def read_ww3file(fname: str, Ny: int, Nx: int) -> np.ndarray:
+    """Read 2D matrix array from a WAVEWATCH III ASCII file.
+
+    Parameters
+    ----------
+    fname : str
+        File path to read.
+    Ny : int
+        Number of rows (latitude grid size).
+    Nx : int
+        Number of columns (longitude grid size).
+
+    Returns
+    -------
+    np.ndarray
+        2D float numpy array of shape (Ny, Nx).
+    """
+    data = []
+    with open(fname, "r") as f:
+        for line in f:
+            tokens = line.strip().split()
+            if tokens:
+                data.extend(float(t) for t in tokens)
+    arr = np.array(data, dtype=np.float64)
+    if arr.size == Ny * Nx:
+        return arr.reshape((Ny, Nx))
+    return arr
+
+
+def read_ww3obstr(fname: str, Ny: int, Nx: int) -> tuple[np.ndarray, np.ndarray]:
+    """Read subgrid obstruction arrays in x (d1) and y (d2) from ASCII file.
+
+    Parameters
+    ----------
+    fname : str
+        File path to read.
+    Ny : int
+        Number of rows (latitude grid size).
+    Nx : int
+        Number of columns (longitude grid size).
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        2D numpy arrays (sx, sy) of shape (Ny, Nx).
+    """
+    data1: list[float] = []
+    data2: list[float] = []
+    current_data = data1
+    with open(fname, "r") as f:
+        for line in f:
+            stripped = line.strip()
+            if not stripped:
+                if data1:
+                    current_data = data2
+                continue
+            tokens = stripped.split()
+            current_data.extend(float(t) for t in tokens)
+
+    d1 = np.array(data1, dtype=np.float64).reshape((Ny, Nx))
+    d2 = np.array(data2, dtype=np.float64).reshape((Ny, Nx))
+    return d1, d2
+
+
+def read_ww3meta(fname: str) -> tuple[str, np.ndarray, np.ndarray, float, float, float]:
+    """Read metadata (.meta) file for WAVEWATCH III grid.
+
+    Parameters
+    ----------
+    fname : str
+        Path to metadata file.
+
+    Returns
+    -------
+    tuple[str, np.ndarray, np.ndarray, float, float, float]
+        Grid type ('RECT' or 'CURV'), lon 2D array, lat 2D array, depth scale, obstr scale, coord scale.
+    """
+    meta_fname = fname if fname.endswith(".meta") else f"{fname}.meta"
+    lines = []
+    with open(meta_fname, "r") as f:
+        for line in f:
+            line_str = line.strip()
+            if line_str and not line_str.startswith("$"):
+                lines.append(line_str)
+
+    gtype = lines[0].split()[0].replace("'", "").upper()
+    nx_ny = lines[1].split()
+    Nx, Ny = int(nx_ny[0]), int(nx_ny[1])
+
+    if gtype == "RECT":
+        lon1_lat1 = lines[3].split()
+        dx_dy = lines[2].split()
+        lon1 = float(lon1_lat1[0])
+        lat1 = float(lon1_lat1[1])
+        dx = float(dx_dy[0]) / 60.0
+        dy = float(dx_dy[1]) / 60.0
+        lon1d = np.arange(Nx) * dx + lon1
+        lat1d = np.arange(Ny) * dy + lat1
+        lon, lat = np.meshgrid(lon1d, lat1d)
+        depth_line_idx = 4
+    else:
+        lon = np.zeros((Ny, Nx))
+        lat = np.zeros((Ny, Nx))
+        depth_line_idx = 4
+
+    depth_tokens = lines[depth_line_idx].split()
+    depth_scale = float(depth_tokens[3]) if len(depth_tokens) > 3 else 1000.0
+
+    obstr_line_idx = depth_line_idx + 1
+    obstr_tokens = lines[obstr_line_idx].split() if len(lines) > obstr_line_idx else []
+    obstr_scale = float(obstr_tokens[1]) if len(obstr_tokens) > 1 else 100.0
+
+    return gtype, lon, lat, depth_scale, obstr_scale, 1.0
 
 
 def write_ww3file(fname: str, data: np.ndarray) -> tuple[str, int]:
