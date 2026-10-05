@@ -116,11 +116,11 @@ echo " WAVEWATCH III / IV Python Grid Generation Driver"
 echo "========================================================================"
 
 # 1. Check Reference Data Directory
-if [ ! -d "$REF_DIR" ]; then
-  echo "WARNING: Reference data directory does not exist at '${REF_DIR}'." >&2
+if [ ! -d "$REF_DIR" ] || [ -z "$(ls -A "$REF_DIR"/*.nc "$REF_DIR"/*.tif 2>/dev/null)" ]; then
+  echo "Error: Reference bathymetry dataset files were not found in '${REF_DIR}'." >&2
   echo "Please populate reference data first by running:" >&2
-  echo "  ./populate_reference_data.sh --target-dir '${REF_DIR}' --etopo2022" >&2
-  echo ""
+  echo "  ./populate_reference_data.sh --target-dir '${REF_DIR}'" >&2
+  exit 1
 fi
 
 # Ensure output directory exists
@@ -150,7 +150,8 @@ python3 -m gridgen.cli \
   --lon-end "$LON_END" \
   --lat-start "$LAT_START" \
   --lat-end "$LAT_END" \
-  --out-dir "$OUT_DIR"
+  --out-dir "$OUT_DIR" \
+  --ref-dir "$REF_DIR"
 
 echo ""
 echo "Execution finished successfully."

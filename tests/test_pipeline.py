@@ -27,8 +27,13 @@ def test_full_grid_pipeline(tmp_path):
     lat1d = np.array([20.0, 21.0, 22.0, 23.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
 
-    # 1. Generate bathymetry
-    depth = generate_grid(lon, lat)
+    # 1. Generate bathymetry using synthetic dataset
+    z = np.full((4, 4), -50.0)
+    ds_mock = xr.Dataset(
+        data_vars={"z": (("lat", "lon"), z)},
+        coords={"lon": lon1d, "lat": lat1d},
+    )
+    depth = generate_grid(lon, lat, bathy_source=ds_mock)
     assert depth.shape == (4, 4)
 
     # 2. Masking

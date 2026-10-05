@@ -89,8 +89,10 @@ def generate_grid(
             var_x, var_y, var_z = var_names
 
         if not os.path.exists(fname_base):
-            # If bathymetry file does not exist, return default array or synthetic
-            return depth_sub
+            raise FileNotFoundError(
+                f"Reference bathymetry dataset file '{fname_base}' was not found. "
+                f"Please populate reference data using populate_reference_data.sh."
+            )
 
         ds_base = xr.open_dataset(fname_base)
 
