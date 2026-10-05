@@ -8,6 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
+# @date Update: 2026-10-05
 -->
 
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Reference Data
@@ -32,6 +33,9 @@ You can populate `reference_data/` with all required and optional datasets using
 ./populate_reference_data.sh --target-dir ./reference_data --legacy
 ./populate_reference_data.sh --etopo2022
 ./populate_reference_data.sh --all
+
+# Clean up all reference datasets from reference_data/
+./populate_reference_data.sh --clean
 ```
 
 Run `./populate_reference_data.sh --help` for full CLI options and dataset information.

@@ -159,3 +159,60 @@ def test_populate_script_existing_tarball(tmp_path: Path):
     for fname in legacy_files:
         assert (target_dir / fname).exists()
     assert not tarball_path.exists(), "Tarball file should be removed after unpacking"
+
+
+def test_populate_script_clean_option(tmp_path: Path):
+    """Verify that --clean removes dataset files while preserving documentation/config files."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "populate_reference_data.sh"
+    target_dir = tmp_path / "clean_ref_data"
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    dataset_files = [
+        "etopo1.nc",
+        "coastal_bound_high.mat",
+        "ETOPO_2022_v1_60s_N90W180_bed.tif",
+    ]
+    preserved_files = [
+        "README.md",
+        "user_polygons.flag",
+        ".gitignore",
+    ]
+
+    for fname in dataset_files + preserved_files:
+        (target_dir / fname).write_text(f"dummy content for {fname}")
+
+    result = subprocess.run(
+        [str(script_path), "-d", str(target_dir), "--clean"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "Cleaning up reference dataset files" in result.stdout
+    assert "Cleanup complete." in result.stdout
+
+    for fname in dataset_files:
+        assert not (target_dir / fname).exists(), f"{fname} should have been deleted"
+
+    for fname in preserved_files:
+        assert (target_dir / fname).exists(), f"{fname} should have been preserved"
+
+
+def test_populate_script_clean_empty_dir(tmp_path: Path):
+    """Verify that --clean executes gracefully when target directory contains no dataset files."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "populate_reference_data.sh"
+    target_dir = tmp_path / "empty_ref_data"
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    result = subprocess.run(
+        [str(script_path), "-d", str(target_dir), "--clean"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "No dataset files found to remove" in result.stdout

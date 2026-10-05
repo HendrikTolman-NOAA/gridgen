@@ -66,6 +66,7 @@ The `populate_reference_data.sh` script supports the following command-line opti
 | Option | Description |
 | :--- | :--- |
 | `-d, --target-dir DIR` | Specify target output directory (default: `./reference_data`). |
+| `-c, --clean, --cleanup` | Remove all reference dataset files from the target directory. |
 | `--legacy` | Pull legacy reference datasets (`etopo1.nc`, `etopo2.nc`, `coastal_bound_*.mat`). |
 | `--etopo2022` | Pull newer NOAA NCEI ETOPO 2022 global relief model dataset (`ETOPO_2022_v1_60s_N90W180_bed.tif`). |
 | `--gebco` | Display instructions and links for GEBCO global bathymetry grid. |
@@ -152,7 +153,7 @@ Gridgen now does not require the grids to be rectilinear to allow for developmen
 
 ---
 
-**Last updated:** October 2, 2026
+**Last updated:** October 5, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">
