@@ -11,9 +11,12 @@
 from __future__ import annotations
 
 import os
+import subprocess
+from pathlib import Path
 
 import matplotlib
 import numpy as np
+from PIL import Image
 
 # Force non-interactive Agg backend for testing
 matplotlib.use("Agg")
@@ -107,3 +110,66 @@ def test_vis_ascii(tmp_path):
     fig = plot_grid(data, title="ASCII Vis Test", output_path=out_gif)
     assert os.path.exists(out_gif)
     assert fig is not None
+
+
+def test_view_grid_script_help():
+    """Verify that view_grid.sh executes and returns usage help message."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "view_grid.sh"
+
+    assert script_path.exists(), "view_grid.sh must exist"
+    assert os.access(script_path, os.X_OK), "script must be executable"
+
+    result = subprocess.run(
+        [str(script_path), "--help"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "Usage: ./view_grid.sh" in result.stdout
+
+
+def test_view_grid_script_missing_file(tmp_path: Path):
+    """Verify view_grid.sh error reporting when specified image file does not exist."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "view_grid.sh"
+    non_existent_img = tmp_path / "non_existent_plot.jpg"
+
+    result = subprocess.run(
+        [str(script_path), str(non_existent_img)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "Grid graphics image file not found" in result.stderr
+
+
+def test_view_grid_script_display_check(tmp_path: Path):
+    """Verify view_grid.sh execution and DISPLAY troubleshooting message when DISPLAY is unset."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "view_grid.sh"
+
+    # Create dummy image file
+    dummy_img = tmp_path / "test_view_grid.jpg"
+    Image.new("RGB", (50, 50), color="red").save(dummy_img)
+
+    env = os.environ.copy()
+    env.pop("DISPLAY", None)
+    env.pop("WAYLAND_DISPLAY", None)
+
+    result = subprocess.run(
+        [str(script_path), str(dummy_img)],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "Displaying WAVEWATCH Grid Graphics" in result.stdout
+    assert "WARNING: Neither DISPLAY nor WAYLAND_DISPLAY environment variable is set." in result.stdout
+    assert "Troubleshooting steps to display graphics" in result.stdout

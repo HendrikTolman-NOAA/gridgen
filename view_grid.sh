@@ -8,6 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-05
+# @date Update: 2026-10-05
 #
 # Utility script to display generated grid plot graphics in the present window.
 
@@ -76,28 +77,50 @@ echo "========================================================================"
 
 # Display using Python Matplotlib/PIL viewer in present window
 python3 - << EOF
+import os
 import sys
 from pathlib import Path
 from PIL import Image
+import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 img_path = "${IMAGE_FILE}"
 print(f"Loading '{img_path}'...")
+
+display_env = os.environ.get("DISPLAY")
+wayland_env = os.environ.get("WAYLAND_DISPLAY")
+
+if not display_env and not wayland_env:
+    print("WARNING: Neither DISPLAY nor WAYLAND_DISPLAY environment variable is set.")
+    print("No active graphical display server detected in current environment.")
+    print("Matplotlib is running in non-interactive backend mode ('agg'), so no window will appear on screen.")
+    print("")
+    print("Troubleshooting steps to display graphics on screen:")
+    print("  1. Ensure you are running in a graphical desktop or GUI environment.")
+    print("  2. If connected remotely via SSH, enable X11 forwarding:")
+    print("       ssh -X user@hostname   or   ssh -Y user@hostname")
+    print("  3. Ensure the DISPLAY environment variable is set (e.g., export DISPLAY=:0).")
 
 try:
     img = Image.open(img_path)
     print(f"Image Format: {img.format}, Size: {img.size[0]}x{img.size[1]} pixels, Mode: {img.mode}")
 
-    # Display image in window
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.imshow(img)
-    ax.set_title(f"WAVEWATCH Grid Graphics: {Path(img_path).name}", fontsize=12, fontweight="bold")
-    ax.axis("off")
-    plt.tight_layout()
-    plt.show()
+    backend = matplotlib.get_backend().lower()
+    print(f"Matplotlib backend: {matplotlib.get_backend()}")
+
+    if backend in ["agg", "pdf", "ps", "svg", "cairo"] or not (display_env or wayland_env):
+        print("Skipping GUI figure window display because Matplotlib backend is non-interactive or no display server is connected.")
+    else:
+        # Display image in window
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.imshow(img)
+        ax.set_title(f"WAVEWATCH Grid Graphics: {Path(img_path).name}", fontsize=12, fontweight="bold")
+        ax.axis("off")
+        plt.tight_layout()
+        plt.show()
 except Exception as e:
-    print(f"Display window info: {e}")
+    print(f"Error displaying window: {e}")
+    print("Display window could not be opened. Please verify your X11/Wayland display configuration.")
 EOF
 
-echo "Display completed for ${IMAGE_FILE}."
+echo "Display task finished for ${IMAGE_FILE}."

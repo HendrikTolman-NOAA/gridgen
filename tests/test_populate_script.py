@@ -42,6 +42,32 @@ def test_populate_script_help():
     assert "GSHHG" in result.stdout
 
 
+def test_reference_data_gitignore():
+    """Verify that reference_data/.gitignore contains entries for all populated data files."""
+    repo_root = Path(__file__).parent.parent
+    gitignore_path = repo_root / "reference_data" / ".gitignore"
+
+    assert gitignore_path.exists(), "reference_data/.gitignore must exist"
+    content = gitignore_path.read_text()
+
+    expected_entries = [
+        "etopo1.nc",
+        "etopo2.nc",
+        "coastal_bound_coarse.mat",
+        "coastal_bound_full.mat",
+        "coastal_bound_high.mat",
+        "coastal_bound_inter.mat",
+        "coastal_bound_low.mat",
+        "optional_coastal_polygons.mat",
+        "gridgen_addit.tar.gz",
+        "ETOPO_2022_v1_60s_N90W180_bed.tif",
+        "ETOPO_2022_v1_30s_N90W180_bed.tif",
+    ]
+
+    for entry in expected_entries:
+        assert entry in content, f"Expected '{entry}' to be listed in reference_data/.gitignore"
+
+
 def test_populate_script_target_dir(tmp_path: Path):
     """Verify that script creates target directory and executes suggestion flags."""
     repo_root = Path(__file__).parent.parent
