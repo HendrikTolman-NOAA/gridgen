@@ -207,3 +207,37 @@ def test_run_gridgen_missing_deps(tmp_path: Path):
 
     assert result.returncode != 0
     assert "Error: Required Python dependencies" in result.stderr
+
+
+def test_run_gridgen_cleanup(tmp_path: Path):
+    """Verify that run_gridgen.sh --cleanup removes generated output grid files."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    out_dir = tmp_path / "grid_output"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create dummy output files
+    (out_dir / "clean_test.depth_ascii").touch()
+    (out_dir / "clean_test_ugrid.nc").touch()
+    (out_dir / "clean_test.jpg").touch()
+
+    assert (out_dir / "clean_test.depth_ascii").exists()
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "clean_test",
+            "-o",
+            str(out_dir),
+            "--cleanup",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert not (out_dir / "clean_test.depth_ascii").exists()
+    assert not (out_dir / "clean_test_ugrid.nc").exists()
+    assert not (out_dir / "clean_test.jpg").exists()

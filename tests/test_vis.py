@@ -21,7 +21,14 @@ matplotlib.use("Agg")
 from gridgen.io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from gridgen.io.coards import nc_ww3_grdwrite
 from gridgen.io.ugrid import create_ugrid_dataset, write_ugrid_nc
-from gridgen.vis import load_grid_data, plot_grid
+from gridgen.vis import extract_grid_name, load_grid_data, plot_grid
+
+
+def test_extract_grid_name():
+    assert extract_grid_name("ww4_grid_ugrid.nc") == "ww4_grid"
+    assert extract_grid_name("/path/to/mygrid_coards.nc") == "mygrid"
+    assert extract_grid_name("custom_ugrid.zarr") == "custom"
+    assert extract_grid_name("test.depth_ascii") == "test"
 
 
 def test_vis_ugrid(tmp_path):

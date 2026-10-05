@@ -27,6 +27,38 @@ import xarray as xr
 from .io.ascii import read_ww3file, read_ww3meta, read_ww3obstr
 
 
+def extract_grid_name(filepath: str | Path) -> str:
+    """Extract grid prefix identifier from input filepath.
+
+    Parameters
+    ----------
+    filepath : str or Path
+        Input grid file path or prefix.
+
+    Returns
+    -------
+    str
+        Grid prefix identifier (e.g. 'ww4_grid').
+    """
+    path = Path(filepath)
+    fname = path.name
+    suffixes = [
+        "_ugrid.nc",
+        "_coards.nc",
+        "_ugrid.zarr",
+        ".depth_ascii",
+        ".maskorig_ascii",
+        ".obstr_lev1",
+        ".meta",
+        ".nc",
+        ".zarr",
+    ]
+    for s in suffixes:
+        if fname.endswith(s):
+            return fname[: -len(s)]
+    return path.stem or "ww4_grid"
+
+
 def load_grid_data(filepath: str | Path) -> dict[str, Any]:
     """Load WAVEWATCH grid, bathymetry, mask, and obstruction data from a dataset file or ASCII grid prefix.
 
@@ -257,7 +289,7 @@ def main() -> None:
         "--output",
         type=str,
         default=None,
-        help="Output image file path (default: ww4_grid_display.<format>)",
+        help="Output image file path (default: <GRIDNAME>.<format>)",
     )
     parser.add_argument(
         "-f",
@@ -274,14 +306,28 @@ def main() -> None:
         help="Figure title",
     )
     parser.add_argument(
-        "--show",
+        "--display",
+        dest="display",
         action="store_true",
-        help="Display plot figure window interactively",
+        default=True,
+        help="Interactively display the figure window (default: enabled)",
+    )
+    parser.add_argument(
+        "--no-display",
+        dest="display",
+        action="store_false",
+        help="Disable interactive figure window display",
+    )
+    parser.add_argument(
+        "--show",
+        dest="display",
+        action="store_true",
+        help="Interactively display the figure window",
     )
 
     args = parser.parse_args()
 
-    if not args.show:
+    if not args.display:
         matplotlib.use("Agg")
 
     fmt = args.format.lower()
@@ -289,12 +335,13 @@ def main() -> None:
         fmt = "jpg"
 
     if args.output is None:
-        out_path = f"ww4_grid_display.{fmt}"
+        grid_name = extract_grid_name(args.input)
+        out_path = f"{grid_name}.{fmt}"
     else:
         out_path = args.output
 
     data = load_grid_data(args.input)
-    plot_grid(data, title=args.title, output_path=out_path, show=args.show)
+    plot_grid(data, title=args.title, output_path=out_path, show=args.display)
 
 
 if __name__ == "__main__":
