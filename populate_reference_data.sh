@@ -29,6 +29,7 @@ FETCH_LEGACY=false
 FETCH_ETOPO2022=false
 FETCH_GEBCO=false
 FETCH_GSHHG=false
+CLEANUP=false
 CLI_SPECIFIED=false
 HAD_LEGACY_ERROR=false
 
@@ -40,6 +41,7 @@ Tool to populate the WAVEWATCH gridgen reference_data directory from authoritati
 
 Options:
   -d, --target-dir DIR   Specify target output directory (default: ./reference_data)
+  -c, --clean, --cleanup Remove all reference datasets from target directory
   --legacy               Pull legacy reference datasets (etopo1.nc, etopo2.nc, coastal_bound_*.mat)
   --etopo2022            Pull newer NOAA NCEI ETOPO 2022 global relief model dataset
   --gebco                Display instructions & links for GEBCO global bathymetry grid
@@ -74,6 +76,11 @@ while [[ $# -gt 0 ]]; do
     -d|--target-dir)
       TARGET_DIR="$2"
       shift 2
+      ;;
+    -c|--clean|--cleanup)
+      CLEANUP=true
+      CLI_SPECIFIED=true
+      shift
       ;;
     --legacy)
       FETCH_LEGACY=true
@@ -149,6 +156,31 @@ echo "========================================================================"
 echo " WAVEWATCH III / IV Reference Data Population Tool"
 echo " Target Directory: ${TARGET_DIR}"
 echo "========================================================================"
+
+# 0. Perform Cleanup if requested
+if [ "$CLEANUP" = true ]; then
+  echo ""
+  echo "--> Cleaning up reference dataset files in ${TARGET_DIR}..."
+  if [ -d "$TARGET_DIR" ]; then
+    REMOVED_COUNT=0
+    for file in "${TARGET_DIR}"/*; do
+      [ -e "$file" ] || continue
+      fname="$(basename "$file")"
+      if [ "$fname" != "README.md" ] && [ "$fname" != "user_polygons.flag" ] && [ "$fname" != ".gitignore" ]; then
+        rm -rf "$file"
+        echo "Removed ${file}"
+        REMOVED_COUNT=$((REMOVED_COUNT + 1))
+      fi
+    done
+    if [ "$REMOVED_COUNT" -eq 0 ]; then
+      echo "No dataset files found to remove in ${TARGET_DIR}."
+    else
+      echo "Cleanup complete. Removed ${REMOVED_COUNT} item(s)."
+    fi
+  else
+    echo "Target directory ${TARGET_DIR} does not exist. Nothing to clean."
+  fi
+fi
 
 # 1. Fetch Legacy Data
 if [ "$FETCH_LEGACY" = true ]; then
