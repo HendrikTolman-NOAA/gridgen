@@ -41,6 +41,9 @@ def main() -> None:
     parser.add_argument("--lat-start", type=float, default=44.0, help="Min latitude")
     parser.add_argument("--lat-end", type=float, default=54.0, help="Max latitude")
     parser.add_argument("--out-dir", type=str, default=".", help="Output directory")
+    parser.add_argument(
+        "--ref-dir", type=str, default="reference_data", help="Reference data directory"
+    )
 
     args = parser.parse_args()
 
@@ -50,7 +53,7 @@ def main() -> None:
 
     print(f"Generating grid '{args.name}' with shape {lon.shape}...")
 
-    depth = generate_grid(lon, lat)
+    depth = generate_grid(lon, lat, ref_dir=args.ref_dir)
     m = np.ones_like(depth, dtype=int)
     m[depth == 999999.0] = 0
 

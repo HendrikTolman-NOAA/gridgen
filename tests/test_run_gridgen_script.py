@@ -81,6 +81,62 @@ def test_run_gridgen_execution(tmp_path: Path):
     assert (out_dir / "test_grid_ugrid.zarr").exists()
 
 
+def test_run_gridgen_with_ref_dir(tmp_path: Path):
+    """Verify that run_gridgen.sh passes ref_dir and generates bathymetry from reference NetCDF when provided."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    out_dir = tmp_path / "grid_output"
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create dummy etopo1.nc dataset
+    import numpy as np
+    import xarray as xr
+
+    lon = np.linspace(140.0, 160.0, 20)
+    lat = np.linspace(44.0, 54.0, 20)
+    z = np.full((20, 20), -100.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("lat", "lon"), z)},
+        coords={"lon": lon, "lat": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo1.nc")
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "ref_grid",
+            "--dx",
+            "2.0",
+            "--dy",
+            "2.0",
+            "--lon-start",
+            "140.0",
+            "--lon-end",
+            "150.0",
+            "--lat-start",
+            "44.0",
+            "--lat-end",
+            "50.0",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert (out_dir / "ref_grid.depth_ascii").exists()
+    # Read depth file and check bathymetry is populated (e.g., -100000 after 1000 scale)
+    depth_content = (out_dir / "ref_grid.depth_ascii").read_text()
+    assert "999999000" not in depth_content
+    assert "-100000" in depth_content
+
+
 def test_run_gridgen_missing_deps(tmp_path: Path):
     """Verify that run_gridgen.sh outputs helpful error when Python dependencies are missing."""
     repo_root = Path(__file__).parent.parent

@@ -150,7 +150,8 @@ python3 -m gridgen.cli \
   --lon-end "$LON_END" \
   --lat-start "$LAT_START" \
   --lat-end "$LAT_END" \
-  --out-dir "$OUT_DIR"
+  --out-dir "$OUT_DIR" \
+  --ref-dir "$REF_DIR"
 
 echo ""
 echo "Execution finished successfully."
