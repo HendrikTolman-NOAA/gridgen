@@ -123,7 +123,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
-A graphical display shell driver script is provided in the repository root directory to generate multi-panel plot graphics (in GIF format) of bathymetry depth, land-sea masks, and sub-grid directional obstruction factors ($S_x$, $S_y$):
+A graphical display shell driver script is provided in the repository root directory to generate multi-panel plot graphics of bathymetry depth, land-sea masks, and sub-grid directional obstruction factors ($S_x$, $S_y$):
 
 ```bash
 ./plot_grid.sh [OPTIONS]
@@ -132,8 +132,8 @@ A graphical display shell driver script is provided in the repository root direc
 Or via the utility binary or installed package CLI entry point:
 
 ```bash
-./bin/plot_grid.py -i ww4_grid_ugrid.nc -o ww4_grid_display.gif
-ww4plotgrid -i ww4_grid_ugrid.nc -o ww4_grid_display.gif
+./bin/plot_grid.py -i ww4_grid_ugrid.nc -f jpg -o ww4_grid_display.jpg
+ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid_display.pdf
 ```
 
 #### Script Options
@@ -141,7 +141,8 @@ ww4plotgrid -i ww4_grid_ugrid.nc -o ww4_grid_display.gif
 | Option | Description |
 | :--- | :--- |
 | `-i, --input PATH` | Input grid dataset filepath (`_ugrid.nc`, `_coards.nc`, `_ugrid.zarr`, or ASCII prefix). Default: `ww4_grid_ugrid.nc`. |
-| `-o, --output PATH` | Output figure image path. Default: `ww4_grid_display.gif`. |
+| `-o, --output PATH` | Output figure image path. Default: `ww4_grid_display.<format>`. |
+| `-f, --format FORMAT` | Output graphic format: `jpg`, `png`, `pdf`, `eps`, or `gif`. Default: `jpg`. |
 | `--title TITLE` | Custom title for the generated figure. |
 | `--show` | Interactively display figure window. |
 

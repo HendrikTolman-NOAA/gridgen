@@ -17,7 +17,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 
 INPUT_FILE="ww4_grid_ugrid.nc"
-OUTPUT_FILE="ww4_grid_display.gif"
+OUTPUT_FILE=""
+FORMAT="jpg"
 TITLE="WAVEWATCH IV Grid & Obstructions"
 SHOW_FLAG=""
 
@@ -25,11 +26,12 @@ usage() {
   cat << 'EOF'
 Usage: ./plot_grid.sh [OPTIONS]
 
-Utility script to graphically display resulting WAVEWATCH III / IV grids and obstructions in GIF format.
+Utility script to graphically display resulting WAVEWATCH III / IV grids and obstructions.
 
 Options:
   -i, --input PATH       Input dataset file path (_ugrid.nc, _coards.nc, _ugrid.zarr, or ASCII prefix) (default: ww4_grid_ugrid.nc)
-  -o, --output PATH      Output plot image file path (default: ww4_grid_display.gif)
+  -o, --output PATH      Output plot image file path (default: ww4_grid_display.<format>)
+  -f, --format FORMAT    Output graphic format: jpg, png, pdf, eps, or gif (default: jpg)
   --title TITLE          Custom figure title (default: WAVEWATCH IV Grid & Obstructions)
   --show                 Display figure window interactively
   -h, --help             Display this help message and exit
@@ -37,7 +39,7 @@ Options:
 Description:
   This script executes the Python grid visualization module (`gridgen.vis`)
   to produce multi-panel plots of bathymetry depth, land-sea mask, and
-  sub-grid directional obstruction factors (sx, sy) in GIF format.
+  sub-grid directional obstruction factors (sx, sy) in JPG, PNG, PDF, EPS, or GIF formats.
 EOF
 }
 
@@ -50,6 +52,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -o|--output)
       OUTPUT_FILE="$2"
+      shift 2
+      ;;
+    -f|--format)
+      FORMAT="$2"
       shift 2
       ;;
     --title)
@@ -89,11 +95,17 @@ if ! python3 -c "import numpy, matplotlib, xarray" &> /dev/null; then
   exit 1
 fi
 
+# Determine output filename if not explicitly set
+if [ -z "$OUTPUT_FILE" ]; then
+  OUTPUT_FILE="ww4_grid_display.${FORMAT}"
+fi
+
 # 2. Execute Visualization Module
-echo "Generating plot graphics for '${INPUT_FILE}'..."
+echo "Generating plot graphics for '${INPUT_FILE}' in format '${FORMAT}'..."
 python3 -m gridgen.vis \
   --input "$INPUT_FILE" \
   --output "$OUTPUT_FILE" \
+  --format "$FORMAT" \
   --title "$TITLE" \
   $SHOW_FLAG
 

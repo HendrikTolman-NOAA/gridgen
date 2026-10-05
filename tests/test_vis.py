@@ -45,10 +45,11 @@ def test_vis_ugrid(tmp_path):
     assert "sy" in data
     assert data["depth"].shape == (3, 3)
 
-    out_gif = str(tmp_path / "vis_ugrid.gif")
-    fig = plot_grid(data, title="UGRID Vis Test", output_path=out_gif)
-    assert os.path.exists(out_gif)
-    assert fig is not None
+    for ext in ["jpg", "pdf", "eps", "gif", "png"]:
+        out_file = str(tmp_path / f"vis_ugrid.{ext}")
+        fig = plot_grid(data, title="UGRID Vis Test", output_path=out_file)
+        assert os.path.exists(out_file)
+        assert fig is not None
 
 
 def test_vis_coards(tmp_path):

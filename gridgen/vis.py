@@ -256,8 +256,16 @@ def main() -> None:
         "-o",
         "--output",
         type=str,
-        default="ww4_grid_display.gif",
-        help="Output image file path (default: ww4_grid_display.gif)",
+        default=None,
+        help="Output image file path (default: ww4_grid_display.<format>)",
+    )
+    parser.add_argument(
+        "-f",
+        "--format",
+        type=str,
+        default="jpg",
+        choices=["jpg", "jpeg", "png", "pdf", "eps", "gif"],
+        help="Output graphic format: jpg, png, pdf, eps, or gif (default: jpg)",
     )
     parser.add_argument(
         "--title",
@@ -276,8 +284,17 @@ def main() -> None:
     if not args.show:
         matplotlib.use("Agg")
 
+    fmt = args.format.lower()
+    if fmt == "jpeg":
+        fmt = "jpg"
+
+    if args.output is None:
+        out_path = f"ww4_grid_display.{fmt}"
+    else:
+        out_path = args.output
+
     data = load_grid_data(args.input)
-    plot_grid(data, title=args.title, output_path=args.output, show=args.show)
+    plot_grid(data, title=args.title, output_path=out_path, show=args.show)
 
 
 if __name__ == "__main__":
