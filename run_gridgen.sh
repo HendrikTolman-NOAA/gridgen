@@ -8,6 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-02
+# @date Update: 2026-10-05
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
