@@ -33,7 +33,7 @@ It is assumed that basic Python (v3.9 or higher) is installed already on your sy
 To create a local clone of the repository:
 
 ```bash
-git clone https://github.com/NOAA-EMC/gridgen.git
+git clone https://github.com/NOAA-EMC/gridgen
 cd gridgen
 ```
 
