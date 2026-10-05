@@ -56,6 +56,7 @@ flowchart TD
         Q --> R3[gridgen.io.ugrid<br/>WW4 NetCDF-UGRID 1.0<br/>_ugrid.nc]
         Q --> R4[gridgen.io.zarr_store<br/>WW4 Zarr Store<br/>_ugrid.zarr]
         Q --> R5[plot_grid.sh / gridgen.vis<br/>Graphical Plots<br/>.jpg, .png, .pdf, .eps, .gif]
+        R5 --> R6[view_grid.sh<br/>Display Graphics Window]
     end
 ```
 
@@ -86,5 +87,5 @@ flowchart TD
   - **WW4 NetCDF-UGRID 1.0:** `_ugrid.nc`
   - **WW4 Zarr Store:** `_ugrid.zarr`
 
-- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis`)**
-  - Generates multi-panel plot graphics displaying bathymetry depth, land-sea masks, and sub-grid directional obstruction factors (`sx`, `sy`) in `jpg`, `png`, `pdf`, `eps`, or `gif` formats.
+- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis` / `view_grid.sh`)**
+  - Generates multi-panel plot graphics displaying bathymetry depth, land-sea masks, and sub-grid directional obstruction factors (`sx`, `sy`) in `jpg`, `png`, `pdf`, `eps`, or `gif` formats, and displays generated graphics in the present window (`view_grid.sh`).

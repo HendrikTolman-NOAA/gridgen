@@ -148,6 +148,12 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `--display` | Interactively display figure window (default: enabled). |
 | `--no-display` | Disable interactive figure window display. |
 
+To display the generated grid plot image in the present window:
+
+```bash
+./view_grid.sh [IMAGE_FILE]
+```
+
 ## Dependencies
 
 The package requires Python 3.9+ and the following scientific Python libraries:
