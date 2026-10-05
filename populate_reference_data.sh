@@ -196,6 +196,8 @@ if [ "$FETCH_LEGACY" = true ]; then
       echo "Extracting missing legacy reference data files from ${TARBALL}..."
       tar -xzf "$TARBALL" -C "$TARGET_DIR" --skip-old-files 2>/dev/null || tar -xzf "$TARBALL" -C "$TARGET_DIR" -k 2>/dev/null || tar -xzf "$TARBALL" -C "$TARGET_DIR"
       echo "Extraction complete."
+      rm -f "$TARBALL"
+      echo "Removed tarball archive ${TARBALL}."
 
       STILL_MISSING=()
       for file in "${MISSING_FILES[@]}"; do

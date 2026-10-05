@@ -154,6 +154,8 @@ def test_populate_script_existing_tarball(tmp_path: Path):
     assert result.returncode == 0
     assert "Extracting missing legacy reference data files" in result.stdout
     assert "Extraction complete." in result.stdout
+    assert "Removed tarball archive" in result.stdout
 
     for fname in legacy_files:
         assert (target_dir / fname).exists()
+    assert not tarball_path.exists(), "Tarball file should be removed after unpacking"
