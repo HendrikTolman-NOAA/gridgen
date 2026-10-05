@@ -8,6 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-02
+# @date Update: 2026-10-05
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -15,6 +16,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 
 # Default Configuration
 NAME="ww4_grid"
@@ -127,6 +129,14 @@ mkdir -p "$OUT_DIR"
 # 2. Check Python Environment
 if ! command -v python3 &> /dev/null; then
   echo "Error: 'python3' interpreter was not found in PATH." >&2
+  exit 1
+fi
+
+if ! python3 -c "import numpy, scipy, xarray, netCDF4, zarr, shapely" &> /dev/null; then
+  echo "Error: Required Python dependencies (numpy, scipy, xarray, netCDF4, zarr, shapely) are missing in environment '$(command -v python3)'." >&2
+  echo "Please install dependencies into your Python environment:" >&2
+  echo "  pip install -e ." >&2
+  echo "or activate a Python environment/venv with required packages installed." >&2
   exit 1
 fi
 

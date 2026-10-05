@@ -7,7 +7,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
-# @date Update: 2026-10-02
+# @date Update: 2026-10-05
 
 """Unit tests for reference data population script (populate_reference_data.sh)."""
 
@@ -154,6 +154,8 @@ def test_populate_script_existing_tarball(tmp_path: Path):
     assert result.returncode == 0
     assert "Extracting missing legacy reference data files" in result.stdout
     assert "Extraction complete." in result.stdout
+    assert "Removed tarball archive" in result.stdout
 
     for fname in legacy_files:
         assert (target_dir / fname).exists()
+    assert not tarball_path.exists(), "Tarball file should be removed after unpacking"

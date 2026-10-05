@@ -7,6 +7,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-02
+# @date Update: 2026-10-05
 
 """Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
@@ -78,3 +79,30 @@ def test_run_gridgen_execution(tmp_path: Path):
     assert (out_dir / "test_grid_coards.nc").exists()
     assert (out_dir / "test_grid_ugrid.nc").exists()
     assert (out_dir / "test_grid_ugrid.zarr").exists()
+
+
+def test_run_gridgen_missing_deps(tmp_path: Path):
+    """Verify that run_gridgen.sh outputs helpful error when Python dependencies are missing."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+
+    # Override PATH with a directory containing a dummy python3 script that lacks numpy
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    dummy_python = bin_dir / "python3"
+    dummy_python.write_text("#!/bin/sh\nexit 1\n")
+    dummy_python.chmod(0o755)
+
+    env = dict(os.environ)
+    env["PATH"] = f"{bin_dir}:{env.get('PATH', '')}"
+
+    result = subprocess.run(
+        [str(script_path)],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "Error: Required Python dependencies" in result.stderr

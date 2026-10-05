@@ -8,7 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
-# @date Update: 2026-10-02
+# @date Update: 2026-10-05
 #
 # Utility tool to populate the reference_data directory with authoritative
 # bathymetry, shoreline, and regional polygon datasets required by WAVEWATCH.
@@ -196,6 +196,8 @@ if [ "$FETCH_LEGACY" = true ]; then
       echo "Extracting missing legacy reference data files from ${TARBALL}..."
       tar -xzf "$TARBALL" -C "$TARGET_DIR" --skip-old-files 2>/dev/null || tar -xzf "$TARBALL" -C "$TARGET_DIR" -k 2>/dev/null || tar -xzf "$TARBALL" -C "$TARGET_DIR"
       echo "Extraction complete."
+      rm -f "$TARBALL"
+      echo "Removed tarball archive ${TARBALL}."
 
       STILL_MISSING=()
       for file in "${MISSING_FILES[@]}"; do
