@@ -28,6 +28,7 @@ LAT_START="44.0"
 LAT_END="54.0"
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
+CLEANUP=0
 
 usage() {
   cat << 'EOF'
@@ -45,6 +46,7 @@ Options:
   --lat-end LAT          Maximum latitude in degrees (default: 54.0)
   -o, --out-dir DIR      Output directory for generated grid files (default: .)
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
+  -c, --clean, --cleanup Remove generated grid files for NAME from output directory
   -h, --help             Display this help message and exit
 
 Description:
@@ -99,6 +101,10 @@ while [[ $# -gt 0 ]]; do
       REF_DIR="$2"
       shift 2
       ;;
+    -c|--clean|--cleanup)
+      CLEANUP=1
+      shift 1
+      ;;
     -h|--help)
       usage
       exit 0
@@ -114,6 +120,25 @@ done
 echo "========================================================================"
 echo " WAVEWATCH III / IV Python Grid Generation Driver"
 echo "========================================================================"
+
+# Check for cleanup option
+if [ "$CLEANUP" -eq 1 ]; then
+  echo "Cleaning up generated grid files for prefix '${NAME}' in directory '${OUT_DIR}'..."
+  rm -rf "${OUT_DIR}/${NAME}.depth_ascii" \
+         "${OUT_DIR}/${NAME}.maskorig_ascii" \
+         "${OUT_DIR}/${NAME}.obstr_lev1" \
+         "${OUT_DIR}/${NAME}.meta" \
+         "${OUT_DIR}/${NAME}_coards.nc" \
+         "${OUT_DIR}/${NAME}_ugrid.nc" \
+         "${OUT_DIR}/${NAME}_ugrid.zarr" \
+         "${OUT_DIR}/${NAME}.jpg" \
+         "${OUT_DIR}/${NAME}.png" \
+         "${OUT_DIR}/${NAME}.pdf" \
+         "${OUT_DIR}/${NAME}.eps" \
+         "${OUT_DIR}/${NAME}.gif"
+  echo "Cleanup finished successfully."
+  exit 0
+fi
 
 # 1. Check Reference Data Directory
 if [ ! -d "$REF_DIR" ] || [ -z "$(ls -A "$REF_DIR"/*.nc "$REF_DIR"/*.tif 2>/dev/null)" ]; then

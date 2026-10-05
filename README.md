@@ -111,6 +111,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--lat-end LAT` | Maximum latitude in degrees (default: `54.0`). |
 | `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). |
 | `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). |
+| `-c, --clean, --cleanup` | Remove generated output grid files for specified `--name` from output directory. |
 | `-h, --help` | Display usage help message and exit. |
 
 #### Output Formats
@@ -121,6 +122,38 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 3. **WW4 NetCDF-UGRID 1.0 grid**: `_ugrid.nc`
 4. **WW4 Zarr Store grid**: `_ugrid.zarr`
 
+### Grid & Obstruction Visualization (`plot_grid.sh`)
+
+A graphical display shell driver script is provided in the repository root directory to generate multi-panel plot graphics of bathymetry depth, land-sea masks, and sub-grid directional obstruction factors ($S_x$, $S_y$):
+
+```bash
+./plot_grid.sh [OPTIONS]
+```
+
+Or via the utility binary or installed package CLI entry point:
+
+```bash
+./bin/plot_grid.py -i ww4_grid_ugrid.nc -f jpg -o ww4_grid.jpg
+ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
+```
+
+#### Script Options
+
+| Option | Description |
+| :--- | :--- |
+| `-i, --input PATH` | Input grid dataset filepath (`_ugrid.nc`, `_coards.nc`, `_ugrid.zarr`, or ASCII prefix). Default: `ww4_grid_ugrid.nc`. |
+| `-o, --output PATH` | Output figure image path. Default: `<GRIDNAME>.<format>` (e.g. `ww4_grid.jpg`). |
+| `-f, --format FORMAT` | Output graphic format: `jpg`, `png`, `pdf`, `eps`, or `gif`. Default: `jpg`. |
+| `--title TITLE` | Custom title for the generated figure. |
+| `--display` | Interactively display figure window (default: enabled). |
+| `--no-display` | Disable interactive figure window display. |
+
+To display the generated grid plot image in the present window:
+
+```bash
+./view_grid.sh [IMAGE_FILE]
+```
+
 ## Dependencies
 
 The package requires Python 3.9+ and the following scientific Python libraries:
@@ -130,6 +163,7 @@ The package requires Python 3.9+ and the following scientific Python libraries:
 - `netCDF4` (>= 1.5)
 - `zarr` (>= 2.10)
 - `shapely` (>= 2.0)
+- `matplotlib` (>= 3.5)
 
 ## Files
 

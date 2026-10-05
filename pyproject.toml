@@ -19,11 +19,13 @@ dependencies = [
     "xarray>=2022.03",
     "netCDF4>=1.5",
     "zarr>=2.10",
-    "shapely>=2.0"
+    "shapely>=2.0",
+    "matplotlib>=3.5"
 ]
 
 [project.scripts]
 ww4gridgen = "gridgen.cli:main"
+ww4plotgrid = "gridgen.vis:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
