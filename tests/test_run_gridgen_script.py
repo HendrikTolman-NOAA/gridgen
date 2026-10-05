@@ -39,11 +39,50 @@ def test_run_gridgen_help():
     assert "WW4 NetCDF-UGRID 1.0 grid" in result.stdout
 
 
-def test_run_gridgen_execution(tmp_path: Path):
-    """Verify that run_gridgen.sh generates all grid export formats."""
+def test_run_gridgen_missing_ref_dir_fails(tmp_path: Path):
+    """Verify that run_gridgen.sh fails with error when reference data is missing."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "run_gridgen.sh"
     out_dir = tmp_path / "grid_output"
+    empty_ref_dir = tmp_path / "empty_ref"
+    empty_ref_dir.mkdir(parents=True, exist_ok=True)
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "-r",
+            str(empty_ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "Error: Reference bathymetry dataset files were not found" in result.stderr
+
+
+def test_run_gridgen_execution(tmp_path: Path):
+    """Verify that run_gridgen.sh generates all grid export formats when ref_dir contains bathymetry data."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    out_dir = tmp_path / "grid_output"
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    import numpy as np
+    import xarray as xr
+
+    lon = np.linspace(10.0, 12.0, 10)
+    lat = np.linspace(20.0, 22.0, 10)
+    z = np.full((10, 10), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("lat", "lon"), z)},
+        coords={"lon": lon, "lat": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo1.nc")
 
     result = subprocess.run(
         [
@@ -62,6 +101,8 @@ def test_run_gridgen_execution(tmp_path: Path):
             "20.0",
             "--lat-end",
             "22.0",
+            "-r",
+            str(ref_dir),
             "--out-dir",
             str(out_dir),
         ],
@@ -142,6 +183,10 @@ def test_run_gridgen_missing_deps(tmp_path: Path):
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "run_gridgen.sh"
 
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+    (ref_dir / "etopo1.nc").touch()
+
     # Override PATH with a directory containing a dummy python3 script that lacks numpy
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
@@ -153,7 +198,7 @@ def test_run_gridgen_missing_deps(tmp_path: Path):
     env["PATH"] = f"{bin_dir}:{env.get('PATH', '')}"
 
     result = subprocess.run(
-        [str(script_path)],
+        [str(script_path), "-r", str(ref_dir)],
         capture_output=True,
         text=True,
         env=env,
