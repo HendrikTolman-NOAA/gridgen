@@ -8,8 +8,9 @@ The grid generation package converts high-resolution source bathymetry and shore
 
 ```mermaid
 flowchart TD
-    subgraph Step 0: Software Acquisition
+    subgraph Step 0: Software Acquisition & Environment Setup
         A0[GitHub Repository<br/>NOAA-EMC/gridgen] --> A1[git clone https://github.com/NOAA-EMC/gridgen.git]
+        A1 --> A2[Verify Python Packages<br/>numpy, scipy, xarray, netCDF4, zarr, shapely, matplotlib]
     end
 
     subgraph Step 1: Reference Data Population
@@ -20,7 +21,7 @@ flowchart TD
         C2 --> D
     end
 
-    A1 --> B
+    A2 --> B
 
     subgraph Step 2: Driver Execution & Validation
         E[User CLI / Script Call] --> F[run_gridgen.sh]
@@ -52,8 +53,8 @@ flowchart TD
 
 ## Step-by-Step Processing Pipeline
 
-0. **Software Acquisition (`git clone`)**
-   - Obtain the software package by cloning the repository from GitHub (`https://github.com/NOAA-EMC/gridgen.git`) and setting up the Python environment and search path.
+0. **Software Acquisition & Environment Verification (`git clone` & Package Check)**
+   - Obtain the software package by cloning the repository from GitHub (`https://github.com/NOAA-EMC/gridgen.git`), setting up the Python environment and search path, and verifying required Python dependencies (`numpy`, `scipy`, `xarray`, `netCDF4`, `zarr`, `shapely`, `matplotlib`).
 
 1. **Reference Data Population (`populate_reference_data.sh`)**
    - Populates bathymetry grids (`etopo1.nc`, `etopo2.nc`, or ETOPO 2022) and shoreline boundary MAT files (`coastal_bound_*.mat`) in `reference_data/`.

@@ -256,8 +256,8 @@ def main() -> None:
         "-o",
         "--output",
         type=str,
-        default="ww4_grid_display.png",
-        help="Output image file path (default: ww4_grid_display.png)",
+        default="ww4_grid_display.gif",
+        help="Output image file path (default: ww4_grid_display.gif)",
     )
     parser.add_argument(
         "--title",

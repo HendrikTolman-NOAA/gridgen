@@ -45,9 +45,9 @@ def test_vis_ugrid(tmp_path):
     assert "sy" in data
     assert data["depth"].shape == (3, 3)
 
-    out_png = str(tmp_path / "vis_ugrid.png")
-    fig = plot_grid(data, title="UGRID Vis Test", output_path=out_png)
-    assert os.path.exists(out_png)
+    out_gif = str(tmp_path / "vis_ugrid.gif")
+    fig = plot_grid(data, title="UGRID Vis Test", output_path=out_gif)
+    assert os.path.exists(out_gif)
     assert fig is not None
 
 
@@ -66,9 +66,9 @@ def test_vis_coards(tmp_path):
     data = load_grid_data(nc_path)
     assert data["depth"].shape == (3, 3)
 
-    out_png = str(tmp_path / "vis_coards.png")
-    fig = plot_grid(data, title="COARDS Vis Test", output_path=out_png)
-    assert os.path.exists(out_png)
+    out_gif = str(tmp_path / "vis_coards.gif")
+    fig = plot_grid(data, title="COARDS Vis Test", output_path=out_gif)
+    assert os.path.exists(out_gif)
     assert fig is not None
 
 
@@ -95,7 +95,7 @@ def test_vis_ascii(tmp_path):
     assert data["depth"].shape == (3, 3)
     assert np.allclose(data["sx"], sx)
 
-    out_png = str(tmp_path / "vis_ascii.png")
-    fig = plot_grid(data, title="ASCII Vis Test", output_path=out_png)
-    assert os.path.exists(out_png)
+    out_gif = str(tmp_path / "vis_ascii.gif")
+    fig = plot_grid(data, title="ASCII Vis Test", output_path=out_gif)
+    assert os.path.exists(out_gif)
     assert fig is not None
