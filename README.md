@@ -91,6 +91,12 @@ The reference dataset files include:
   - `coastal_bound_inter.mat`
   - `optional_coastal_polygons.mat`
 
+### User-Defined Coastal Polygons
+
+Optional user-defined coastal polygons (`optional_coastal_polygons.mat`) allow users to explicitly mask out water bodies (such as inland lakes, bays, or estuaries) that do not play a significant role in wave propagation. User polygon selection is controlled by a flag text file (e.g. `user_polygons.flag`) containing binary switches (0 = off, 1 = on) per polygon index:
+- `load_user_polygons(ref_dir, flag_file)` loads and filters active user boundary polygons based on the control switches.
+- Active user polygons are passed into `clean_mask()` to refine land/sea mask boundaries and `create_obstr()` to calculate directional sub-grid obstruction factors ($S_x$, $S_y$).
+
 ### Running Grid Generation Tool (`run_gridgen.sh`)
 
 Once the reference data directory is populated, you can generate WAVEWATCH III and WAVEWATCH IV grid files using the provided `run_gridgen.sh` driver script:
@@ -104,6 +110,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | Option | Description |
 | :--- | :--- |
 | `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). |
+| `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `lambert_conformal`, `rotated_pole` (default: `regular`). |
 | `--dx DX` | Longitude grid resolution increment in degrees (default: `0.25`). |
 | `--dy DY` | Latitude grid resolution increment in degrees (default: `0.25`). |
 | `--lon-start LON` | Minimum longitude in degrees (default: `140.0`). |
@@ -186,7 +193,7 @@ Gridgen now does not require the grids to be rectilinear to allow for developmen
 
 ---
 
-**Last updated:** October 5, 2026
+**Last updated:** October 6, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">

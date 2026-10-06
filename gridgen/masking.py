@@ -12,15 +12,17 @@
 #
 # Code Heritage:
 # Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m,
-# and modify_mask.m originally authored by NOAA/NCEP (Arun Chawla).
+# modify_mask.m, and optional_bound.m originally authored by NOAA/NCEP (Arun Chawla).
 
 """Mask processing and boundary utilities for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4)."""
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import numpy as np
+import scipy.io as sio
 from shapely.geometry import Point, Polygon, box
 from shapely.strtree import STRtree
 
@@ -482,12 +484,98 @@ def define_boundary_points(
             b11 = abs(base_mask[jy1, jx1]) in (1, 2) or (1.0 - rx) * (1.0 - ry) < 0.05
             b12 = abs(base_mask[jy1, jx2]) in (1, 2) or rx * (1.0 - ry) < 0.05
             b21 = abs(base_mask[jy2, jx1]) in (1, 2) or (1.0 - rx) * ry < 0.05
-            b22 = abs(base_mask[jy2, jx2]) in (1, 2) or rx * ry < 0.05
+            b22 = abs(base_mask[jy2, jx2]) in (1, 2) or rx * (1.0 - ry) < 0.05
 
             if not (b11 and b12 and b21 and b22):
                 m_new[r, c] = 3
 
     return m_new
+
+
+def load_user_polygons(
+    ref_dir: str = "reference_data",
+    flag_file: str | None = None,
+    mat_filename: str = "optional_coastal_polygons.mat",
+) -> list[dict[str, Any]]:
+    """Load user-defined optional coastal polygons filtered by a flag control file.
+
+    Ported from legacy MATLAB optional_bound.m function.
+
+    Parameters
+    ----------
+    ref_dir : str
+        Directory containing optional coastal polygon MAT datasets.
+    flag_file : Optional[str]
+        Path to text file containing binary switches (0 = off, 1 = on) per polygon.
+    mat_filename : str
+        Filename of MAT file containing user coastal polygons.
+
+    Returns
+    -------
+    active_polygons : List[Dict[str, Any]]
+        List of active user boundary polygon dictionaries.
+    """
+    mat_path = os.path.join(ref_dir, mat_filename)
+    if not os.path.exists(mat_path):
+        return []
+
+    mat_data = sio.loadmat(mat_path, squeeze_me=True, struct_as_record=False)
+    if "user_bound" not in mat_data:
+        return []
+
+    user_bound = mat_data["user_bound"]
+    if not isinstance(user_bound, np.ndarray):
+        user_bound = np.array([user_bound])
+
+    switches = []
+    if flag_file and os.path.exists(flag_file):
+        with open(flag_file) as f:
+            for line in f:
+                line_str = line.strip()
+                if not line_str or line_str.startswith("#"):
+                    continue
+                parts = line_str.split()
+                if len(parts) >= 2:
+                    switches.append(int(parts[1]))
+                elif len(parts) == 1:
+                    switches.append(int(parts[0]))
+
+    if not switches:
+        switches = [1] * len(user_bound)
+
+    active_polygons = []
+    for idx, bound_obj in enumerate(user_bound):
+        if idx >= len(switches) or switches[idx] != 1:
+            continue
+
+        bx = np.asarray(getattr(bound_obj, "x", []), dtype=np.float64)
+        by = np.asarray(getattr(bound_obj, "y", []), dtype=np.float64)
+        if len(bx) < 3:
+            continue
+
+        west, east = float(np.min(bx)), float(np.max(bx))
+        south, north = float(np.min(by)), float(np.max(by))
+        poly = Polygon(np.column_stack((bx, by)))
+        if not poly.is_valid:
+            poly = poly.buffer(0)
+
+        active_polygons.append(
+            {
+                "x": bx,
+                "y": by,
+                "n": len(bx),
+                "west": west,
+                "east": east,
+                "south": south,
+                "north": north,
+                "width": east - west,
+                "height": north - south,
+                "level": int(getattr(bound_obj, "level", 1)),
+                "polygon": poly,
+            }
+        )
+
+    return active_polygons
 
 
 # Backward compatibility alias

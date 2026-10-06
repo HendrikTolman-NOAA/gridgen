@@ -26,7 +26,7 @@ from .grid import generate_grid
 from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from .io.coards import nc_ww3_grdwrite
 from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
-from .masking import define_boundary_points, remove_lake
+from .masking import clean_mask, define_boundary_points, load_user_polygons, remove_lake
 from .obstructions import create_obstr
 
 
@@ -58,6 +58,12 @@ def main() -> None:
         action="store_true",
         help="Define input boundary points (mask value 2) along regional grid boundaries",
     )
+    parser.add_argument(
+        "--user-polygons-flag",
+        type=str,
+        default=None,
+        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
+    )
 
     args = parser.parse_args()
 
@@ -79,11 +85,18 @@ def main() -> None:
     m = np.ones_like(depth, dtype=int)
     m[depth == 999999.0] = 0
 
+    user_bounds = []
+    if args.user_polygons_flag:
+        user_bounds = load_user_polygons(ref_dir=args.ref_dir, flag_file=args.user_polygons_flag)
+        if user_bounds:
+            print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
+            m = clean_mask(lon, lat, m, user_bounds)
+
     m_mod, _ = remove_lake(m, lake_tol=-1, igl=0)
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
-    sx, sy = create_obstr(lon, lat, [], m_mod)
+    sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
 
     # 1. Legacy WW3 ASCII
     depth_scale = 1000.0
