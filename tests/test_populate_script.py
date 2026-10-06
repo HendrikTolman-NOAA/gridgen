@@ -7,7 +7,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
-# @date Update: 2026-10-05
+# @date Update: 2026-10-06
 
 """Unit tests for reference data population script (populate_reference_data.sh)."""
 
@@ -242,3 +242,21 @@ def test_populate_script_clean_empty_dir(tmp_path: Path):
 
     assert result.returncode == 0
     assert "No dataset files found to remove" in result.stdout
+
+
+def test_populate_script_from_external_directory(tmp_path: Path):
+    """Verify populate_reference_data.sh executed from external working directory targets repo_root/reference_data by default."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "populate_reference_data.sh"
+
+    result = subprocess.run(
+        [str(script_path), "--gebco"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    expected_target = repo_root / "reference_data"
+    assert f"Target Directory: {expected_target}" in result.stdout

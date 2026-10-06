@@ -7,6 +7,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-05
+# @date Update: 2026-10-06
 
 from __future__ import annotations
 
@@ -173,3 +174,120 @@ def test_view_grid_script_display_check(tmp_path: Path):
     assert "Displaying WAVEWATCH Grid Graphics" in result.stdout
     assert "WARNING: Neither DISPLAY nor WAYLAND_DISPLAY environment variable is set." in result.stdout
     assert "Troubleshooting steps to display graphics" in result.stdout
+
+
+def test_plot_grid_from_external_directory_default_out(tmp_path: Path):
+    """Verify plot_grid.sh executed from an external working directory defaults output figure location to repo_root."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    # Create dummy NetCDF UGRID file in repo_root
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), 10.0)
+    mask = np.ones((3, 3), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Ext Grid Plot Test")
+
+    grid_name = "ext_plot_test"
+    nc_file = repo_root / f"{grid_name}_ugrid.nc"
+    write_ugrid_nc(ds, str(nc_file))
+
+    try:
+        result = subprocess.run(
+            [str(script_path), "-i", str(nc_file), "-f", "jpg", "--no-display"],
+            cwd=tmp_path,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        assert result.returncode == 0
+        # Default output graphic should be placed in repo_root
+        expected_plot = repo_root / f"{grid_name}.jpg"
+        assert expected_plot.exists()
+        assert not (tmp_path / f"{grid_name}.jpg").exists()
+    finally:
+        if nc_file.exists():
+            nc_file.unlink()
+        plot_path = repo_root / f"{grid_name}.jpg"
+        if plot_path.exists():
+            plot_path.unlink()
+
+
+def test_plot_grid_from_external_directory_custom_out(tmp_path: Path):
+    """Verify plot_grid.sh executed from external directory respects relative user output figure path."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), 10.0)
+    mask = np.ones((3, 3), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Ext Custom Plot Test")
+
+    nc_file = tmp_path / "custom_input_ugrid.nc"
+    write_ugrid_nc(ds, str(nc_file))
+
+    out_jpg = "my_external_plot.jpg"
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "-i",
+            str(nc_file),
+            "-o",
+            out_jpg,
+            "-f",
+            "jpg",
+            "--no-display",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    # Output file should be created inside tmp_path (where user ran it)
+    assert (tmp_path / out_jpg).exists()
+
+
+def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
+    """Verify bin/plot_grid.py executed from external directory runs correctly and places output as specified."""
+    repo_root = Path(__file__).parent.parent
+    bin_script = repo_root / "bin" / "plot_grid.py"
+
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), 10.0)
+    mask = np.ones((3, 3), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Bin Plot Test")
+
+    nc_file = tmp_path / "bin_plot_input_ugrid.nc"
+    write_ugrid_nc(ds, str(nc_file))
+
+    out_jpg = "bin_ext_plot.jpg"
+
+    result = subprocess.run(
+        [
+            "python3",
+            str(bin_script),
+            "-i",
+            str(nc_file),
+            "-o",
+            out_jpg,
+            "-f",
+            "jpg",
+            "--no-display",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert (tmp_path / out_jpg).exists()

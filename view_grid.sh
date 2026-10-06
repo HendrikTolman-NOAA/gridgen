@@ -8,16 +8,19 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-05
-# @date Update: 2026-10-05
+# @date Update: 2026-10-06
 #
 # Utility script to display generated grid plot graphics in the present window.
 
 set -euo pipefail
 
+ORIG_DIR="$(pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 
 IMAGE_FILE=""
+IMAGE_FILE_SPECIFIED=0
 
 usage() {
   cat << 'EOF'
@@ -45,6 +48,7 @@ while [[ $# -gt 0 ]]; do
     *)
       if [ -z "$IMAGE_FILE" ]; then
         IMAGE_FILE="$1"
+        IMAGE_FILE_SPECIFIED=1
         shift 1
       else
         echo "Error: Unknown argument: $1" >&2
@@ -54,6 +58,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Resolve IMAGE_FILE relative to ORIG_DIR if explicitly specified by user input
+if [ "$IMAGE_FILE_SPECIFIED" -eq 1 ] && [[ "$IMAGE_FILE" != /* ]]; then
+  IMAGE_FILE="${ORIG_DIR}/${IMAGE_FILE}"
+fi
 
 # If no image file provided, search for default generated image files
 if [ -z "$IMAGE_FILE" ]; then

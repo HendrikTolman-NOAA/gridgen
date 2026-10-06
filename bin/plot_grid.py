@@ -8,17 +8,35 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-05
+# @date Update: 2026-10-06
 #
 # Code Heritage:
 # Executable script wrapper for WAVEWATCH IV grid and obstruction visualization.
 
 """Utility script to graphically display WAVEWATCH III / IV resulting grid and obstructions."""
 
+import os
 import sys
 from pathlib import Path
 
-# Add project root directory to sys.path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# Add project root directory to sys.path and set working directory to repo root
+repo_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(repo_root))
+
+orig_pwd = Path.cwd()
+
+# Resolve relative input/output arguments relative to original invocation directory
+for idx, arg in enumerate(sys.argv):
+    if arg in ("-i", "--input") and idx + 1 < len(sys.argv):
+        inp = Path(sys.argv[idx + 1])
+        if not inp.is_absolute():
+            sys.argv[idx + 1] = str((orig_pwd / inp).resolve())
+    elif arg in ("-o", "--output") and idx + 1 < len(sys.argv):
+        outp = Path(sys.argv[idx + 1])
+        if not outp.is_absolute():
+            sys.argv[idx + 1] = str((orig_pwd / outp).resolve())
+
+os.chdir(repo_root)
 
 from gridgen.vis import main
 

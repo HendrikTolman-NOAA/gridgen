@@ -8,14 +8,16 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-02
-# @date Update: 2026-10-05
+# @date Update: 2026-10-06
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
 
 set -euo pipefail
 
+ORIG_DIR="$(pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 
 # Default Configuration
@@ -29,6 +31,9 @@ LAT_END="54.0"
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
 CLEANUP=0
+
+OUT_DIR_SPECIFIED=0
+REF_DIR_SPECIFIED=0
 
 usage() {
   cat << 'EOF'
@@ -95,10 +100,12 @@ while [[ $# -gt 0 ]]; do
       ;;
     -o|--out-dir)
       OUT_DIR="$2"
+      OUT_DIR_SPECIFIED=1
       shift 2
       ;;
     -r|--ref-dir)
       REF_DIR="$2"
+      REF_DIR_SPECIFIED=1
       shift 2
       ;;
     -c|--clean|--cleanup)
@@ -116,6 +123,23 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Resolve OUT_DIR and REF_DIR relative to ORIG_DIR if explicitly specified by user input
+if [ "$OUT_DIR_SPECIFIED" -eq 1 ]; then
+  if [[ "$OUT_DIR" != /* ]]; then
+    OUT_DIR="${ORIG_DIR}/${OUT_DIR}"
+  fi
+else
+  OUT_DIR="."
+fi
+
+if [ "$REF_DIR_SPECIFIED" -eq 1 ]; then
+  if [[ "$REF_DIR" != /* ]]; then
+    REF_DIR="${ORIG_DIR}/${REF_DIR}"
+  fi
+else
+  REF_DIR="${SCRIPT_DIR}/reference_data"
+fi
 
 echo "========================================================================"
 echo " WAVEWATCH III / IV Python Grid Generation Driver"
