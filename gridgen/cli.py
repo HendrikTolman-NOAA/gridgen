@@ -21,6 +21,7 @@ import argparse
 
 import numpy as np
 
+from .coordinates import create_grid_coordinates
 from .grid import generate_grid
 from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from .io.coards import nc_ww3_grdwrite
@@ -35,6 +36,13 @@ def main() -> None:
         description="WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid Generation Tool"
     )
     parser.add_argument("--name", type=str, default="ww4_grid", help="Grid prefix name")
+    parser.add_argument(
+        "--grid-type",
+        type=str,
+        default="regular",
+        choices=["regular", "polar_stereographic", "mercator", "rotated_pole"],
+        help="Grid coordinate projection/layout type (default: regular)",
+    )
     parser.add_argument("--dx", type=float, default=0.25, help="Grid lon increment dx")
     parser.add_argument("--dy", type=float, default=0.25, help="Grid lat increment dy")
     parser.add_argument("--lon-start", type=float, default=140.0, help="Min longitude")
@@ -48,12 +56,20 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    lon1d = np.arange(args.lon_start, args.lon_end + args.dx, args.dx)
-    lat1d = np.arange(args.lat_start, args.lat_end + args.dy, args.dy)
-    lon, lat = np.meshgrid(lon1d, lat1d)
+    # Step 1: Create 2D grid coordinates array
+    lon, lat = create_grid_coordinates(
+        grid_type=args.grid_type,
+        lon_start=args.lon_start,
+        lon_end=args.lon_end,
+        lat_start=args.lat_start,
+        lat_end=args.lat_end,
+        dx=args.dx,
+        dy=args.dy,
+    )
 
-    print(f"Generating grid '{args.name}' with shape {lon.shape}...")
+    print(f"Generating '{args.grid_type}' grid '{args.name}' with shape {lon.shape}...")
 
+    # Step 2: Extract bathymetry & generate mask and obstructions
     depth = generate_grid(lon, lat, ref_dir=args.ref_dir)
     m = np.ones_like(depth, dtype=int)
     m[depth == 999999.0] = 0

@@ -23,6 +23,7 @@ export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 
 # Default Configuration
 NAME="ww4_grid"
+GRID_TYPE="regular"
 DX="0.25"
 DY="0.25"
 LON_START="140.0"
@@ -44,6 +45,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation t
 
 Options:
   -n, --name NAME        Grid prefix identifier (default: ww4_grid)
+  -g, --grid-type TYPE   Grid type: regular, polar_stereographic, mercator, rotated_pole (default: regular)
   --dx DX                Longitude grid resolution increment in degrees (default: 0.25)
   --dy DY                Latitude grid resolution increment in degrees (default: 0.25)
   --lon-start LON        Minimum longitude in degrees (default: 140.0)
@@ -72,6 +74,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -n|--name)
       NAME="$2"
+      shift 2
+      ;;
+    -g|--grid-type)
+      GRID_TYPE="$2"
       shift 2
       ;;
     --dx)
@@ -192,6 +198,7 @@ fi
 echo "Launching Python grid generation pipeline for '${NAME}'..."
 python3 -m gridgen.cli \
   --name "$NAME" \
+  --grid-type "$GRID_TYPE" \
   --dx "$DX" \
   --dy "$DY" \
   --lon-start "$LON_START" \

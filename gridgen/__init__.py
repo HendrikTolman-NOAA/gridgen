@@ -8,6 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-06
 #
 # Code Heritage:
 # Converted from MATLAB gridgen suite originally authored by NCEP/NOAA
@@ -17,4 +18,20 @@
 
 from __future__ import annotations
 
+from .coordinates import (
+    create_grid_coordinates,
+    create_mercator_grid,
+    create_polar_stereographic_grid,
+    create_regular_grid,
+    create_rotated_pole_grid,
+)
+
 __version__ = "0.1.0"
+
+__all__ = [
+    "create_grid_coordinates",
+    "create_mercator_grid",
+    "create_polar_stereographic_grid",
+    "create_regular_grid",
+    "create_rotated_pole_grid",
+]

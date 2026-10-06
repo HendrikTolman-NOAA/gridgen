@@ -52,7 +52,8 @@ flowchart TD
     end
 
     subgraph Run Step 2: Core Grid Processing Pipeline
-        I --> J[gridgen.grid.generate_grid]
+        I --> J0[gridgen.coordinates.create_grid_coordinates<br/>Generate 2D Grid Coordinates lon, lat<br/>regular, polar stereographic, mercator, rotated pole]
+        J0 --> J[gridgen.grid.generate_grid]
         J --> K{Check Bathymetry File}
         K -- File Missing --> L[Raise FileNotFoundError & Stop]
         K -- File Found --> M[Interpolate & Average Bathymetry<br/>Cell corners & polygon overlap]
@@ -69,7 +70,6 @@ flowchart TD
         Q --> R2[gridgen.io.coards<br/>Legacy GMT COARDS NetCDF<br/>_coards.nc]
         Q --> R3[gridgen.io.ugrid<br/>WW4 NetCDF-UGRID 1.0<br/>_ugrid.nc]
         Q --> R4[plot_grid.sh / gridgen.vis<br/>Graphical Plots<br/>.jpg, .png, .pdf, .eps, .gif]
-        R4 --> R5[view_grid.sh<br/>Display Graphics Window]
     end
 ```
 
@@ -89,7 +89,8 @@ flowchart TD
   - Verifies Python dependency availability (`numpy`, `scipy`, `xarray`, `netCDF4`, `shapely`, `matplotlib`).
   - Ensures `reference_data/` contains bathymetry datasets before invoking `python3 -m gridgen.cli`.
 
-- **Run Step 2: Core Grid Processing Pipeline (`gridgen.grid`, `gridgen.masking`, `gridgen.obstructions`)**
+- **Run Step 2: Core Grid Processing Pipeline (`gridgen.coordinates`, `gridgen.grid`, `gridgen.masking`, `gridgen.obstructions`)**
+  - **Grid Coordinate Generation:** Creates initial 2D longitude and latitude coordinate arrays (`create_grid_coordinates`) for the specified grid projection/layout (regular lon-lat, polar stereographic, Mercator, or rotated pole).
   - **Bathymetry Extraction:** Computes target grid cell corner polygons (`compute_cellcorner`), extracts/averages sub-grid base bathymetry depths or performs bilinear interpolation, and assigns dry values (`999999.0`) to cells above cut-off depth.
   - **Masking & Lake Removal:** Constructs initial binary land/sea mask based on depth values, cleans disconnected water bodies, and applies lake tolerance rules (`remove_lake`).
   - **Sub-grid Obstruction Calculation:** Intersects cell boundary faces with shoreline polygons to produce directional sub-grid obstruction factors `sx` and `sy` (`create_obstr`).
@@ -99,5 +100,5 @@ flowchart TD
   - **Legacy GMT/NetCDF COARDS:** `_coards.nc`
   - **WW4 NetCDF-UGRID 1.0:** `_ugrid.nc`
 
-- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis` / `view_grid.sh`)**
-  - Generates multi-panel plot graphics displaying bathymetry depth, land-sea masks, and sub-grid directional obstruction factors (`sx`, `sy`) in `jpg`, `png`, `pdf`, `eps`, or `gif` formats, and displays generated graphics in the present window (`view_grid.sh`).
+- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis`)**
+  - Generates multi-panel plot graphics displaying bathymetry depth, land-sea masks, and sub-grid directional obstruction factors (`sx`, `sy`) in `jpg`, `png`, `pdf`, `eps`, or `gif` formats.
