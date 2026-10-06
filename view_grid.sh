@@ -8,7 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-05
-# @date Update: 2026-10-06
+# @date Latest Update: 2026-10-06
 #
 # Utility script to display generated grid plot graphics in the present window.
 
