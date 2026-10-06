@@ -45,7 +45,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation t
 
 Options:
   -n, --name NAME        Grid prefix identifier (default: ww4_grid)
-  -g, --grid-type TYPE   Grid type: regular, polar_stereographic, mercator, rotated_pole (default: regular)
+  -g, --grid-type TYPE   Grid type: regular, stereographic, lambert_conformal, rotated_pole (default: regular)
   --dx DX                Longitude grid resolution increment in degrees (default: 0.25)
   --dy DY                Latitude grid resolution increment in degrees (default: 0.25)
   --lon-start LON        Minimum longitude in degrees (default: 140.0)

@@ -19,10 +19,10 @@ import pytest
 
 from gridgen.coordinates import (
     create_grid_coordinates,
-    create_mercator_grid,
-    create_polar_stereographic_grid,
+    create_lambert_conformal_grid,
     create_regular_grid,
     create_rotated_pole_grid,
+    create_stereographic_grid,
 )
 
 
@@ -45,41 +45,48 @@ def test_create_regular_grid() -> None:
     assert np.isclose(lat[-1, 0], 30.0)
 
 
-def test_create_polar_stereographic_grid() -> None:
-    """Test polar stereographic grid generation."""
-    lon, lat = create_polar_stereographic_grid(
+def test_create_stereographic_grid() -> None:
+    """Test general stereographic grid generation for oblique and polar centers."""
+    # 1. Polar center
+    lon1, lat1 = create_stereographic_grid(
         center_lon=0.0,
         center_lat=90.0,
+        extent_km=500.0,
+        resolution_km=100.0,
+    )
+    assert lon1.ndim == 2
+    assert lat1.ndim == 2
+    cy, cx = lon1.shape[0] // 2, lon1.shape[1] // 2
+    assert np.isclose(lat1[cy, cx], 90.0, atol=1e-3)
+
+    # 2. Oblique center
+    lon2, lat2 = create_stereographic_grid(
+        center_lon=-75.0,
+        center_lat=40.0,
+        extent_km=300.0,
+        resolution_km=50.0,
+    )
+    cy2, cx2 = lon2.shape[0] // 2, lon2.shape[1] // 2
+    assert np.isclose(lat2[cy2, cx2], 40.0, atol=1e-3)
+    assert np.isclose(lon2[cy2, cx2], 285.0, atol=1e-3)  # -75 mod 360 = 285
+
+
+def test_create_lambert_conformal_grid() -> None:
+    """Test Lambert Conformal Conic grid generation."""
+    lon, lat = create_lambert_conformal_grid(
+        center_lon=-95.0,
+        center_lat=35.0,
+        lat_1=30.0,
+        lat_2=60.0,
         extent_km=500.0,
         resolution_km=100.0,
     )
 
     assert lon.ndim == 2
     assert lat.ndim == 2
-    assert lon.shape == lat.shape
-    # Center cell should be near North Pole
     cy, cx = lon.shape[0] // 2, lon.shape[1] // 2
-    assert np.isclose(lat[cy, cx], 90.0, atol=1e-3)
-    assert np.all(lat >= -90.0) and np.all(lat <= 90.0)
-
-
-def test_create_mercator_grid() -> None:
-    """Test Mercator projection grid generation."""
-    lon, lat = create_mercator_grid(
-        lon_start=140.0,
-        lon_end=160.0,
-        lat_start=10.0,
-        lat_end=40.0,
-        nx=21,
-        ny=31,
-    )
-
-    assert lon.shape == (31, 21)
-    assert lat.shape == (31, 21)
-    assert np.isclose(lon[0, 0], 140.0)
-    assert np.isclose(lon[0, -1], 160.0)
-    assert np.isclose(lat[0, 0], 10.0, atol=1e-4)
-    assert np.isclose(lat[-1, 0], 40.0, atol=1e-4)
+    assert np.isclose(lat[cy, cx], 35.0, atol=1e-3)
+    assert np.isclose(lon[cy, cx], 265.0, atol=1e-3)  # -95 mod 360 = 265
 
 
 def test_create_rotated_pole_grid() -> None:
@@ -108,15 +115,15 @@ def test_create_grid_coordinates_unified() -> None:
     assert lon1.shape == (11, 11)
     assert lat1.shape == (11, 11)
 
-    # 2. Polar Stereographic
-    lon2, lat2 = create_grid_coordinates("polar_stereographic", extent_km=200, resolution_km=50)
+    # 2. General Stereographic
+    lon2, lat2 = create_grid_coordinates("stereographic", extent_km=200, resolution_km=50)
     assert lon2.ndim == 2
     assert lat2.ndim == 2
 
-    # 3. Mercator
-    lon3, lat3 = create_grid_coordinates("mercator", nx=10, ny=10)
-    assert lon3.shape == (10, 10)
-    assert lat3.shape == (10, 10)
+    # 3. Lambert Conformal
+    lon3, lat3 = create_grid_coordinates("lambert_conformal", extent_km=200, resolution_km=50)
+    assert lon3.ndim == 2
+    assert lat3.ndim == 2
 
     # 4. Rotated Pole
     lon4, lat4 = create_grid_coordinates("rotated_pole", nx=10, ny=10)
@@ -125,4 +132,4 @@ def test_create_grid_coordinates_unified() -> None:
 
     # 5. Invalid type
     with pytest.raises(ValueError, match="Unsupported grid_type"):
-        create_grid_coordinates("invalid_grid_type")
+        create_grid_coordinates("mercator")

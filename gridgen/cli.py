@@ -40,7 +40,7 @@ def main() -> None:
         "--grid-type",
         type=str,
         default="regular",
-        choices=["regular", "polar_stereographic", "mercator", "rotated_pole"],
+        choices=["regular", "stereographic", "polar_stereographic", "lambert_conformal", "rotated_pole"],
         help="Grid coordinate projection/layout type (default: regular)",
     )
     parser.add_argument("--dx", type=float, default=0.25, help="Grid lon increment dx")

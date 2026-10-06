@@ -20,18 +20,18 @@ from __future__ import annotations
 
 from .coordinates import (
     create_grid_coordinates,
-    create_mercator_grid,
-    create_polar_stereographic_grid,
+    create_lambert_conformal_grid,
     create_regular_grid,
     create_rotated_pole_grid,
+    create_stereographic_grid,
 )
 
 __version__ = "0.1.0"
 
 __all__ = [
     "create_grid_coordinates",
-    "create_mercator_grid",
-    "create_polar_stereographic_grid",
+    "create_lambert_conformal_grid",
     "create_regular_grid",
     "create_rotated_pole_grid",
+    "create_stereographic_grid",
 ]
