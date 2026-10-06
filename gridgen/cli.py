@@ -21,11 +21,12 @@ import argparse
 
 import numpy as np
 
+from .coordinates import create_grid_coordinates
 from .grid import generate_grid
 from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from .io.coards import nc_ww3_grdwrite
 from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
-from .masking import remove_lake
+from .masking import clean_mask, define_boundary_points, load_user_polygons, remove_lake
 from .obstructions import create_obstr
 
 
@@ -35,6 +36,13 @@ def main() -> None:
         description="WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid Generation Tool"
     )
     parser.add_argument("--name", type=str, default="ww4_grid", help="Grid prefix name")
+    parser.add_argument(
+        "--grid-type",
+        type=str,
+        default="regular",
+        choices=["regular", "stereographic", "polar_stereographic", "lambert_conformal", "rotated_pole"],
+        help="Grid coordinate projection/layout type (default: regular)",
+    )
     parser.add_argument("--dx", type=float, default=0.25, help="Grid lon increment dx")
     parser.add_argument("--dy", type=float, default=0.25, help="Grid lat increment dy")
     parser.add_argument("--lon-start", type=float, default=140.0, help="Min longitude")
@@ -45,21 +53,50 @@ def main() -> None:
     parser.add_argument(
         "--ref-dir", type=str, default="reference_data", help="Reference data directory"
     )
+    parser.add_argument(
+        "--boundary-points",
+        action="store_true",
+        help="Define input boundary points (mask value 2) along regional grid boundaries",
+    )
+    parser.add_argument(
+        "--user-polygons-flag",
+        type=str,
+        default=None,
+        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
+    )
 
     args = parser.parse_args()
 
-    lon1d = np.arange(args.lon_start, args.lon_end + args.dx, args.dx)
-    lat1d = np.arange(args.lat_start, args.lat_end + args.dy, args.dy)
-    lon, lat = np.meshgrid(lon1d, lat1d)
+    # Step 1: Create 2D grid coordinates array
+    lon, lat = create_grid_coordinates(
+        grid_type=args.grid_type,
+        lon_start=args.lon_start,
+        lon_end=args.lon_end,
+        lat_start=args.lat_start,
+        lat_end=args.lat_end,
+        dx=args.dx,
+        dy=args.dy,
+    )
 
-    print(f"Generating grid '{args.name}' with shape {lon.shape}...")
+    print(f"Generating '{args.grid_type}' grid '{args.name}' with shape {lon.shape}...")
 
+    # Step 2: Extract bathymetry & generate mask and obstructions
     depth = generate_grid(lon, lat, ref_dir=args.ref_dir)
     m = np.ones_like(depth, dtype=int)
     m[depth == 999999.0] = 0
 
+    user_bounds = []
+    if args.user_polygons_flag:
+        user_bounds = load_user_polygons(ref_dir=args.ref_dir, flag_file=args.user_polygons_flag)
+        if user_bounds:
+            print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
+            m = clean_mask(lon, lat, m, user_bounds)
+
     m_mod, _ = remove_lake(m, lake_tol=-1, igl=0)
-    sx, sy = create_obstr(lon, lat, [], m_mod)
+    if args.boundary_points:
+        m_mod = define_boundary_points(m_mod, lon, lat)
+
+    sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
 
     # 1. Legacy WW3 ASCII
     depth_scale = 1000.0

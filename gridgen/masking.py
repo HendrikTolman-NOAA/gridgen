@@ -8,18 +8,21 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-06
 #
 # Code Heritage:
-# Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m
-# originally authored by NOAA/NCEP (Arun Chawla).
+# Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m,
+# modify_mask.m, and optional_bound.m originally authored by NOAA/NCEP (Arun Chawla).
 
 """Mask processing and boundary utilities for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4)."""
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import numpy as np
+import scipy.io as sio
 from shapely.geometry import Point, Polygon, box
 from shapely.strtree import STRtree
 
@@ -343,3 +346,237 @@ def remove_lake(
                     mask_mod[mask_map == body_id] = 0
 
     return mask_mod, mask_map
+
+
+def define_boundary_points(
+    mask: np.ndarray,
+    lon: np.ndarray,
+    lat: np.ndarray,
+    base_mask: np.ndarray | None = None,
+    base_lon: np.ndarray | None = None,
+    base_lat: np.ndarray | None = None,
+    igl: int = 0,
+    active_poly: tuple[np.ndarray, np.ndarray] | None = None,
+) -> np.ndarray:
+    """Define input boundary points (mask value 2) in regional / nested grids.
+
+    Ported from legacy MATLAB modify_mask.m function.
+
+    Parameters
+    ----------
+    mask : np.ndarray
+        2D land/sea mask array (0 = land, 1 = wet).
+    lon : np.ndarray
+        2D longitude coordinates array of shape (Ny, Nx).
+    lat : np.ndarray
+        2D latitude coordinates array of shape (Ny, Nx).
+    base_mask : Optional[np.ndarray]
+        2D mask array for parent/base grid (used for nesting reconciliation).
+    base_lon : Optional[np.ndarray]
+        2D longitude coordinates array for parent/base grid.
+    base_lat : Optional[np.ndarray]
+        2D latitude coordinates array for parent/base grid.
+    igl : int
+        1 if base grid is global (wrap-around lon), 0 if regional.
+    active_poly : Optional[Tuple[np.ndarray, np.ndarray]]
+        Optional tuple (px, py) of boundary coordinates defining active computation.
+
+    Returns
+    -------
+    m_new : np.ndarray
+        Modified 2D mask array with values:
+        0 = Land/Dry cell
+        1 = Active wet cell
+        2 = Input boundary cell
+        3 = Excluded/Inactive cell
+    """
+    Ny, Nx = mask.shape
+    m_new = np.copy(mask)
+
+    # 1. Apply active computation polygon if provided
+    if active_poly is not None:
+        px, py = active_poly
+        poly_coords = np.column_stack((px, py))
+        comp_poly = Polygon(poly_coords)
+
+        for k in range(Ny):
+            for j in range(Nx):
+                pt = Point(float(lon[k, j]), float(lat[k, j]))
+                if not comp_poly.contains(pt):
+                    m_new[k, j] = 3
+
+    # 2. Flag outer domain edges as input boundary cells (value 2)
+    for j in range(Ny):
+        if m_new[j, 0] == 1:
+            m_new[j, 0] = 2
+        if m_new[j, Nx - 1] == 1:
+            m_new[j, Nx - 1] = 2
+
+    for k in range(Nx):
+        if m_new[0, k] == 1:
+            m_new[0, k] = 2
+        if m_new[Ny - 1, k] == 1:
+            m_new[Ny - 1, k] = 2
+
+    # 3. Flag cells adjacent to inactive cells (value 3) as boundary cells (value 2)
+    inactive_indices = np.argwhere(m_new == 3)
+    for r, c in inactive_indices:
+        ny_down = max(0, r - 1)
+        ny_up = min(Ny - 1, r + 1)
+        nx_left = max(0, c - 1)
+        nx_right = min(Nx - 1, c + 1)
+
+        found_wet = False
+        if (
+            m_new[r, nx_left] == 1
+            or m_new[r, nx_right] == 1
+            or m_new[ny_down, c] == 1
+            or m_new[ny_up, c] == 1
+        ):
+            found_wet = True
+
+        if found_wet:
+            m_new[r, c] = 2
+
+    # 4. Reconcile boundary cells with parent/base grid if base grid provided
+    if base_mask is not None and base_lon is not None and base_lat is not None:
+        boundary_indices = np.argwhere(m_new == 2)
+        Nyb, Nxb = base_lon.shape
+
+        dxb = float(abs(base_lon[0, 1] - base_lon[0, 0])) if Nxb > 1 else 1.0
+        dyb = float(abs(base_lat[1, 0] - base_lat[0, 0])) if Nyb > 1 else 1.0
+
+        lonb_min = float(base_lon[0, 0])
+        latb_min = float(base_lat[0, 0])
+
+        for r, c in boundary_indices:
+            x_val = float(lon[r, c])
+            y_val = float(lat[r, c])
+
+            ry = (y_val - latb_min) / dyb
+            jy = int(np.floor(ry))
+            ry = ry - jy
+
+            if jy < 0 or jy >= Nyb - 1:
+                m_new[r, c] = 3
+                continue
+
+            rx = (x_val - lonb_min) / dxb
+            jx = int(np.floor(rx))
+            rx = rx - jx
+
+            if igl != 1:
+                if jx < 0 or jx >= Nxb - 1:
+                    m_new[r, c] = 3
+                    continue
+            else:
+                jx = jx % Nxb
+
+            jx1 = jx
+            jx2 = (jx + 1) % Nxb if igl == 1 else jx + 1
+            jy1 = jy
+            jy2 = jy + 1
+
+            if jx2 >= Nxb or jy2 >= Nyb:
+                m_new[r, c] = 3
+                continue
+
+            b11 = abs(base_mask[jy1, jx1]) in (1, 2) or (1.0 - rx) * (1.0 - ry) < 0.05
+            b12 = abs(base_mask[jy1, jx2]) in (1, 2) or rx * (1.0 - ry) < 0.05
+            b21 = abs(base_mask[jy2, jx1]) in (1, 2) or (1.0 - rx) * ry < 0.05
+            b22 = abs(base_mask[jy2, jx2]) in (1, 2) or rx * (1.0 - ry) < 0.05
+
+            if not (b11 and b12 and b21 and b22):
+                m_new[r, c] = 3
+
+    return m_new
+
+
+def load_user_polygons(
+    ref_dir: str = "reference_data",
+    flag_file: str | None = None,
+    mat_filename: str = "optional_coastal_polygons.mat",
+) -> list[dict[str, Any]]:
+    """Load user-defined optional coastal polygons filtered by a flag control file.
+
+    Ported from legacy MATLAB optional_bound.m function.
+
+    Parameters
+    ----------
+    ref_dir : str
+        Directory containing optional coastal polygon MAT datasets.
+    flag_file : Optional[str]
+        Path to text file containing binary switches (0 = off, 1 = on) per polygon.
+    mat_filename : str
+        Filename of MAT file containing user coastal polygons.
+
+    Returns
+    -------
+    active_polygons : List[Dict[str, Any]]
+        List of active user boundary polygon dictionaries.
+    """
+    mat_path = os.path.join(ref_dir, mat_filename)
+    if not os.path.exists(mat_path):
+        return []
+
+    mat_data = sio.loadmat(mat_path, squeeze_me=True, struct_as_record=False)
+    if "user_bound" not in mat_data:
+        return []
+
+    user_bound = mat_data["user_bound"]
+    if not isinstance(user_bound, np.ndarray):
+        user_bound = np.array([user_bound])
+
+    switches = []
+    if flag_file and os.path.exists(flag_file):
+        with open(flag_file) as f:
+            for line in f:
+                line_str = line.strip()
+                if not line_str or line_str.startswith("#"):
+                    continue
+                parts = line_str.split()
+                if len(parts) >= 2:
+                    switches.append(int(parts[1]))
+                elif len(parts) == 1:
+                    switches.append(int(parts[0]))
+
+    if not switches:
+        switches = [1] * len(user_bound)
+
+    active_polygons = []
+    for idx, bound_obj in enumerate(user_bound):
+        if idx >= len(switches) or switches[idx] != 1:
+            continue
+
+        bx = np.asarray(getattr(bound_obj, "x", []), dtype=np.float64)
+        by = np.asarray(getattr(bound_obj, "y", []), dtype=np.float64)
+        if len(bx) < 3:
+            continue
+
+        west, east = float(np.min(bx)), float(np.max(bx))
+        south, north = float(np.min(by)), float(np.max(by))
+        poly = Polygon(np.column_stack((bx, by)))
+        if not poly.is_valid:
+            poly = poly.buffer(0)
+
+        active_polygons.append(
+            {
+                "x": bx,
+                "y": by,
+                "n": len(bx),
+                "west": west,
+                "east": east,
+                "south": south,
+                "north": north,
+                "width": east - west,
+                "height": north - south,
+                "level": int(getattr(bound_obj, "level", 1)),
+                "polygon": poly,
+            }
+        )
+
+    return active_polygons
+
+
+# Backward compatibility alias
+modify_mask = define_boundary_points

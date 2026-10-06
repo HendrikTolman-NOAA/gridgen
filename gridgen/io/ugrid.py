@@ -8,6 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-06
 #
 # Code Heritage:
 # WAVEWATCH IV NetCDF-UGRID 1.0 format exporter module.
@@ -36,6 +37,9 @@ def create_ugrid_dataset(
 ) -> xr.Dataset:
     """Create an xarray Dataset compliant with the NetCDF-UGRID 1.0 conventions.
 
+    Includes both 1D topological UGRID mesh variables and full 2D grid coordinate
+    arrays ('grid_lon', 'grid_lat') and 2D field data arrays ('grid_depth', 'grid_mask').
+
     Parameters
     ----------
     x : np.ndarray
@@ -58,7 +62,7 @@ def create_ugrid_dataset(
     Returns
     -------
     ds : xr.Dataset
-        NetCDF-UGRID 1.0 compliant xarray Dataset.
+        NetCDF-UGRID 1.0 compliant xarray Dataset containing full 2D grid data.
     """
     Ny, Nx = x.shape
     num_faces = Ny * Nx
@@ -141,6 +145,27 @@ def create_ugrid_dataset(
                 "flag_meanings": "dry wet",
             },
         ),
+        "grid_depth": (
+            ("ny", "nx"),
+            depth.astype(np.float32),
+            {
+                "long_name": "2D Bathymetry depth grid",
+                "standard_name": "sea_floor_depth_below_sea_surface",
+                "units": "m",
+                "coordinates": "grid_lon grid_lat",
+            },
+        ),
+        "grid_mask": (
+            ("ny", "nx"),
+            mask.astype(np.int32),
+            {
+                "long_name": "2D Land sea mask grid",
+                "units": "1",
+                "flag_values": [0, 1],
+                "flag_meanings": "dry wet",
+                "coordinates": "grid_lon grid_lat",
+            },
+        ),
     }
 
     if sx is not None:
@@ -155,6 +180,15 @@ def create_ugrid_dataset(
                 "coordinates": "face_lon face_lat",
             },
         )
+        data_vars["grid_sx"] = (
+            ("ny", "nx"),
+            sx.astype(np.float32),
+            {
+                "long_name": "2D Subgrid obstruction factor grid in x direction",
+                "units": "1",
+                "coordinates": "grid_lon grid_lat",
+            },
+        )
 
     if sy is not None:
         data_vars["sy"] = (
@@ -166,6 +200,15 @@ def create_ugrid_dataset(
                 "mesh": "mesh_topology",
                 "location": "face",
                 "coordinates": "face_lon face_lat",
+            },
+        )
+        data_vars["grid_sy"] = (
+            ("ny", "nx"),
+            sy.astype(np.float32),
+            {
+                "long_name": "2D Subgrid obstruction factor grid in y direction",
+                "units": "1",
+                "coordinates": "grid_lon grid_lat",
             },
         )
 
@@ -205,6 +248,24 @@ def create_ugrid_dataset(
                 {
                     "standard_name": "latitude",
                     "long_name": "Latitude of face centers",
+                    "units": "degrees_north",
+                },
+            ),
+            "grid_lon": (
+                ("ny", "nx"),
+                x.astype(np.float64),
+                {
+                    "standard_name": "longitude",
+                    "long_name": "2D Longitude grid coordinates",
+                    "units": "degrees_east",
+                },
+            ),
+            "grid_lat": (
+                ("ny", "nx"),
+                y.astype(np.float64),
+                {
+                    "standard_name": "latitude",
+                    "long_name": "2D Latitude grid coordinates",
                     "units": "degrees_north",
                 },
             ),
