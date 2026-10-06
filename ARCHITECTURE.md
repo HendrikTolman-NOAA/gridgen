@@ -45,7 +45,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph Run Step 1: Driver Execution & Validation
-        E[User CLI / Script Call] --> F[run_gridgen.sh]
+        E[User CLI / Script Call] --> F[run_gridgen.sh<br/>Manages Execution & Grid Coordinate Generation]
         F --> G{Check reference_data/}
         G -- Missing / Empty --> H[Error & Stop:<br/>Prompt user to run populate_reference_data.sh]
         G -- Datasets Present --> I[Invoke Python CLI:<br/>python3 -m gridgen.cli]
@@ -70,6 +70,7 @@ flowchart TD
         Q --> R2[gridgen.io.coards<br/>Legacy GMT COARDS NetCDF<br/>_coards.nc]
         Q --> R3[gridgen.io.ugrid<br/>WW4 NetCDF-UGRID 1.0<br/>_ugrid.nc]
         Q --> R4[plot_grid.sh / gridgen.vis<br/>Graphical Plots<br/>.jpg, .png, .pdf, .eps, .gif]
+        R4 --> R5[view_grid.sh<br/>Displays Graphics Window]
     end
 ```
 
@@ -87,7 +88,7 @@ flowchart TD
 
 - **Run Step 1: Driver Check & Execution (`run_gridgen.sh` & `gridgen.cli`)**
   - Verifies Python dependency availability (`numpy`, `scipy`, `xarray`, `netCDF4`, `shapely`, `matplotlib`).
-  - Ensures `reference_data/` contains bathymetry datasets before invoking `python3 -m gridgen.cli`.
+  - Ensures `reference_data/` contains bathymetry datasets before invoking `python3 -m gridgen.cli`, managing execution and grid coordinate generation options.
 
 - **Run Step 2: Core Grid Processing Pipeline (`gridgen.coordinates`, `gridgen.grid`, `gridgen.masking`, `gridgen.obstructions`)**
   - **Grid Coordinate Generation:** Creates initial 2D longitude and latitude coordinate arrays (`create_grid_coordinates`) for the specified grid projection/layout (regular lon-lat, polar stereographic, Mercator, or rotated pole).
@@ -100,5 +101,5 @@ flowchart TD
   - **Legacy GMT/NetCDF COARDS:** `_coards.nc`
   - **WW4 NetCDF-UGRID 1.0:** `_ugrid.nc`
 
-- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis`)**
-  - Generates multi-panel plot graphics displaying bathymetry depth, land-sea masks, and sub-grid directional obstruction factors (`sx`, `sy`) in `jpg`, `png`, `pdf`, `eps`, or `gif` formats.
+- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis` / `view_grid.sh`)**
+  - Generates multi-panel plot graphics displaying bathymetry depth, land-sea masks, and sub-grid directional obstruction factors (`sx`, `sy`) in `jpg`, `png`, `pdf`, `eps`, or `gif` formats, and displays generated graphics (`view_grid.sh`).

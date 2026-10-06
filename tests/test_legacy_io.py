@@ -8,6 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-06
 
 from __future__ import annotations
 
@@ -18,6 +19,7 @@ import xarray as xr
 
 from gridgen.io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from gridgen.io.coards import nc_ww3_grdwrite
+from gridgen.io.ugrid import create_ugrid_dataset, write_ugrid_nc
 
 
 def test_write_ww3file(tmp_path):
@@ -85,3 +87,30 @@ def test_nc_ww3_grdwrite(tmp_path):
     assert "sy" in ds
     assert ds.attrs["Conventions"] == "COARDS/CF-1.0"
     ds.close()
+
+
+def test_create_ugrid_dataset_full_grid(tmp_path):
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    z = np.ones((3, 3), dtype=float) * 10.0
+    mask = np.ones((3, 3), dtype=int)
+    sx = np.zeros((3, 3), dtype=float)
+    sy = np.zeros((3, 3), dtype=float)
+
+    ds = create_ugrid_dataset(lon, lat, z, mask, sx=sx, sy=sy)
+    assert "grid_lon" in ds.coords
+    assert "grid_lat" in ds.coords
+    assert "grid_depth" in ds
+    assert "grid_mask" in ds
+    assert "grid_sx" in ds
+    assert "grid_sy" in ds
+    assert ds["grid_lon"].shape == (3, 3)
+
+    filepath = str(tmp_path / "test_ugrid.nc")
+    write_ugrid_nc(ds, filepath)
+    assert os.path.exists(filepath)
+    ds_read = xr.open_dataset(filepath)
+    assert "grid_lon" in ds_read.coords
+    assert ds_read["grid_depth"].shape == (3, 3)
+    ds_read.close()
