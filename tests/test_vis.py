@@ -31,7 +31,6 @@ from gridgen.vis import extract_grid_name, load_grid_data, plot_grid
 def test_extract_grid_name():
     assert extract_grid_name("ww4_grid_ugrid.nc") == "ww4_grid"
     assert extract_grid_name("/path/to/mygrid_coards.nc") == "mygrid"
-    assert extract_grid_name("custom_ugrid.zarr") == "custom"
     assert extract_grid_name("test.depth_ascii") == "test"
 
 

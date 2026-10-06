@@ -119,7 +119,6 @@ def test_run_gridgen_execution(tmp_path: Path):
     assert (out_dir / "test_grid.meta").exists()
     assert (out_dir / "test_grid_coards.nc").exists()
     assert (out_dir / "test_grid_ugrid.nc").exists()
-    assert (out_dir / "test_grid_ugrid.zarr").exists()
 
 
 def test_run_gridgen_with_ref_dir(tmp_path: Path):

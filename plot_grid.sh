@@ -35,7 +35,7 @@ Usage: ./plot_grid.sh [OPTIONS]
 Utility script to graphically display resulting WAVEWATCH III / IV grids and obstructions.
 
 Options:
-  -i, --input PATH       Input dataset file path (_ugrid.nc, _coards.nc, _ugrid.zarr, or ASCII prefix) (default: ww4_grid_ugrid.nc)
+  -i, --input PATH       Input dataset file path (_ugrid.nc, _coards.nc, or ASCII prefix) (default: ww4_grid_ugrid.nc)
   -o, --output PATH      Output plot image file path (default: <GRIDNAME>.<format>)
   -f, --format FORMAT    Output graphic format: jpg, png, pdf, eps, or gif (default: jpg)
   --title TITLE          Custom figure title (default: WAVEWATCH IV Grid & Obstructions)

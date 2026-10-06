@@ -8,7 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-02
+# @date Latest Update: 2026-10-06
 -->
 
 <p align="center">
@@ -120,7 +120,6 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 1. **Legacy WW3 ASCII grid**: `.depth_ascii`, `.maskorig_ascii`, `.obstr_lev1`, `.meta`
 2. **Legacy GMT/NetCDF COARDS grid**: `_coards.nc`
 3. **WW4 NetCDF-UGRID 1.0 grid**: `_ugrid.nc`
-4. **WW4 Zarr Store grid**: `_ugrid.zarr`
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
@@ -141,7 +140,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 
 | Option | Description |
 | :--- | :--- |
-| `-i, --input PATH` | Input grid dataset filepath (`_ugrid.nc`, `_coards.nc`, `_ugrid.zarr`, or ASCII prefix). Default: `ww4_grid_ugrid.nc`. |
+| `-i, --input PATH` | Input grid dataset filepath (`_ugrid.nc`, `_coards.nc`, or ASCII prefix). Default: `ww4_grid_ugrid.nc`. |
 | `-o, --output PATH` | Output figure image path. Default: `<GRIDNAME>.<format>` (e.g. `ww4_grid.jpg`). |
 | `-f, --format FORMAT` | Output graphic format: `jpg`, `png`, `pdf`, `eps`, or `gif`. Default: `jpg`. |
 | `--title TITLE` | Custom title for the generated figure. |
@@ -161,7 +160,6 @@ The package requires Python 3.9+ and the following scientific Python libraries:
 - `scipy` (>= 1.7)
 - `xarray` (>= 2022.03)
 - `netCDF4` (>= 1.5)
-- `zarr` (>= 2.10)
 - `shapely` (>= 2.0)
 - `matplotlib` (>= 3.5)
 

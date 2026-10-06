@@ -5,8 +5,9 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-06
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -23,7 +24,6 @@ from .grid import generate_grid
 from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from .io.coards import nc_ww3_grdwrite
 from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
-from .io.zarr_store import write_ugrid_zarr
 from .masking import remove_lake
 from .obstructions import create_obstr
 
@@ -92,10 +92,7 @@ def main() -> None:
     )
     write_ugrid_nc(ds_ugrid, f"{args.out_dir}/{args.name}_ugrid.nc")
 
-    # 4. WW4 Zarr Store
-    write_ugrid_zarr(ds_ugrid, f"{args.out_dir}/{args.name}_ugrid.zarr")
-
-    print("Successfully exported all grid formats (ASCII, COARDS NC, UGRID NC, Zarr)!")
+    print("Successfully exported all grid formats (ASCII, COARDS NC, UGRID NC)!")
 
 
 if __name__ == "__main__":

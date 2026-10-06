@@ -7,6 +7,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-05
+# @date Latest Update: 2026-10-06
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -45,13 +46,11 @@ def extract_grid_name(filepath: str | Path) -> str:
     suffixes = [
         "_ugrid.nc",
         "_coards.nc",
-        "_ugrid.zarr",
         ".depth_ascii",
         ".maskorig_ascii",
         ".obstr_lev1",
         ".meta",
         ".nc",
-        ".zarr",
     ]
     for s in suffixes:
         if fname.endswith(s):
@@ -65,7 +64,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
     Parameters
     ----------
     filepath : str or Path
-        Path to NetCDF UGRID (_ugrid.nc), NetCDF COARDS (_coards.nc), Zarr store (_ugrid.zarr),
+        Path to NetCDF UGRID (_ugrid.nc), NetCDF COARDS (_coards.nc),
         ASCII file (.depth_ascii), or grid prefix identifier.
 
     Returns
@@ -75,12 +74,9 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
     """
     path = Path(filepath)
 
-    # 1. NetCDF or Zarr format
-    if path.suffix in [".nc", ".zarr"] or path.is_dir():
-        if path.suffix == ".zarr" or path.is_dir():
-            ds = xr.open_zarr(path)
-        else:
-            ds = xr.open_dataset(path)
+    # 1. NetCDF format
+    if path.suffix == ".nc":
+        ds = xr.open_dataset(path)
 
         # UGRID 1.0 format
         if "face_lon" in ds and "face_lat" in ds:
@@ -282,7 +278,7 @@ def main() -> None:
         "--input",
         type=str,
         default="ww4_grid_ugrid.nc",
-        help="Input dataset filepath (_ugrid.nc, _coards.nc, _ugrid.zarr, or ASCII prefix)",
+        help="Input dataset filepath (_ugrid.nc, _coards.nc, or ASCII prefix)",
     )
     parser.add_argument(
         "-o",

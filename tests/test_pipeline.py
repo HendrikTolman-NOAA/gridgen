@@ -5,8 +5,9 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-06
 
 from __future__ import annotations
 
@@ -17,7 +18,6 @@ import xarray as xr
 
 from gridgen.grid import generate_grid
 from gridgen.io.ugrid import create_ugrid_dataset, write_ugrid_nc
-from gridgen.io.zarr_store import write_ugrid_zarr
 from gridgen.masking import clean_mask, remove_lake
 from gridgen.obstructions import create_obstr
 
@@ -47,25 +47,19 @@ def test_full_grid_pipeline(tmp_path):
     assert sx.shape == (4, 4)
     assert sy.shape == (4, 4)
 
-    # 4. UGRID & Zarr export
+    # 4. UGRID export
     ds_ugrid = create_ugrid_dataset(
         lon, lat, depth, mask_mod, sx=sx, sy=sy, title="Pipeline Test"
     )
 
     nc_out = str(tmp_path / "pipeline.nc")
-    zarr_out = str(tmp_path / "pipeline.zarr")
 
     write_ugrid_nc(ds_ugrid, nc_out)
-    write_ugrid_zarr(ds_ugrid, zarr_out)
 
     assert os.path.exists(nc_out)
-    assert os.path.exists(zarr_out)
 
     ds_nc = xr.open_dataset(nc_out)
-    ds_zr = xr.open_zarr(zarr_out)
 
     assert ds_nc.attrs["Conventions"] == "CF-1.8 UGRID-1.0"
-    assert ds_zr.attrs["Conventions"] == "CF-1.8 UGRID-1.0"
 
     ds_nc.close()
-    ds_zr.close()
