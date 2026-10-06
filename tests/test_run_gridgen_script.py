@@ -7,7 +7,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-02
-# @date Update: 2026-10-05
+# @date Update: 2026-10-06
 
 """Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
@@ -241,3 +241,105 @@ def test_run_gridgen_cleanup(tmp_path: Path):
     assert not (out_dir / "clean_test.depth_ascii").exists()
     assert not (out_dir / "clean_test_ugrid.nc").exists()
     assert not (out_dir / "clean_test.jpg").exists()
+
+
+def test_run_gridgen_from_external_directory_default_out(tmp_path: Path):
+    """Verify run_gridgen.sh executed from an external working directory places output files in clone root by default."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    ref_dir = repo_root / "reference_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    # Ensure reference dataset file exists in reference_data
+    import numpy as np
+    import xarray as xr
+
+    lon = np.linspace(140.0, 160.0, 5)
+    lat = np.linspace(44.0, 54.0, 5)
+    z = np.full((5, 5), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("lat", "lon"), z)},
+        coords={"lon": lon, "lat": lat},
+    )
+    ref_file = ref_dir / "etopo1.nc"
+    ds.to_netcdf(ref_file)
+
+    grid_prefix = "ext_dir_grid"
+
+    # Execute from tmp_path as current working directory
+    result = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            grid_prefix,
+            "--dx",
+            "5.0",
+            "--dy",
+            "5.0",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    try:
+        assert result.returncode == 0
+        # Check output files placed in repo_root by default, NOT in tmp_path
+        assert (repo_root / f"{grid_prefix}_ugrid.nc").exists()
+        assert not (tmp_path / f"{grid_prefix}_ugrid.nc").exists()
+    finally:
+        # Cleanup created files in repo_root
+        subprocess.run(
+            [str(script_path), "--name", grid_prefix, "--cleanup"],
+            cwd=repo_root,
+            capture_output=True,
+            check=False,
+        )
+
+
+def test_run_gridgen_from_external_directory_custom_out(tmp_path: Path):
+    """Verify run_gridgen.sh executed from external working directory respects relative user output directory option."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    ref_dir = repo_root / "reference_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    import numpy as np
+    import xarray as xr
+
+    lon = np.linspace(140.0, 160.0, 5)
+    lat = np.linspace(44.0, 54.0, 5)
+    z = np.full((5, 5), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("lat", "lon"), z)},
+        coords={"lon": lon, "lat": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo1.nc")
+
+    custom_out = "my_custom_out"
+    grid_prefix = "ext_custom_grid"
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            grid_prefix,
+            "--dx",
+            "5.0",
+            "--dy",
+            "5.0",
+            "-o",
+            custom_out,
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    # Custom output directory should be created inside tmp_path (where user invoked it)
+    expected_out_dir = tmp_path / custom_out
+    assert expected_out_dir.exists()
+    assert (expected_out_dir / f"{grid_prefix}_ugrid.nc").exists()

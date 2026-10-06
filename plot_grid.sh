@@ -8,12 +8,15 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-10-05
+# @date Update: 2026-10-06
 #
 # Shell driver script to generate graphical grid and obstruction plots in GIF format.
 
 set -euo pipefail
 
+ORIG_DIR="$(pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 
 INPUT_FILE="ww4_grid_ugrid.nc"
@@ -21,6 +24,9 @@ OUTPUT_FILE=""
 FORMAT="jpg"
 TITLE="WAVEWATCH IV Grid & Obstructions"
 DISPLAY_FLAG="--display"
+
+INPUT_FILE_SPECIFIED=0
+OUTPUT_FILE_SPECIFIED=0
 
 usage() {
   cat << 'EOF'
@@ -49,10 +55,12 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -i|--input)
       INPUT_FILE="$2"
+      INPUT_FILE_SPECIFIED=1
       shift 2
       ;;
     -o|--output)
       OUTPUT_FILE="$2"
+      OUTPUT_FILE_SPECIFIED=1
       shift 2
       ;;
     -f|--format)
@@ -82,6 +90,15 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Resolve INPUT_FILE and OUTPUT_FILE relative to ORIG_DIR if explicitly specified by user input
+if [ "$INPUT_FILE_SPECIFIED" -eq 1 ] && [[ "$INPUT_FILE" != /* ]]; then
+  INPUT_FILE="${ORIG_DIR}/${INPUT_FILE}"
+fi
+
+if [ "$OUTPUT_FILE_SPECIFIED" -eq 1 ] && [[ "$OUTPUT_FILE" != /* ]]; then
+  OUTPUT_FILE="${ORIG_DIR}/${OUTPUT_FILE}"
+fi
 
 echo "========================================================================"
 echo " WAVEWATCH III / IV Grid & Obstruction Plotting Tool"

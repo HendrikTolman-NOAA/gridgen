@@ -8,7 +8,7 @@
 #
 # @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
 # @date Initial: 2026-09-24
-# @date Update: 2026-10-05
+# @date Update: 2026-10-06
 #
 # Utility tool to populate the reference_data directory with authoritative
 # bathymetry, shoreline, and regional polygon datasets required by WAVEWATCH.
@@ -16,8 +16,11 @@
 set -euo pipefail
 
 # Default Configuration
+ORIG_DIR="$(pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 TARGET_DIR="${SCRIPT_DIR}/reference_data"
+TARGET_DIR_SPECIFIED=0
 
 # URLs for authoritative data sources
 NCEP_GRIDGEN_URL="ftp://polar.ncep.noaa.gov/waves/gridgen/gridgen_addit.tar.gz"
@@ -75,6 +78,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -d|--target-dir)
       TARGET_DIR="$2"
+      TARGET_DIR_SPECIFIED=1
       shift 2
       ;;
     -c|--clean|--cleanup)
@@ -121,6 +125,15 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Resolve TARGET_DIR relative to ORIG_DIR if explicitly specified by user input
+if [ "$TARGET_DIR_SPECIFIED" -eq 1 ]; then
+  if [[ "$TARGET_DIR" != /* ]]; then
+    TARGET_DIR="${ORIG_DIR}/${TARGET_DIR}"
+  fi
+else
+  TARGET_DIR="${SCRIPT_DIR}/reference_data"
+fi
 
 # Default to legacy dataset if no specific dataset flag was requested
 if [ "$CLI_SPECIFIED" = false ]; then
