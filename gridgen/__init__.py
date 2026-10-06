@@ -25,13 +25,27 @@ from .coordinates import (
     create_rotated_pole_grid,
     create_stereographic_grid,
 )
+from .masking import (
+    clean_mask,
+    compute_boundary,
+    define_boundary_points,
+    modify_mask,
+    remove_lake,
+    split_boundary,
+)
 
 __version__ = "0.1.0"
 
 __all__ = [
+    "clean_mask",
+    "compute_boundary",
     "create_grid_coordinates",
     "create_lambert_conformal_grid",
     "create_regular_grid",
     "create_rotated_pole_grid",
     "create_stereographic_grid",
+    "define_boundary_points",
+    "modify_mask",
+    "remove_lake",
+    "split_boundary",
 ]

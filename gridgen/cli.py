@@ -26,7 +26,7 @@ from .grid import generate_grid
 from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from .io.coards import nc_ww3_grdwrite
 from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
-from .masking import remove_lake
+from .masking import define_boundary_points, remove_lake
 from .obstructions import create_obstr
 
 
@@ -53,6 +53,11 @@ def main() -> None:
     parser.add_argument(
         "--ref-dir", type=str, default="reference_data", help="Reference data directory"
     )
+    parser.add_argument(
+        "--boundary-points",
+        action="store_true",
+        help="Define input boundary points (mask value 2) along regional grid boundaries",
+    )
 
     args = parser.parse_args()
 
@@ -75,6 +80,9 @@ def main() -> None:
     m[depth == 999999.0] = 0
 
     m_mod, _ = remove_lake(m, lake_tol=-1, igl=0)
+    if args.boundary_points:
+        m_mod = define_boundary_points(m_mod, lon, lat)
+
     sx, sy = create_obstr(lon, lat, [], m_mod)
 
     # 1. Legacy WW3 ASCII
