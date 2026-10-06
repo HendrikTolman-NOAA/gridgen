@@ -6,6 +6,7 @@
 # is added to its repositories.
 #
 # @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
 
 from __future__ import annotations

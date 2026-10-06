@@ -6,12 +6,14 @@
 # is added to its repositories.
 #
 # @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-06
 #
 # Code Heritage:
 # Converted from MATLAB gridgen suite I/O modules originally authored by NCEP/NOAA
 # and Kelsey Jordahl (nc_ww3_grdwrite).
 
-"""I/O routines for WAVEWATCH III legacy formats and WAVEWATCH IV NetCDF-UGRID/Zarr formats."""
+"""I/O routines for WAVEWATCH III legacy formats and WAVEWATCH IV NetCDF-UGRID format."""
 
 from __future__ import annotations

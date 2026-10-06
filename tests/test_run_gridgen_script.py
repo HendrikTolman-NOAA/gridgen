@@ -5,9 +5,10 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Update: 2026-10-06
+# @date Latest Update: 2026-10-06
 
 """Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
@@ -119,7 +120,6 @@ def test_run_gridgen_execution(tmp_path: Path):
     assert (out_dir / "test_grid.meta").exists()
     assert (out_dir / "test_grid_coards.nc").exists()
     assert (out_dir / "test_grid_ugrid.nc").exists()
-    assert (out_dir / "test_grid_ugrid.zarr").exists()
 
 
 def test_run_gridgen_with_ref_dir(tmp_path: Path):

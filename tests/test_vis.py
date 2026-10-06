@@ -5,9 +5,10 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Update: 2026-10-06
+# @date Latest Update: 2026-10-06
 
 from __future__ import annotations
 
@@ -31,7 +32,6 @@ from gridgen.vis import extract_grid_name, load_grid_data, plot_grid
 def test_extract_grid_name():
     assert extract_grid_name("ww4_grid_ugrid.nc") == "ww4_grid"
     assert extract_grid_name("/path/to/mygrid_coards.nc") == "mygrid"
-    assert extract_grid_name("custom_ugrid.zarr") == "custom"
     assert extract_grid_name("test.depth_ascii") == "test"
 
 

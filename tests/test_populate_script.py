@@ -5,9 +5,10 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Update: 2026-10-06
+# @date Latest Update: 2026-10-06
 
 """Unit tests for reference data population script (populate_reference_data.sh)."""
 

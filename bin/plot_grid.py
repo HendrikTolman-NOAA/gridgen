@@ -6,9 +6,10 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Update: 2026-10-06
+# @date Latest Update: 2026-10-06
 #
 # Code Heritage:
 # Executable script wrapper for WAVEWATCH IV grid and obstruction visualization.

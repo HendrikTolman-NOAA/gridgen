@@ -6,9 +6,10 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
-# @author Aldgisl (Agentic AI), Jules (Agentic AI), Hendrik Tolman
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Update: 2026-10-06
+# @date Latest Update: 2026-10-06
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -63,7 +64,6 @@ Description:
     1. Legacy WW3 ASCII grid (.depth_ascii, .maskorig_ascii, .obstr_lev1, .meta)
     2. Legacy GMT/NetCDF COARDS grid (_coards.nc)
     3. WW4 NetCDF-UGRID 1.0 grid (_ugrid.nc)
-    4. WW4 Zarr Store grid (_ugrid.zarr)
 EOF
 }
 
@@ -154,7 +154,6 @@ if [ "$CLEANUP" -eq 1 ]; then
          "${OUT_DIR}/${NAME}.meta" \
          "${OUT_DIR}/${NAME}_coards.nc" \
          "${OUT_DIR}/${NAME}_ugrid.nc" \
-         "${OUT_DIR}/${NAME}_ugrid.zarr" \
          "${OUT_DIR}/${NAME}.jpg" \
          "${OUT_DIR}/${NAME}.png" \
          "${OUT_DIR}/${NAME}.pdf" \
@@ -181,8 +180,8 @@ if ! command -v python3 &> /dev/null; then
   exit 1
 fi
 
-if ! python3 -c "import numpy, scipy, xarray, netCDF4, zarr, shapely" &> /dev/null; then
-  echo "Error: Required Python dependencies (numpy, scipy, xarray, netCDF4, zarr, shapely) are missing in environment '$(command -v python3)'." >&2
+if ! python3 -c "import numpy, scipy, xarray, netCDF4, shapely" &> /dev/null; then
+  echo "Error: Required Python dependencies (numpy, scipy, xarray, netCDF4, shapely) are missing in environment '$(command -v python3)'." >&2
   echo "Please install dependencies into your Python environment:" >&2
   echo "  pip install -e ." >&2
   echo "or activate a Python environment/venv with required packages installed." >&2
