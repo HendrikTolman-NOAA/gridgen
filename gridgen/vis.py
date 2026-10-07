@@ -264,6 +264,9 @@ def plot_grid(
     if output_path is not None:
         out_p = Path(output_path)
         if out_p.suffix.lower() in (".gif", ".giff"):
+            import io
+            from PIL import Image
+
             buf = io.BytesIO()
             fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
             buf.seek(0)

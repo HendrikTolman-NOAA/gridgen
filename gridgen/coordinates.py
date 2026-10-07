@@ -339,7 +339,7 @@ def load_custom_grid(filepath: str | Path) -> tuple[np.ndarray, np.ndarray]:
         with nc.Dataset(path, "r") as ds:
             lon_var = None
             lat_var = None
-            for key in ds.variables:
+            for key in ds.variables.keys():
                 k_lower = key.lower()
                 if k_lower in ("lon", "longitude", "grid_lon", "x", "nav_lon", "lons"):
                     lon_var = key
@@ -378,8 +378,8 @@ def load_custom_grid(filepath: str | Path) -> tuple[np.ndarray, np.ndarray]:
         from scipy.io import loadmat
 
         mat = loadmat(path)
-        lon_key = next((k for k in mat if k.lower() in ("lon", "longitude", "x")), None)
-        lat_key = next((k for k in mat if k.lower() in ("lat", "latitude", "y")), None)
+        lon_key = next((k for k in mat.keys() if k.lower() in ("lon", "longitude", "x")), None)
+        lat_key = next((k for k in mat.keys() if k.lower() in ("lat", "latitude", "y")), None)
         if not lon_key or not lat_key:
             raise ValueError(f"Could not find 'lon' and 'lat' variables in MAT file '{filepath}'. Keys: {list(mat.keys())}")
         lon_arr = np.array(mat[lon_key])

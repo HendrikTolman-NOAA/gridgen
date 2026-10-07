@@ -18,6 +18,8 @@ import numpy as np
 import pytest
 from scipy.io import savemat
 
+from scipy.io import savemat
+
 from gridgen.coordinates import (
     create_grid_coordinates,
     create_lambert_conformal_grid,
