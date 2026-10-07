@@ -260,7 +260,18 @@ def plot_grid(
     fig.tight_layout()
 
     if output_path is not None:
-        fig.savefig(output_path, dpi=300, bbox_inches="tight")
+        out_p = Path(output_path)
+        if out_p.suffix.lower() in (".gif", ".giff"):
+            import io
+            from PIL import Image
+
+            buf = io.BytesIO()
+            fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+            buf.seek(0)
+            img = Image.open(buf)
+            img.save(out_p, format="GIF")
+        else:
+            fig.savefig(output_path, dpi=300, bbox_inches="tight")
         print(f"Saved grid plot to '{output_path}'")
 
     if show:

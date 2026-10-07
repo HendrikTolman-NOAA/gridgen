@@ -30,6 +30,17 @@ LON_START="140.0"
 LON_END="160.0"
 LAT_START="44.0"
 LAT_END="54.0"
+CENTER_LON="0.0"
+CENTER_LAT="90.0"
+LAT_1="30.0"
+LAT_2="60.0"
+EXTENT_KM="2000.0"
+RESOLUTION_KM="50.0"
+POLE_LON="180.0"
+POLE_LAT="60.0"
+NX=""
+NY=""
+CUSTOM_GRID=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
 CLEANUP=0
@@ -44,18 +55,29 @@ Usage: ./run_gridgen.sh [OPTIONS]
 Utility script to manage and execute WAVEWATCH III / IV Python grid generation tools.
 
 Options:
-  -n, --name NAME        Grid prefix identifier (default: ww4_grid)
-  -g, --grid-type TYPE   Grid type: regular, stereographic, lambert_conformal, rotated_pole (default: regular)
-  --dx DX                Longitude grid resolution increment in degrees (default: 0.25)
-  --dy DY                Latitude grid resolution increment in degrees (default: 0.25)
-  --lon-start LON        Minimum longitude in degrees (default: 140.0)
-  --lon-end LON          Maximum longitude in degrees (default: 160.0)
-  --lat-start LAT        Minimum latitude in degrees (default: 44.0)
-  --lat-end LAT          Maximum latitude in degrees (default: 54.0)
-  -o, --out-dir DIR      Output directory for generated grid files (default: .)
-  -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
-  -c, --clean, --cleanup Remove generated grid files for NAME from output directory
-  -h, --help             Display this help message and exit
+  -n, --name NAME          Grid prefix identifier (default: ww4_grid)
+  -g, --grid-type TYPE     Grid type: regular, stereographic, lambert_conformal, rotated_pole, custom (default: regular)
+  --dx DX                  Longitude grid resolution increment in degrees (default: 0.25)
+  --dy DY                  Latitude grid resolution increment in degrees (default: 0.25)
+  --lon-start LON          Minimum longitude in degrees (default: 140.0)
+  --lon-end LON            Maximum longitude in degrees (default: 160.0)
+  --lat-start LAT          Minimum latitude in degrees (default: 44.0)
+  --lat-end LAT            Maximum latitude in degrees (default: 54.0)
+  --center-lon LON         Center longitude for stereographic/Lambert projection (default: 0.0)
+  --center-lat LAT         Center latitude for stereographic/Lambert projection (default: 90.0)
+  --lat-1 LAT              First standard parallel for Lambert conformal projection (default: 30.0)
+  --lat-2 LAT              Second standard parallel for Lambert conformal projection (default: 60.0)
+  --extent-km KM           Half-width domain extent in km for stereographic/Lambert grid (default: 2000.0)
+  --resolution-km KM       Grid resolution in km for stereographic/Lambert grid (default: 50.0)
+  --pole-lon LON           Rotated pole longitude for rotated_pole projection (default: 180.0)
+  --pole-lat LAT           Rotated pole latitude for rotated_pole projection (default: 60.0)
+  --nx NX                  Number of longitude/x grid points
+  --ny NY                  Number of latitude/y grid points
+  --custom-grid FILE       Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)
+  -o, --out-dir DIR        Output directory for generated grid files (default: .)
+  -r, --ref-dir DIR        Reference data directory (default: ./reference_data)
+  -c, --clean, --cleanup   Remove generated grid files for NAME from output directory
+  -h, --help               Display this help message and exit
 
 Description:
   This script checks that reference bathymetry and shoreline datasets are present
@@ -102,6 +124,50 @@ while [[ $# -gt 0 ]]; do
       ;;
     --lat-end)
       LAT_END="$2"
+      shift 2
+      ;;
+    --center-lon)
+      CENTER_LON="$2"
+      shift 2
+      ;;
+    --center-lat)
+      CENTER_LAT="$2"
+      shift 2
+      ;;
+    --lat-1)
+      LAT_1="$2"
+      shift 2
+      ;;
+    --lat-2)
+      LAT_2="$2"
+      shift 2
+      ;;
+    --extent-km)
+      EXTENT_KM="$2"
+      shift 2
+      ;;
+    --resolution-km)
+      RESOLUTION_KM="$2"
+      shift 2
+      ;;
+    --pole-lon)
+      POLE_LON="$2"
+      shift 2
+      ;;
+    --pole-lat)
+      POLE_LAT="$2"
+      shift 2
+      ;;
+    --nx)
+      NX="$2"
+      shift 2
+      ;;
+    --ny)
+      NY="$2"
+      shift 2
+      ;;
+    --custom-grid)
+      CUSTOM_GRID="$2"
       shift 2
       ;;
     -o|--out-dir)
@@ -196,17 +262,38 @@ fi
 
 # 3. Execute Python Gridgen CLI
 echo "Launching Python grid generation pipeline for '${NAME}'..."
-python3 -m gridgen.cli \
-  --name "$NAME" \
-  --grid-type "$GRID_TYPE" \
-  --dx "$DX" \
-  --dy "$DY" \
-  --lon-start "$LON_START" \
-  --lon-end "$LON_END" \
-  --lat-start "$LAT_START" \
-  --lat-end "$LAT_END" \
-  --out-dir "$OUT_DIR" \
+CMD_ARGS=(
+  --name "$NAME"
+  --grid-type "$GRID_TYPE"
+  --dx "$DX"
+  --dy "$DY"
+  --lon-start "$LON_START"
+  --lon-end "$LON_END"
+  --lat-start "$LAT_START"
+  --lat-end "$LAT_END"
+  --center-lon "$CENTER_LON"
+  --center-lat "$CENTER_LAT"
+  --lat-1 "$LAT_1"
+  --lat-2 "$LAT_2"
+  --extent-km "$EXTENT_KM"
+  --resolution-km "$RESOLUTION_KM"
+  --pole-lon "$POLE_LON"
+  --pole-lat "$POLE_LAT"
+  --out-dir "$OUT_DIR"
   --ref-dir "$REF_DIR"
+)
+
+if [ -n "$NX" ]; then
+  CMD_ARGS+=(--nx "$NX")
+fi
+if [ -n "$NY" ]; then
+  CMD_ARGS+=(--ny "$NY")
+fi
+if [ -n "$CUSTOM_GRID" ]; then
+  CMD_ARGS+=(--custom-grid "$CUSTOM_GRID")
+fi
+
+python3 -m gridgen.cli "${CMD_ARGS[@]}"
 
 echo ""
 echo "Execution finished successfully."

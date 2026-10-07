@@ -65,6 +65,142 @@ def test_run_gridgen_missing_ref_dir_fails(tmp_path: Path):
     assert "Error: Reference bathymetry dataset files were not found" in result.stderr
 
 
+def test_run_gridgen_different_grid_types(tmp_path: Path):
+    """Verify run_gridgen.sh supports rotated_pole, stereographic, and custom grid types."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    out_dir = tmp_path / "grid_output"
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    import numpy as np
+    import xarray as xr
+
+    # Bathymetry reference
+    lon = np.linspace(0.0, 360.0, 20)
+    lat = np.linspace(-90.0, 90.0, 20)
+    z = np.full((20, 20), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("lat", "lon"), z)},
+        coords={"lon": lon, "lat": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo1.nc")
+
+    # 1. Rotated pole grid
+    res1 = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "rot_grid",
+            "-g",
+            "rotated_pole",
+            "--pole-lon",
+            "180.0",
+            "--pole-lat",
+            "60.0",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res1.returncode == 0
+    assert (out_dir / "rot_grid_ugrid.nc").exists()
+
+    # 2. Stereographic grid
+    res2 = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "stereo_grid",
+            "-g",
+            "stereographic",
+            "--center-lon",
+            "0.0",
+            "--center-lat",
+            "90.0",
+            "--extent-km",
+            "500.0",
+            "--resolution-km",
+            "100.0",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res2.returncode == 0
+    assert (out_dir / "stereo_grid_ugrid.nc").exists()
+
+    # 3. Lambert Conformal Conic grid
+    res_lambert = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "lambert_grid",
+            "-g",
+            "lambert_conformal",
+            "--center-lon",
+            "-95.0",
+            "--center-lat",
+            "35.0",
+            "--lat-1",
+            "30.0",
+            "--lat-2",
+            "60.0",
+            "--extent-km",
+            "500.0",
+            "--resolution-km",
+            "100.0",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res_lambert.returncode == 0
+    assert (out_dir / "lambert_grid_ugrid.nc").exists()
+
+    # 3. Custom grid file (.npz)
+    custom_npz = tmp_path / "custom_layout.npz"
+    glon, glat = np.meshgrid(np.linspace(140.0, 150.0, 5), np.linspace(40.0, 50.0, 5))
+    np.savez(custom_npz, lon=glon, lat=glat)
+
+    res3 = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "custom_grid",
+            "-g",
+            "custom",
+            "--custom-grid",
+            str(custom_npz),
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res3.returncode == 0
+    assert (out_dir / "custom_grid_ugrid.nc").exists()
+
+
 def test_run_gridgen_execution(tmp_path: Path):
     """Verify that run_gridgen.sh generates all grid export formats when ref_dir contains bathymetry data."""
     repo_root = Path(__file__).parent.parent

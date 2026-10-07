@@ -110,13 +110,24 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | Option | Description |
 | :--- | :--- |
 | `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). |
-| `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `lambert_conformal`, `rotated_pole` (default: `regular`). |
+| `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `lambert_conformal`, `rotated_pole`, `custom` (default: `regular`). |
 | `--dx DX` | Longitude grid resolution increment in degrees (default: `0.25`). |
 | `--dy DY` | Latitude grid resolution increment in degrees (default: `0.25`). |
 | `--lon-start LON` | Minimum longitude in degrees (default: `140.0`). |
 | `--lon-end LON` | Maximum longitude in degrees (default: `160.0`). |
 | `--lat-start LAT` | Minimum latitude in degrees (default: `44.0`). |
 | `--lat-end LAT` | Maximum latitude in degrees (default: `54.0`). |
+| `--center-lon LON` | Center longitude for stereographic/Lambert projection (default: `0.0`). |
+| `--center-lat LAT` | Center latitude for stereographic/Lambert projection (default: `90.0`). |
+| `--lat-1 LAT` | First standard parallel for Lambert conformal projection (default: `30.0`). |
+| `--lat-2 LAT` | Second standard parallel for Lambert conformal projection (default: `60.0`). |
+| `--extent-km KM` | Half-width domain extent in km for stereographic/Lambert grid (default: `2000.0`). |
+| `--resolution-km KM` | Grid resolution in km for stereographic/Lambert grid (default: `50.0`). |
+| `--pole-lon LON` | Rotated pole longitude for `rotated_pole` projection (default: `180.0`). |
+| `--pole-lat LAT` | Rotated pole latitude for `rotated_pole` projection (default: `60.0`). |
+| `--nx NX` | Number of longitude/x grid points. |
+| `--ny NY` | Number of latitude/y grid points. |
+| `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). |
 | `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). |
 | `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). |
 | `-c, --clean, --cleanup` | Remove generated output grid files for specified `--name` from output directory. |
