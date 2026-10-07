@@ -1,3 +1,27 @@
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package Configuration
+#
+# @file pyproject.toml
+# @brief Project build configuration and metadata for the ww4gridgen Python package.
+# @details Standard Python packaging configuration defining build system requirements,
+#          package dependencies, CLI script entry points, and test/linter settings.
+#
+# Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+# NWS often uses Generative AI (GenAI) for code development and refactoring.
+# Whenever GenAI is used, NWS requires a full human review of code before it
+# is added to its repositories.
+#
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
+# @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-07
+#
+# @note Format Mandate (TOML vs. YAML):
+# Although YAML is the primary configuration/markup language throughout WAVEWATCH IV (WW4),
+# Python packaging standards (PEP 518 for build systems and PEP 621 for project metadata)
+# strictly require the build configuration file to be named 'pyproject.toml' in TOML format.
+# Standard Python toolchains (pip, setuptools, build, pytest, ruff) explicitly look for
+# pyproject.toml and will not recognize Python package metadata or build settings in YAML.
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
