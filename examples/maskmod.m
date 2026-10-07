@@ -1,3 +1,15 @@
+% WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+%
+% Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it
+% is added to its repositories.
+%
+% @author Aldgisl (Agentic AI), Hendrik Tolman
+% @author Jules (Agentic AI) (contributor)
+% @date Initial: 2026-10-07
+% @date Latest Update: 2026-10-07
+%
 % EXAMPLE SCRIPT FOR MODIFYING MASK FILE FOR MULTI-GRID WW3
 % (Note : To run this script you have to run 'create_grid_regional.m'
 %   and 'create_grid_global.m' first because this example modifies the mask 

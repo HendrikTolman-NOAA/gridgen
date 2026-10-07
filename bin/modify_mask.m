@@ -1,3 +1,15 @@
+% WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+%
+% Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it
+% is added to its repositories.
+%
+% @author Aldgisl (Agentic AI), Hendrik Tolman
+% @author Jules (Agentic AI) (contributor)
+% @date Initial: 2026-10-07
+% @date Latest Update: 2026-10-07
+%
 function m_new = modify_mask(m,lon,lat,mb,lonb,latb,igl,px,py)
 
 % -------------------------------------------------------------------------

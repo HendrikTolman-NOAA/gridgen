@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-07
 #
 # Code Heritage:
 # Executable script wrapper for WAVEWATCH IV grid and obstruction visualization.

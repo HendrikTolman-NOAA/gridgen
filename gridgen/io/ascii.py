@@ -8,6 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-07
 #
 # Code Heritage:
 # Converted from write_ww3file.m, write_ww3obstr.m, write_ww3meta.m

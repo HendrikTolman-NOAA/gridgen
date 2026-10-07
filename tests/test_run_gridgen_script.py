@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-07
 
 """Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
