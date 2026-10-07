@@ -10,7 +10,7 @@
 # @date Initial: 2026-10-07
 # @date Latest Update: 2026-10-07
 
-"""Unit test for package version consistency across VERSION, pyproject.toml, and gridgen."""
+"""Unit test for single-source package version definition in gridgen."""
 
 from __future__ import annotations
 
@@ -25,21 +25,20 @@ else:
 import gridgen
 
 
-def test_version_consistency():
-    """Verify package version consistency across VERSION, pyproject.toml, and gridgen.__version__."""
+def test_package_version():
+    """Verify single-source version definition in gridgen.__version__ and pyproject.toml."""
+    assert gridgen.__version__ == "2.0.0"
+
     repo_root = Path(__file__).parent.parent
-    version_file = repo_root / "VERSION"
     pyproject_file = repo_root / "pyproject.toml"
+    version_file = repo_root / "VERSION"
 
-    assert version_file.exists(), "VERSION file must exist in root directory"
+    assert not version_file.exists(), "VERSION file must not exist (single source of truth in gridgen.__version__)"
     assert pyproject_file.exists(), "pyproject.toml must exist in root directory"
-
-    version_str = version_file.read_text().strip()
-    assert version_str == "2.0.0"
-    assert gridgen.__version__ == version_str
 
     with open(pyproject_file, "rb") as f:
         pyproject_data = tomllib.load(f)
 
-    pyproject_version = pyproject_data.get("project", {}).get("version")
-    assert pyproject_version == version_str
+    # Verify setuptools dynamic version configuration points to gridgen.__version__
+    dynamic_attrs = pyproject_data.get("tool", {}).get("setuptools", {}).get("dynamic", {})
+    assert dynamic_attrs.get("version", {}).get("attr") == "gridgen.__version__"

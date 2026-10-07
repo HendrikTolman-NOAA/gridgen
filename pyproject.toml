@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ww4gridgen"
-version = "2.0.0"
+dynamic = ["version"]
 description = "WAVEWATCH IV Grid Generation Package in Pure Python with NetCDF-UGRID support"
 readme = "README"
 requires-python = ">=3.9"
@@ -29,6 +29,9 @@ ww4plotgrid = "gridgen.vis:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["gridgen*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "gridgen.__version__"}
 
 [tool.ruff]
 line-length = 88
