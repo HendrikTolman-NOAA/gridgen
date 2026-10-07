@@ -44,7 +44,9 @@ def test_vis_ugrid(tmp_path):
     sx = np.full((3, 3), 0.1)
     sy = np.full((3, 3), 0.2)
 
-    ds = create_ugrid_dataset(lon, lat, depth, mask, sx=sx, sy=sy, title="Test Vis Grid")
+    ds = create_ugrid_dataset(
+        lon, lat, depth, mask, sx=sx, sy=sy, title="Test Vis Grid"
+    )
     nc_path = str(tmp_path / "test_vis_ugrid.nc")
     write_ugrid_nc(ds, nc_path)
 
@@ -172,7 +174,10 @@ def test_view_grid_script_display_check(tmp_path: Path):
 
     assert result.returncode == 0
     assert "Displaying WAVEWATCH Grid Graphics" in result.stdout
-    assert "WARNING: Neither DISPLAY nor WAYLAND_DISPLAY environment variable is set." in result.stdout
+    assert (
+        "WARNING: Neither DISPLAY nor WAYLAND_DISPLAY environment variable is set."
+        in result.stdout
+    )
     assert "Troubleshooting steps to display graphics" in result.stdout
 
 

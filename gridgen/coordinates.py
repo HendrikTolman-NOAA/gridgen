@@ -116,12 +116,20 @@ def create_stereographic_grid(
     if nx is not None:
         x1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, nx)
     else:
-        x1d = np.arange(-extent_km * 1000.0, extent_km * 1000.0 + resolution_km * 500.0, resolution_km * 1000.0)
+        x1d = np.arange(
+            -extent_km * 1000.0,
+            extent_km * 1000.0 + resolution_km * 500.0,
+            resolution_km * 1000.0,
+        )
 
     if ny is not None:
         y1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, ny)
     else:
-        y1d = np.arange(-extent_km * 1000.0, extent_km * 1000.0 + resolution_km * 500.0, resolution_km * 1000.0)
+        y1d = np.arange(
+            -extent_km * 1000.0,
+            extent_km * 1000.0 + resolution_km * 500.0,
+            resolution_km * 1000.0,
+        )
 
     x, y = np.meshgrid(x1d, y1d)
     radius_earth = 6371000.0
@@ -141,9 +149,7 @@ def create_stereographic_grid(
 
         rho_safe = np.where(rho == 0, 1.0, rho)
 
-        lat_rad = np.arcsin(
-            cos_c * sin_lat0 + (y * sin_c * cos_lat0) / rho_safe
-        )
+        lat_rad = np.arcsin(cos_c * sin_lat0 + (y * sin_c * cos_lat0) / rho_safe)
 
         lon_rad = lon0_rad + np.arctan2(
             x * sin_c,
@@ -201,12 +207,20 @@ def create_lambert_conformal_grid(
     if nx is not None:
         x1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, nx)
     else:
-        x1d = np.arange(-extent_km * 1000.0, extent_km * 1000.0 + resolution_km * 500.0, resolution_km * 1000.0)
+        x1d = np.arange(
+            -extent_km * 1000.0,
+            extent_km * 1000.0 + resolution_km * 500.0,
+            resolution_km * 1000.0,
+        )
 
     if ny is not None:
         y1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, ny)
     else:
-        y1d = np.arange(-extent_km * 1000.0, extent_km * 1000.0 + resolution_km * 500.0, resolution_km * 1000.0)
+        y1d = np.arange(
+            -extent_km * 1000.0,
+            extent_km * 1000.0 + resolution_km * 500.0,
+            resolution_km * 1000.0,
+        )
 
     x, y = np.meshgrid(x1d, y1d)
     radius_earth = 6371000.0
@@ -339,7 +353,7 @@ def load_custom_grid(filepath: str | Path) -> tuple[np.ndarray, np.ndarray]:
         with nc.Dataset(path, "r") as ds:
             lon_var = None
             lat_var = None
-            for key in ds.variables.keys():
+            for key in ds.variables:
                 k_lower = key.lower()
                 if k_lower in ("lon", "longitude", "grid_lon", "x", "nav_lon", "lons"):
                     lon_var = key
@@ -357,31 +371,48 @@ def load_custom_grid(filepath: str | Path) -> tuple[np.ndarray, np.ndarray]:
 
     elif ext == ".npz":
         data = np.load(path)
-        lon_key = next((k for k in data.files if k.lower() in ("lon", "longitude", "x")), None)
-        lat_key = next((k for k in data.files if k.lower() in ("lat", "latitude", "y")), None)
+        lon_key = next(
+            (k for k in data.files if k.lower() in ("lon", "longitude", "x")), None
+        )
+        lat_key = next(
+            (k for k in data.files if k.lower() in ("lat", "latitude", "y")), None
+        )
         if not lon_key or not lat_key:
-            raise ValueError(f"Could not find 'lon' and 'lat' keys in NPZ file '{filepath}'. Keys: {data.files}")
+            raise ValueError(
+                f"Could not find 'lon' and 'lat' keys in NPZ file '{filepath}'. Keys: {data.files}"
+            )
         lon_arr = np.array(data[lon_key])
         lat_arr = np.array(data[lat_key])
 
     elif ext == ".npy":
         arr = np.load(path, allow_pickle=True)
-        if isinstance(arr, np.ndarray) and arr.dtype.names and ("lon" in arr.dtype.names) and ("lat" in arr.dtype.names):
+        if (
+            isinstance(arr, np.ndarray)
+            and arr.dtype.names
+            and ("lon" in arr.dtype.names)
+            and ("lat" in arr.dtype.names)
+        ):
             lon_arr = arr["lon"]
             lat_arr = arr["lat"]
-        elif isinstance(arr, tuple) or (isinstance(arr, np.ndarray) and arr.ndim == 3 and arr.shape[0] == 2):
+        elif isinstance(arr, tuple) or (
+            isinstance(arr, np.ndarray) and arr.ndim == 3 and arr.shape[0] == 2
+        ):
             lon_arr, lat_arr = arr[0], arr[1]
         else:
-            raise ValueError(f"Unable to parse 2D lon and lat from NPY file '{filepath}'.")
+            raise ValueError(
+                f"Unable to parse 2D lon and lat from NPY file '{filepath}'."
+            )
 
     elif ext == ".mat":
         from scipy.io import loadmat
 
         mat = loadmat(path)
-        lon_key = next((k for k in mat.keys() if k.lower() in ("lon", "longitude", "x")), None)
-        lat_key = next((k for k in mat.keys() if k.lower() in ("lat", "latitude", "y")), None)
+        lon_key = next((k for k in mat if k.lower() in ("lon", "longitude", "x")), None)
+        lat_key = next((k for k in mat if k.lower() in ("lat", "latitude", "y")), None)
         if not lon_key or not lat_key:
-            raise ValueError(f"Could not find 'lon' and 'lat' variables in MAT file '{filepath}'. Keys: {list(mat.keys())}")
+            raise ValueError(
+                f"Could not find 'lon' and 'lat' variables in MAT file '{filepath}'. Keys: {list(mat.keys())}"
+            )
         lon_arr = np.array(mat[lon_key])
         lat_arr = np.array(mat[lat_key])
 
@@ -395,7 +426,9 @@ def load_custom_grid(filepath: str | Path) -> tuple[np.ndarray, np.ndarray]:
             lon_arr = data[0, :]
             lat_arr = data[1, :]
         else:
-            raise ValueError(f"ASCII grid file '{filepath}' must contain 2 columns or 2 rows for lon and lat.")
+            raise ValueError(
+                f"ASCII grid file '{filepath}' must contain 2 columns or 2 rows for lon and lat."
+            )
     else:
         raise ValueError(
             f"Unsupported custom grid file format '{ext}'. "
@@ -457,7 +490,9 @@ def create_grid_coordinates(
     custom_file = kwargs.get("custom_grid") or kwargs.get("filepath")
     if gtype == "custom" or custom_file is not None:
         if not custom_file:
-            raise ValueError("Parameter 'custom_grid' (filepath) must be provided when grid_type is 'custom'.")
+            raise ValueError(
+                "Parameter 'custom_grid' (filepath) must be provided when grid_type is 'custom'."
+            )
         return load_custom_grid(custom_file)
 
     if gtype in ("regular", "latlon", "rectilinear"):

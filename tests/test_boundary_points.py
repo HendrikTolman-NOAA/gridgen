@@ -22,7 +22,9 @@ from gridgen.masking import define_boundary_points, modify_mask
 
 def test_define_boundary_points_edges() -> None:
     """Test setting outer domain boundary wet cells to mask value 2."""
-    lon, lat = create_regular_grid(lon_start=0, lon_end=4, lat_start=0, lat_end=4, dx=1, dy=1)
+    lon, lat = create_regular_grid(
+        lon_start=0, lon_end=4, lat_start=0, lat_end=4, dx=1, dy=1
+    )
     mask = np.ones((5, 5), dtype=int)
     # Set one cell to dry land
     mask[0, 0] = 0
@@ -40,7 +42,9 @@ def test_define_boundary_points_edges() -> None:
 
 def test_define_boundary_points_active_poly() -> None:
     """Test defining active computation polygon region and internal boundaries."""
-    lon, lat = create_regular_grid(lon_start=0, lon_end=10, lat_start=0, lat_end=10, dx=1, dy=1)
+    lon, lat = create_regular_grid(
+        lon_start=0, lon_end=10, lat_start=0, lat_end=10, dx=1, dy=1
+    )
     mask = np.ones((11, 11), dtype=int)
 
     # Active polygon covering center (2,2) to (8,8)
@@ -57,7 +61,9 @@ def test_define_boundary_points_active_poly() -> None:
 
 def test_modify_mask_alias() -> None:
     """Test modify_mask backward compatibility alias."""
-    lon, lat = create_regular_grid(lon_start=0, lon_end=4, lat_start=0, lat_end=4, dx=1, dy=1)
+    lon, lat = create_regular_grid(
+        lon_start=0, lon_end=4, lat_start=0, lat_end=4, dx=1, dy=1
+    )
     mask = np.ones((5, 5), dtype=int)
 
     m_new = modify_mask(mask, lon, lat)

@@ -191,7 +191,7 @@ def generate_grid(
                 else:
                     depth_sub[k, j] = dry
 
-    if not isinstance(bathy_source, xr.Dataset) and 'ds_base' in locals():
+    if not isinstance(bathy_source, xr.Dataset) and "ds_base" in locals():
         ds_base.close()
 
     return depth_sub

@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 import argparse
-import io
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +25,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-from PIL import Image
 
 from .io.ascii import read_ww3file, read_ww3meta, read_ww3obstr
 
@@ -173,7 +171,9 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "sy": sy,
         }
 
-    raise FileNotFoundError(f"Could not load grid data from path or prefix '{filepath}'")
+    raise FileNotFoundError(
+        f"Could not load grid data from path or prefix '{filepath}'"
+    )
 
 
 def plot_grid(
@@ -222,7 +222,9 @@ def plot_grid(
     ax1 = axes_flat[0]
     ax1.set_facecolor("#d2b48c")  # Tan background for land cells
     if lon.ndim == 2:
-        pcm1 = ax1.pcolormesh(lon, lat, depth_display, cmap="Blues_r", shading="nearest")
+        pcm1 = ax1.pcolormesh(
+            lon, lat, depth_display, cmap="Blues_r", shading="nearest"
+        )
     else:
         pcm1 = ax1.scatter(lon, lat, c=depth_display, cmap="Blues_r")
     fig.colorbar(pcm1, ax=ax1, label="Depth (m)")
@@ -236,7 +238,9 @@ def plot_grid(
         ax2 = axes_flat[1]
         ax2.set_facecolor("#f0f0f0")
         if lon.ndim == 2:
-            pcm2 = ax2.pcolormesh(lon, lat, sx, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest")
+            pcm2 = ax2.pcolormesh(
+                lon, lat, sx, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            )
         else:
             pcm2 = ax2.scatter(lon, lat, c=sx, cmap="YlOrRd", vmin=0.0, vmax=1.0)
         fig.colorbar(pcm2, ax=ax2, label="x-Obstruction Factor (sx)")
@@ -249,7 +253,9 @@ def plot_grid(
         ax3 = axes_flat[2]
         ax3.set_facecolor("#f0f0f0")
         if lon.ndim == 2:
-            pcm3 = ax3.pcolormesh(lon, lat, sy, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest")
+            pcm3 = ax3.pcolormesh(
+                lon, lat, sy, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            )
         else:
             pcm3 = ax3.scatter(lon, lat, c=sy, cmap="YlOrRd", vmin=0.0, vmax=1.0)
         fig.colorbar(pcm3, ax=ax3, label="y-Obstruction Factor (sy)")
@@ -265,6 +271,7 @@ def plot_grid(
         out_p = Path(output_path)
         if out_p.suffix.lower() in (".gif", ".giff"):
             import io
+
             from PIL import Image
 
             buf = io.BytesIO()

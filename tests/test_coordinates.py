@@ -18,8 +18,6 @@ import numpy as np
 import pytest
 from scipy.io import savemat
 
-from scipy.io import savemat
-
 from gridgen.coordinates import (
     create_grid_coordinates,
     create_lambert_conformal_grid,
@@ -115,17 +113,23 @@ def test_create_rotated_pole_grid() -> None:
 def test_create_grid_coordinates_unified() -> None:
     """Test unified entry point create_grid_coordinates."""
     # 1. Regular
-    lon1, lat1 = create_grid_coordinates("regular", lon_start=0, lon_end=10, lat_start=0, lat_end=10, dx=1, dy=1)
+    lon1, lat1 = create_grid_coordinates(
+        "regular", lon_start=0, lon_end=10, lat_start=0, lat_end=10, dx=1, dy=1
+    )
     assert lon1.shape == (11, 11)
     assert lat1.shape == (11, 11)
 
     # 2. General Stereographic
-    lon2, lat2 = create_grid_coordinates("stereographic", extent_km=200, resolution_km=50)
+    lon2, lat2 = create_grid_coordinates(
+        "stereographic", extent_km=200, resolution_km=50
+    )
     assert lon2.ndim == 2
     assert lat2.ndim == 2
 
     # 3. Lambert Conformal
-    lon3, lat3 = create_grid_coordinates("lambert_conformal", extent_km=200, resolution_km=50)
+    lon3, lat3 = create_grid_coordinates(
+        "lambert_conformal", extent_km=200, resolution_km=50
+    )
     assert lon3.ndim == 2
     assert lat3.ndim == 2
 
