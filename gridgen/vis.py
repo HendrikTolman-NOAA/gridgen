@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-07
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -262,13 +262,13 @@ def plot_grid(
     fig.tight_layout()
 
     if output_path is not None:
-        out_path = Path(output_path)
-        if out_path.suffix.lower() == ".gif":
+        out_p = Path(output_path)
+        if out_p.suffix.lower() in (".gif", ".giff"):
             buf = io.BytesIO()
             fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
             buf.seek(0)
             img = Image.open(buf)
-            img.save(out_path, format="GIF")
+            img.save(out_p, format="GIF")
         else:
             fig.savefig(output_path, dpi=300, bbox_inches="tight")
         print(f"Saved grid plot to '{output_path}'")

@@ -8,15 +8,18 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-07
 
 """Grid coordinate generation module for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4).
 
 Provides 2D coordinate generation routines for regular, general stereographic,
-Lambert Conformal Conic, and rotated pole grid geometries.
+Lambert Conformal Conic, rotated pole grid geometries, and custom grid layout files.
 """
 
 from __future__ import annotations
+
+import inspect
+from pathlib import Path
 
 import numpy as np
 
@@ -307,6 +310,124 @@ def create_rotated_pole_grid(
     return lon, lat
 
 
+def load_custom_grid(filepath: str | Path) -> tuple[np.ndarray, np.ndarray]:
+    """Load 2D longitude and latitude coordinate arrays from a custom grid layout file.
+
+    Supports NetCDF (.nc), NumPy archive (.npz, .npy), MATLAB (.mat), and ASCII (.dat, .txt, .csv) files.
+
+    Parameters
+    ----------
+    filepath : str | Path
+        Path to the custom grid layout file.
+
+    Returns
+    -------
+    lon : np.ndarray
+        2D longitude array of shape (Ny, Nx).
+    lat : np.ndarray
+        2D latitude array of shape (Ny, Nx).
+    """
+    path = Path(filepath)
+    if not path.exists():
+        raise FileNotFoundError(f"Custom grid file not found: '{filepath}'")
+
+    ext = path.suffix.lower()
+
+    if ext in (".nc", ".nc4", ".cdf"):
+        import netCDF4 as nc
+
+        with nc.Dataset(path, "r") as ds:
+            lon_var = None
+            lat_var = None
+            for key in ds.variables:
+                k_lower = key.lower()
+                if k_lower in ("lon", "longitude", "grid_lon", "x", "nav_lon", "lons"):
+                    lon_var = key
+                elif k_lower in ("lat", "latitude", "grid_lat", "y", "nav_lat", "lats"):
+                    lat_var = key
+
+            if not lon_var or not lat_var:
+                raise ValueError(
+                    f"Could not identify longitude and latitude variables in NetCDF file '{filepath}'. "
+                    f"Available variables: {list(ds.variables.keys())}"
+                )
+
+            lon_arr = np.array(ds.variables[lon_var][:])
+            lat_arr = np.array(ds.variables[lat_var][:])
+
+    elif ext == ".npz":
+        data = np.load(path)
+        lon_key = next((k for k in data.files if k.lower() in ("lon", "longitude", "x")), None)
+        lat_key = next((k for k in data.files if k.lower() in ("lat", "latitude", "y")), None)
+        if not lon_key or not lat_key:
+            raise ValueError(f"Could not find 'lon' and 'lat' keys in NPZ file '{filepath}'. Keys: {data.files}")
+        lon_arr = np.array(data[lon_key])
+        lat_arr = np.array(data[lat_key])
+
+    elif ext == ".npy":
+        arr = np.load(path, allow_pickle=True)
+        if isinstance(arr, np.ndarray) and arr.dtype.names and ("lon" in arr.dtype.names) and ("lat" in arr.dtype.names):
+            lon_arr = arr["lon"]
+            lat_arr = arr["lat"]
+        elif isinstance(arr, tuple) or (isinstance(arr, np.ndarray) and arr.ndim == 3 and arr.shape[0] == 2):
+            lon_arr, lat_arr = arr[0], arr[1]
+        else:
+            raise ValueError(f"Unable to parse 2D lon and lat from NPY file '{filepath}'.")
+
+    elif ext == ".mat":
+        from scipy.io import loadmat
+
+        mat = loadmat(path)
+        lon_key = next((k for k in mat if k.lower() in ("lon", "longitude", "x")), None)
+        lat_key = next((k for k in mat if k.lower() in ("lat", "latitude", "y")), None)
+        if not lon_key or not lat_key:
+            raise ValueError(f"Could not find 'lon' and 'lat' variables in MAT file '{filepath}'. Keys: {list(mat.keys())}")
+        lon_arr = np.array(mat[lon_key])
+        lat_arr = np.array(mat[lat_key])
+
+    elif ext in (".dat", ".txt", ".csv"):
+        delimiter = "," if ext == ".csv" else None
+        data = np.loadtxt(path, delimiter=delimiter)
+        if data.ndim == 2 and data.shape[1] == 2:
+            lon_arr = data[:, 0]
+            lat_arr = data[:, 1]
+        elif data.ndim == 2 and data.shape[0] == 2:
+            lon_arr = data[0, :]
+            lat_arr = data[1, :]
+        else:
+            raise ValueError(f"ASCII grid file '{filepath}' must contain 2 columns or 2 rows for lon and lat.")
+    else:
+        raise ValueError(
+            f"Unsupported custom grid file format '{ext}'. "
+            "Supported formats: .nc, .npz, .npy, .mat, .dat, .txt, .csv"
+        )
+
+    lon_arr = np.squeeze(lon_arr)
+    lat_arr = np.squeeze(lat_arr)
+
+    if lon_arr.ndim == 1 and lat_arr.ndim == 1:
+        lon_arr, lat_arr = np.meshgrid(lon_arr, lat_arr)
+    elif lon_arr.ndim != 2 or lat_arr.ndim != 2:
+        raise ValueError(
+            f"Coordinates in '{filepath}' must be 1D or 2D. "
+            f"Got shapes lon: {lon_arr.shape}, lat: {lat_arr.shape}"
+        )
+
+    if lon_arr.shape != lat_arr.shape:
+        raise ValueError(
+            f"Longitude shape {lon_arr.shape} does not match latitude shape {lat_arr.shape} in '{filepath}'."
+        )
+
+    return lon_arr, lat_arr
+
+
+def _filter_kwargs(func, kwargs: dict) -> dict:
+    """Helper to extract valid keyword arguments for a target function."""
+    sig = inspect.signature(func)
+    valid_params = set(sig.parameters.keys())
+    return {k: v for k, v in kwargs.items() if k in valid_params and v is not None}
+
+
 def create_grid_coordinates(
     grid_type: str = "regular",
     **kwargs,
@@ -321,8 +442,9 @@ def create_grid_coordinates(
         - 'stereographic', 'polar_stereographic': General stereographic grid.
         - 'lambert_conformal', 'lambert': Lambert Conformal Conic grid.
         - 'rotated_pole', 'curvilinear': Rotated pole spherical grid.
+        - 'custom': Custom grid loaded from a layout file specified via custom_grid/filepath parameter.
     **kwargs
-        Parameters passed to the specific grid generator.
+        Parameters passed to the specific grid generator or custom_grid filepath.
 
     Returns
     -------
@@ -332,16 +454,26 @@ def create_grid_coordinates(
         2D latitude array of shape (Ny, Nx).
     """
     gtype = grid_type.lower().strip()
+    custom_file = kwargs.get("custom_grid") or kwargs.get("filepath")
+    if gtype == "custom" or custom_file is not None:
+        if not custom_file:
+            raise ValueError("Parameter 'custom_grid' (filepath) must be provided when grid_type is 'custom'.")
+        return load_custom_grid(custom_file)
+
     if gtype in ("regular", "latlon", "rectilinear"):
-        return create_regular_grid(**kwargs)
+        filtered = _filter_kwargs(create_regular_grid, kwargs)
+        return create_regular_grid(**filtered)
     elif gtype in ("stereographic", "polar_stereographic"):
-        return create_stereographic_grid(**kwargs)
+        filtered = _filter_kwargs(create_stereographic_grid, kwargs)
+        return create_stereographic_grid(**filtered)
     elif gtype in ("lambert_conformal", "lambert"):
-        return create_lambert_conformal_grid(**kwargs)
+        filtered = _filter_kwargs(create_lambert_conformal_grid, kwargs)
+        return create_lambert_conformal_grid(**filtered)
     elif gtype in ("rotated_pole", "curvilinear"):
-        return create_rotated_pole_grid(**kwargs)
+        filtered = _filter_kwargs(create_rotated_pole_grid, kwargs)
+        return create_rotated_pole_grid(**filtered)
     else:
         raise ValueError(
             f"Unsupported grid_type '{grid_type}'. Supported grid types: "
-            "'regular', 'stereographic', 'lambert_conformal', 'rotated_pole'."
+            "'regular', 'stereographic', 'lambert_conformal', 'rotated_pole', 'custom'."
         )
