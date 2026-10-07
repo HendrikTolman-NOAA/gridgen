@@ -33,12 +33,16 @@ def test_package_version():
     pyproject_file = repo_root / "pyproject.toml"
     version_file = repo_root / "VERSION"
 
-    assert not version_file.exists(), "VERSION file must not exist (single source of truth in gridgen.__version__)"
+    assert not version_file.exists(), (
+        "VERSION file must not exist (single source of truth in gridgen.__version__)"
+    )
     assert pyproject_file.exists(), "pyproject.toml must exist in root directory"
 
     with open(pyproject_file, "rb") as f:
         pyproject_data = tomllib.load(f)
 
     # Verify setuptools dynamic version configuration points to gridgen.__version__
-    dynamic_attrs = pyproject_data.get("tool", {}).get("setuptools", {}).get("dynamic", {})
+    dynamic_attrs = (
+        pyproject_data.get("tool", {}).get("setuptools", {}).get("dynamic", {})
+    )
     assert dynamic_attrs.get("version", {}).get("attr") == "gridgen.__version__"

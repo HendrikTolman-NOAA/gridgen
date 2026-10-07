@@ -38,8 +38,14 @@ def test_load_user_polygons(tmp_path) -> None:
     mat_path = os.path.join(ref_dir, mat_filename)
 
     # Create dummy user_bound array
-    poly1 = DummyBound(np.array([10.0, 20.0, 20.0, 10.0, 10.0]), np.array([10.0, 10.0, 20.0, 20.0, 10.0]))
-    poly2 = DummyBound(np.array([30.0, 40.0, 40.0, 30.0, 30.0]), np.array([30.0, 30.0, 40.0, 40.0, 30.0]))
+    poly1 = DummyBound(
+        np.array([10.0, 20.0, 20.0, 10.0, 10.0]),
+        np.array([10.0, 10.0, 20.0, 20.0, 10.0]),
+    )
+    poly2 = DummyBound(
+        np.array([30.0, 40.0, 40.0, 30.0, 30.0]),
+        np.array([30.0, 30.0, 40.0, 40.0, 30.0]),
+    )
 
     sio.savemat(mat_path, {"user_bound": np.array([poly1, poly2], dtype=object)})
 
@@ -49,7 +55,9 @@ def test_load_user_polygons(tmp_path) -> None:
         f.write("1 0\n")
         f.write("2 1\n")
 
-    active_polys = load_user_polygons(ref_dir=ref_dir, flag_file=flag_path, mat_filename=mat_filename)
+    active_polys = load_user_polygons(
+        ref_dir=ref_dir, flag_file=flag_path, mat_filename=mat_filename
+    )
 
     assert len(active_polys) == 1
     assert np.isclose(active_polys[0]["west"], 30.0)

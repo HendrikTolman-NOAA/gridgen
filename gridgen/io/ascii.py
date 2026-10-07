@@ -161,9 +161,7 @@ def write_ww3file(fname: str, data: np.ndarray) -> tuple[str, int]:
         return str(e), 1
 
 
-def write_ww3obstr(
-    fname: str, d1: np.ndarray, d2: np.ndarray
-) -> tuple[str, int]:
+def write_ww3obstr(fname: str, d1: np.ndarray, d2: np.ndarray) -> tuple[str, int]:
     """Write 2D subgrid obstruction arrays in x (d1) and y (d2) into ASCII file.
 
     Parameters
@@ -272,44 +270,50 @@ def write_ww3meta(
 
     gtype_upper = gtype.upper()
     if gtype_upper == "RECT":
-        lines.extend((
-            "$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.",
-            "$    If NX*SX = 360., latitudinal closure is applied.",
-            "$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.",
-        ))
+        lines.extend(
+            (
+                "$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.",
+                "$    If NX*SX = 360., latitudinal closure is applied.",
+                "$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.",
+            )
+        )
     elif gtype_upper == "CURV":
-        lines.extend((
-            "$  3 Unit number of file with x-coordinate.",
-            "$    Scale factor and add offset: x <= scale_fac * x_read + add_offset.",
-            "$    IDLA, IDFM, format for formatted read, FROM and filename.",
-            "$  4 Unit number of file with y-coordinate.",
-            "$    Scale factor and add offset: y <= scale_fac * y_read + add_offset.",
-            "$    IDLA, IDFM, format for formatted read, FROM and filename.",
-        ))
+        lines.extend(
+            (
+                "$  3 Unit number of file with x-coordinate.",
+                "$    Scale factor and add offset: x <= scale_fac * x_read + add_offset.",
+                "$    IDLA, IDFM, format for formatted read, FROM and filename.",
+                "$  4 Unit number of file with y-coordinate.",
+                "$    Scale factor and add offset: y <= scale_fac * y_read + add_offset.",
+                "$    IDLA, IDFM, format for formatted read, FROM and filename.",
+            )
+        )
     else:
         return f"Unrecognized grid type: {gtype}", 1
 
-    lines.extend((
-        "$  5 Limiting bottom depth (m) to discriminate between land and sea",
-        "$    points, minimum water depth (m) as allowed in model, unit number",
-        "$    of file with bottom depths, scale factor for bottom depths (mult.),",
-        "$    IDLA, IDFM, format for formatted read, FROM and filename.",
-        "$      IDLA : Layout indicator :",
-        "$                  1   : Read line-by-line bottom to top.",
-        "$                  2   : Like 1, single read statement.",
-        "$                  3   : Read line-by-line top to bottom.",
-        "$                  4   : Like 3, single read statement.",
-        "$      IDFM : format indicator :",
-        "$                  1   : Free format.",
-        "$                  2   : Fixed format with above format descriptor.",
-        "$                  3   : Unformatted.",
-        "$      FROM : file type parameter",
-        "$             'UNIT' : open file by unit number only.",
-        "$             'NAME' : open file by name and assign to unit.",
-        "$  If the Unit Numbers in above files is 10 then data is read from this file",
-        "$",
-        f"   '{gtype_upper}'  FLAGLL CSTRNG",
-    ))
+    lines.extend(
+        (
+            "$  5 Limiting bottom depth (m) to discriminate between land and sea",
+            "$    points, minimum water depth (m) as allowed in model, unit number",
+            "$    of file with bottom depths, scale factor for bottom depths (mult.),",
+            "$    IDLA, IDFM, format for formatted read, FROM and filename.",
+            "$      IDLA : Layout indicator :",
+            "$                  1   : Read line-by-line bottom to top.",
+            "$                  2   : Like 1, single read statement.",
+            "$                  3   : Read line-by-line top to bottom.",
+            "$                  4   : Like 3, single read statement.",
+            "$      IDFM : format indicator :",
+            "$                  1   : Free format.",
+            "$                  2   : Fixed format with above format descriptor.",
+            "$                  3   : Unformatted.",
+            "$      FROM : file type parameter",
+            "$             'UNIT' : open file by unit number only.",
+            "$             'NAME' : open file by name and assign to unit.",
+            "$  If the Unit Numbers in above files is 10 then data is read from this file",
+            "$",
+            f"   '{gtype_upper}'  FLAGLL CSTRNG",
+        )
+    )
 
     if gtype_upper == "RECT":
         dx_min = (lon[0, 1] - lon[0, 0]) * 60.0 if Nx > 1 else 0.0
@@ -319,21 +323,19 @@ def write_ww3meta(
         lines.append(f"{lon[0, 0]:8.4f} \t {lat[0, 0]:8.4f} \t 1.00")
     else:
         lines.append(f"{Nx} \t {Ny}")
-        lines.append(
-            f"20  {n3:f}  0.00  1  1 '(....)'  NAME  '{base_fname}.lon'"
-        )
-        lines.append(
-            f"30  {n3:f}  0.00  1  1 '(....)'  NAME  '{base_fname}.lat'"
-        )
+        lines.append(f"20  {n3:f}  0.00  1  1 '(....)'  NAME  '{base_fname}.lon'")
+        lines.append(f"30  {n3:f}  0.00  1  1 '(....)'  NAME  '{base_fname}.lat'")
 
-    lines.extend((
-        "$ Bottom Bathymetry",
-        f"-0.10  2.50  40  {n1:f}  1  1 '(....)'  NAME  '{base_fname}{ext_depth}'",
-        "$ Sub-grid information",
-        f"50  {n2:f}  1  1 '(....)'  NAME  '{base_fname}{ext_obstr}'",
-        "$ Mask Information",
-        f"60  1  1 '(....)'  NAME  '{base_fname}{ext_mask}'",
-    ))
+    lines.extend(
+        (
+            "$ Bottom Bathymetry",
+            f"-0.10  2.50  40  {n1:f}  1  1 '(....)'  NAME  '{base_fname}{ext_depth}'",
+            "$ Sub-grid information",
+            f"50  {n2:f}  1  1 '(....)'  NAME  '{base_fname}{ext_obstr}'",
+            "$ Mask Information",
+            f"60  1  1 '(....)'  NAME  '{base_fname}{ext_mask}'",
+        )
+    )
 
     try:
         with open(meta_fname, "w") as f:

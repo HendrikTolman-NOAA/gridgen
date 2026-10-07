@@ -40,7 +40,14 @@ def main() -> None:
         "--grid-type",
         type=str,
         default="regular",
-        choices=["regular", "stereographic", "polar_stereographic", "lambert_conformal", "rotated_pole", "custom"],
+        choices=[
+            "regular",
+            "stereographic",
+            "polar_stereographic",
+            "lambert_conformal",
+            "rotated_pole",
+            "custom",
+        ],
         help="Grid coordinate projection/layout type (default: regular)",
     )
     parser.add_argument("--dx", type=float, default=0.25, help="Grid lon increment dx")
@@ -49,16 +56,60 @@ def main() -> None:
     parser.add_argument("--lon-end", type=float, default=160.0, help="Max longitude")
     parser.add_argument("--lat-start", type=float, default=44.0, help="Min latitude")
     parser.add_argument("--lat-end", type=float, default=54.0, help="Max latitude")
-    parser.add_argument("--center-lon", type=float, default=0.0, help="Center longitude for stereographic/Lambert projection")
-    parser.add_argument("--center-lat", type=float, default=90.0, help="Center latitude for stereographic/Lambert projection")
-    parser.add_argument("--lat-1", type=float, default=30.0, help="First standard parallel for Lambert conformal projection")
-    parser.add_argument("--lat-2", type=float, default=60.0, help="Second standard parallel for Lambert conformal projection")
-    parser.add_argument("--extent-km", type=float, default=2000.0, help="Half-width domain extent in km for stereographic/Lambert grid")
-    parser.add_argument("--resolution-km", type=float, default=50.0, help="Grid spacing in km for stereographic/Lambert grid")
-    parser.add_argument("--pole-lon", type=float, default=180.0, help="Rotated pole longitude for rotated_pole projection")
-    parser.add_argument("--pole-lat", type=float, default=60.0, help="Rotated pole latitude for rotated_pole projection")
-    parser.add_argument("--nx", type=int, default=None, help="Number of longitude/x grid points")
-    parser.add_argument("--ny", type=int, default=None, help="Number of latitude/y grid points")
+    parser.add_argument(
+        "--center-lon",
+        type=float,
+        default=0.0,
+        help="Center longitude for stereographic/Lambert projection",
+    )
+    parser.add_argument(
+        "--center-lat",
+        type=float,
+        default=90.0,
+        help="Center latitude for stereographic/Lambert projection",
+    )
+    parser.add_argument(
+        "--lat-1",
+        type=float,
+        default=30.0,
+        help="First standard parallel for Lambert conformal projection",
+    )
+    parser.add_argument(
+        "--lat-2",
+        type=float,
+        default=60.0,
+        help="Second standard parallel for Lambert conformal projection",
+    )
+    parser.add_argument(
+        "--extent-km",
+        type=float,
+        default=2000.0,
+        help="Half-width domain extent in km for stereographic/Lambert grid",
+    )
+    parser.add_argument(
+        "--resolution-km",
+        type=float,
+        default=50.0,
+        help="Grid spacing in km for stereographic/Lambert grid",
+    )
+    parser.add_argument(
+        "--pole-lon",
+        type=float,
+        default=180.0,
+        help="Rotated pole longitude for rotated_pole projection",
+    )
+    parser.add_argument(
+        "--pole-lat",
+        type=float,
+        default=60.0,
+        help="Rotated pole latitude for rotated_pole projection",
+    )
+    parser.add_argument(
+        "--nx", type=int, default=None, help="Number of longitude/x grid points"
+    )
+    parser.add_argument(
+        "--ny", type=int, default=None, help="Number of latitude/y grid points"
+    )
     parser.add_argument(
         "--custom-grid",
         type=str,
@@ -84,9 +135,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Step 1: Create 2D grid coordinates array
-    lon, lat = create_grid_coordinates(
-        **vars(args)
-    )
+    lon, lat = create_grid_coordinates(**vars(args))
 
     print(f"Generating '{args.grid_type}' grid '{args.name}' with shape {lon.shape}...")
 
@@ -97,7 +146,9 @@ def main() -> None:
 
     user_bounds = []
     if args.user_polygons_flag:
-        user_bounds = load_user_polygons(ref_dir=args.ref_dir, flag_file=args.user_polygons_flag)
+        user_bounds = load_user_polygons(
+            ref_dir=args.ref_dir, flag_file=args.user_polygons_flag
+        )
         if user_bounds:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
             m = clean_mask(lon, lat, m, user_bounds)
@@ -131,7 +182,13 @@ def main() -> None:
 
     # 2. Legacy GMT/NetCDF COARDS
     nc_ww3_grdwrite(
-        lon, lat, depth, f"{args.out_dir}/{args.name}_coards.nc", mask=m_mod, sx=sx, sy=sy
+        lon,
+        lat,
+        depth,
+        f"{args.out_dir}/{args.name}_coards.nc",
+        mask=m_mod,
+        sx=sx,
+        sy=sy,
     )
 
     # 3. WW4 NetCDF-UGRID 1.0

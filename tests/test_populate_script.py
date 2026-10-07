@@ -66,7 +66,9 @@ def test_reference_data_gitignore():
     ]
 
     for entry in expected_entries:
-        assert entry in content, f"Expected '{entry}' to be listed in reference_data/.gitignore"
+        assert entry in content, (
+            f"Expected '{entry}' to be listed in reference_data/.gitignore"
+        )
 
 
 def test_populate_script_target_dir(tmp_path: Path):
@@ -84,8 +86,14 @@ def test_populate_script_target_dir(tmp_path: Path):
 
     assert result.returncode == 0
     assert target_dir.exists()
-    assert "SUGGESTION: Newer Authoritative Bathymetry Source - GEBCO 2024" in result.stdout
-    assert "SUGGESTION: Newer Authoritative Shoreline Source - GSHHG v2.3.7" in result.stdout
+    assert (
+        "SUGGESTION: Newer Authoritative Bathymetry Source - GEBCO 2024"
+        in result.stdout
+    )
+    assert (
+        "SUGGESTION: Newer Authoritative Shoreline Source - GSHHG v2.3.7"
+        in result.stdout
+    )
 
 
 def test_populate_script_legacy_download_or_defunct(tmp_path: Path):

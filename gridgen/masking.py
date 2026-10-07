@@ -165,9 +165,7 @@ def split_boundary(
                         y_axis[ly + 1],
                         x_axis[lx + 1],
                     )
-                    sub_b, _ = compute_boundary(
-                        sub_coord, [b], bflg=b.get("level", 1)
-                    )
+                    sub_b, _ = compute_boundary(sub_coord, [b], bflg=b.get("level", 1))
                     result.extend(sub_b)
         else:
             result.append(b)
