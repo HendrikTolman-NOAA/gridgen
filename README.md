@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-07
 -->
 
 <p align="center">
@@ -204,7 +204,7 @@ Gridgen now does not require the grids to be rectilinear to allow for developmen
 
 ---
 
-**Last updated:** October 6, 2026
+**Last updated:** October 7, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">
