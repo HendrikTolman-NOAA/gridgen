@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import argparse
+import io
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+from PIL import Image
 
 from .io.ascii import read_ww3file, read_ww3meta, read_ww3obstr
 
