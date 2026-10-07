@@ -27,7 +27,7 @@ import gridgen
 
 def test_package_version():
     """Verify single-source version definition in gridgen.__version__ and pyproject.toml."""
-    assert gridgen.__version__ == "2.0.0"
+    assert gridgen.__version__ == "3.0.0"
 
     repo_root = Path(__file__).parent.parent
     pyproject_file = repo_root / "pyproject.toml"
