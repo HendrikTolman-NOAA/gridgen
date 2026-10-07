@@ -1,30 +1,32 @@
 function [messg,errno] = write_ww3obstr(fname,d1,d2)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      | 
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| Write the output arrays into ascii file                                |
-%|                                                                        |
-%| write_ww3file(fname,d1,d2)                                             |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  fname       : Output file name                                        |
-%|  d1,d2       : Output 2D obstruction arrays in x (d1) and y (d2)       |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|  messg       : Error message. Is blank if no error occurs              |
-%|  errno       : Error number. Is zero for succesful write               |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file write_ww3obstr.m
+% @brief Writes sub-grid obstruction factors (sx, sy) to a WAVEWATCH ASCII obstruction file.
+% @details Outputs 2D sx and sy obstruction matrices to an ASCII grid file.
+%
+% @param[in] fname Output filename path.
+% @param[in] d1 2D sub-grid obstruction array in x direction (sx).
+% @param[in] d2 2D sub-grid obstruction array in y direction (sy).
+% @return messg Status or error message string.
+% @return errno Error flag (0 for success).
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
 [Ny,Nx] = size(d1);
 

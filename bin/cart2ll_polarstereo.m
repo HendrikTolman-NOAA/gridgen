@@ -1,7 +1,34 @@
 function [LAT,LON]=cart2ll_polarstereo(x,y,earth_radius,eccentricity,north)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Ali Abdolali EMC/NCEP/NOAA ali.abdolali@noaa.gov 26, March 2021
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file cart2ll_polarstereo.m
+% @brief Transforms Cartesian map coordinates to latitude/longitude for a polar stereographic system.
+% @details Computes geographic coordinates (latitude and longitude) given Cartesian (x,y) positions, Earth radius, eccentricity, and hemisphere indicator.
+%
+% @param[in] x Cartesian x-coordinate (m).
+% @param[in] y Cartesian y-coordinate (m).
+% @param[in] earth_radius Radius of ellipsoid (m).
+% @param[in] eccentricity Eccentricity of ellipsoid.
+% @param[in] north Hemisphere flag (1 for North, 0 for South).
+% @return LAT 2D array of latitudes (degrees).
+% @return LON 2D array of longitudes (degrees).
+%
+% @copyright © 2021-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI), Ali Abdolali
+% @date Initial, 2021-03-26
+% @date Last update : 2026-10-07
+%
+% @note Originally written by Ali Abdolali (EMC/NCEP/NOAA) for WAVEWATCH grid generation.
+%
 %This script transforms map coordinates to lat/lon data for a polar stereographic system
 %Equations are taken form: Map Projections - A Working manual - by J.P. Snyder. 1987 
 

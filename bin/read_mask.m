@@ -1,29 +1,31 @@
 function m = read_mask(fname,Nx,Ny)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      | 
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| Read data from file                                                    |
-%|                                                                        |
-%| m = read_mask(fname,Nx,Ny)                                             |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  fname       : Input file name containing data                         |
-%|  Nx,Ny       : Array dimensions in x and y                             |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|  m           : 2D array with data                                      |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file read_mask.m
+% @brief Reads a WAVEWATCH ASCII mask file into a 2D array.
+% @details Parses an ASCII formatted land/sea mask file and returns a 2D matrix of size (Ny, Nx).
+%
+% @param[in] fname Path to input mask file.
+% @param[in] Nx Number of grid columns.
+% @param[in] Ny Number of grid rows.
+% @return m 2D land/sea mask array.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
   
 fid = fopen(fname,'r');
 

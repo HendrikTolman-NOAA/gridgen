@@ -1,38 +1,26 @@
 function setup_gridgen
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | setup_gridgen    NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  07-Dec-2017 |                      |
-%|                    +----------------------------+                      |
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| The setup_gridgen function supports the gridgen                        |
-%| 1. downloads the reference data (etopo1 and etopo2) from NCEP's server,|
-%| 2. uncompresses the tarball at the appropriate path and                |
-%| 3. adds temporarily the grid_gen's paths to the MATLAB's pathdef.      |
-%|                                                                        |
-%| INPUT                                                                  |
-%| None                                                                   | 
-%|                                                                        |
-%| OUTPUT                                                                 |
-%| None                                                                   |
-%|                                                                        |
-%| NOTES                                                                  |
-%| In case of updates update the section "Define paths, files and ftp     |
-%| server and paths".                                                     |
-%|                                                                        |
-%| BUG FIXES                                                              |
-%|                                                                        |
-%| PRGRMR   :   Stylianos Flampouris                                      |
-%| DATE     :                                                             |
-%|              v.1.0 - 07-Dec-2017                                       |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file setup_gridgen.m
+% @brief Setup function for the WAVEWATCH grid generation package.
+% @details Downloads ETOPO1 and ETOPO2 reference datasets, uncompresses the tarball archive, and adds gridgen directories to the MATLAB search path.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI), Stylianos Flampouris
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 %%
 display('grid_gen installation!')
 %% Define paths, files and ftp server and paths

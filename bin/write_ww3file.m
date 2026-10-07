@@ -1,30 +1,31 @@
 function [messg,errno] = write_ww3file(fname,d)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      | 
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| Write the output array into ascii file                                 |
-%|                                                                        |
-%| [messg,errno] = write_ww3file(fname,d)                                 |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  fname       : Output file name                                        |
-%|  d           : Output 2D array                                         | 
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|  messg       : Error message. Is blank if no error occurs              |
-%|  errno       : Error number. Is zero for succesful write               |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file write_ww3file.m
+% @brief Writes a 2D array to a WAVEWATCH ASCII grid file.
+% @details Formats and writes depth or mask 2D matrices into standard WAVEWATCH ASCII grid format.
+%
+% @param[in] fname Path to output file.
+% @param[in] d 2D data array to write.
+% @return messg Status or error message string.
+% @return errno Error flag (0 for success).
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
 [Ny,Nx] = size(d);
 

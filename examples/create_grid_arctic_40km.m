@@ -1,8 +1,26 @@
-% THIS IS AN EXAMPLE SCRIPT FOR GENERATING A POLAR STEREOGRAPHICAL GRID AND 
-%CAN BE USED AS  A TEMPLATE FOR DESIGNING GRIDS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Ali Abdolali EMC/NCEP/NOAA ali.abdolali@noaa.gov 26, March 2021
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file create_grid_arctic_40km.m
+% @brief Example script for generating a polar stereographic Arctic 40km grid.
+% @details Configures polar stereographic projection coordinates, extracts ETOPO bathymetry,
+% clips GSHHS coastline polygons, cleans land/sea mask, and exports grid files.
+%
+% @copyright © 2021-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI), Ali Abdolali
+% @date Initial, 2021-03-26
+% @date Last update : 2026-10-07
+%
+% @note Originally written by Ali Abdolali (EMC/NCEP/NOAA) for WAVEWATCH grid generation.
+%
 clear all 
 clc
 % 0. Initialization

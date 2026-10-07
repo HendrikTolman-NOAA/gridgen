@@ -1,50 +1,39 @@
 function m_new = modify_mask(m,lon,lat,mb,lonb,latb,igl,px,py)
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file modify_mask.m
+% @brief Modifies a grid mask for nested or multi-grid WAVEWATCH setups.
+% @details Updates mask values for boundary or overlapping cells between target grid (m) and base grid (mb).
+%
+% @param[in] m Initial 2D mask array of target grid.
+% @param[in] lon 2D longitude array of target grid.
+% @param[in] lat 2D latitude array of target grid.
+% @param[in] mb 2D mask array of base grid.
+% @param[in] lonb 2D longitude array of base grid.
+% @param[in] latb 2D latitude array of base grid.
+% @param[in] igl Mask modification flag.
+% @param[in] px Polygon x-coordinates (longitudes).
+% @param[in] py Polygon y-coordinates (latitudes).
+% @return m_new Modified 2D land/sea mask array.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      | 
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| This routine was developed for WAVEWATCH III v3.10 or higher           | 
-%| (multi-grid version) where the traditional mask with values of 0 and 1 | 
-%| for land and water are modified to give values of 0,1,2 and 3 for cells| 
-%| that are on land, water, boundary or to be ignored, respectively. These|
-%| masks are needed for grids that are nested with a larger grid from     |
-%| which they get their boundary information                              |
-%|                                                                        |
-%| m_new = modify_mask(m,lon,lat,mb,lonb,latb,igl,[px,py])                |
-%|                                                                        |
-%| INPUT                                                                  |
-%|   m     : 2D land sea mask for grid                                    |
-%|   lon   : longitude (x) coordinates of grid                            |
-%|   lat   : lattitude (y) coordinates of grid                            |
-%|   mb    : 2D mask for base grid (grid with which boundary data is      |
-%|           exchanged)                                                   |
-%|   lonb  : longitude (x) coordinates of base grid                       |
-%|   latb  : lattitude (y) coordinates of base grid                       |
-%|   igl   : flag indicating if base grid is global (1) or not (0)        |
-%|   px,py : Optional x,y coordinates of polygon defining the region of   |
-%|           active computation in the grid. If ommitted the entire grid  |
-%|           is used.                                                     |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|   m_new : New 2D mask file with values ranging from 0-3.               |
-%|              0 -> Active (within the computational region) dry cells   |
-%|              1 -> Active wet cells                                     |
-%|              2 -> Boundary cells (for data exchange)                   |
-%|              3 -> Inactive cells                                       |
-%|                                                                        |
-% ------------------------------------------------------------------------
-
-%@@@ Determine the number of inputs
+% Determine the number of inputs
 
 narg = nargin;
 edge_boundary = 1;

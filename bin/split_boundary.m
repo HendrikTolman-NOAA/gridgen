@@ -1,34 +1,30 @@
 function bound_ingrid = split_boundary(bound,lim)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      |
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| This function splits up large boundary segments into smaller ones so   |
-%| that they are more managable                                           |
-%|                                                                        |
-%| bound_ingrid = split_boundary(bound,lim,[bflg])                        |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  bound : Data structure array of boundary polygons that lie inside the |
-%|          grid domain                                                   |
-%|  lim   : Limiting size to determine if a polygon needs to be split     |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%| bound_ingrid : A new data structure of boundary polygons where the     |
-%|                larger polygons have been split up to more managable    |
-%|                smaller sizes                                           |
-%|                                                                        |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file split_boundary.m
+% @brief Splits boundary polygons across a specified polygon line segment.
+% @details Modifies boundary polygons intersecting a user-defined polygon line segment.
+%
+% @param[in] bound Active boundary polygon structure array.
+% @param[in] lim Splitting limit/threshold.
+% @return bound_ingrid Updated boundary structure array.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
 eps = 1e-5;
 

@@ -1,69 +1,32 @@
 function [bound_ingrid,Nb] = compute_boundary(coord,bound,varargin)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      |
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| Computes the shoreline polygons from the GSHHS database that lie within| 
-%| the grid domain, properly accounting for polygons that cross the domain| 
-%| The routine has been designed to work with coastal polygons by default.|
-%| That can be changed by using a different boundary flag. See GSHHS      |
-%| documentation (or below) for the meaning of the different flags        |
-%|                                                                        |
-%| [bound_ingrid,Nb] = compute_boundary(coord,bound,[bflg])               |
-%|                                                                        |
-%| INPUT                                                                  |
-%|   coord : An array defining the corner points of the grid              |
-%|           coord(1) = Lattitude (y) of lower left hand corner           |
-%|           coord(2) = Longitude (x) of lower left hand corner           |
-%|           coord(3) = Lattitude (y) of upper right hand corner          |
-%|           coord(4) = Longitude (x) of upper right hand corner          |
-%|   bound : A data structure array of the basic polygons (The GSHHS      |
-%|           polygons are stored as mat files with several different      | 
-%|           resolutions and the user should ensure that the files have   |
-%|           been loaded before using this routine).                      |
-%|                                                                        |
-%|           The different available files are --                         |
-%|             coastal_bound_ful.mat    -- Full resolution                |
-%|                                         (188606 polygons)              |
-%|		       coastal_bound_high.mat   -- High resolution        |
-%|                                         (0.2 km; 153539 polygons)      |
-%|		       coastal_bound_inter.mat  -- Intermediate resolution|
-%|                                         (1 km; 41523 polygons)         |
-%|		       coastal_bound_low.mat    -- Low resolution         |
-%|                                         (5 km; 10769 polygons)         |
-%|		       coastal_bound_coarse.mat -- Coarse resolution      |
-%|                                         (25 km; 1866 polygons)         |
-%|                                                                        |
-%|    bflg : Optional definition of flag type from the gshhs boundary     |
-%|           database (1 = land; 2 = lake margin; 3 = in-lake island).    |
-%|           If left blank, defaults to land (1).                         |
-%|                                                                        |
-%|	    Alternatively, a separate list of user defined polygons can   |
-%|          be generated having the same fields as bound. One such list is|
-%|	    "optional_coastal_polygons.mat" which is also distributed with|
-%|          reference data. This is an ever growing list of water bodies  |
-%|          that see very little wave action and for most practical       | 
-%|          purposes can be masked out as land.                           |
-%|                                                                        | 
-%|          See also optional_bound.m which shows how the optional coastal|
-%|          polygons are used                                             |
-%|                                                                        | 
-%| OUTPUT                                                                 |
-%|  bound_ingrid : Subset data structure array of polygons that lie inside|
-%|                 the grid                                               |
-%|  Nb           : Total number of polygons found that lie inside the grid|
-%|                                                                        |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file compute_boundary.m
+% @brief Computes shoreline boundary polygons intersecting a grid domain.
+% @details Extracts and clips global shoreline boundary polygons to the active domain extent for use in mask cleaning and obstruction factor calculation.
+%
+% @param[in] coord Array defining grid corner points [lat_start, lon_start, lat_end, lon_end].
+% @param[in] bound Data structure array of basic polygons.
+% @param[in] varargin Optional flag type definition from GSHHS boundary database.
+% @return bound_ingrid Subset data structure array of polygons inside the grid.
+% @return Nb Total number of polygons found inside the grid.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 narg=nargin;
 
 % Determine if third input variable present (requesting inland features)
@@ -81,26 +44,26 @@ lon_start = coord(2);
 lat_end = coord(3);
 lon_end = coord(4);
 
-%@@@ Definitions
+% Definitions
 
-%@@@ Minimum distance between points (to avoid round off errors from points
-%@@@ too close to each other)
+% Minimum distance between points (to avoid round off errors from points
+% too close to each other)
 
 eps = 1e-5;
 
-%@@@ Maximum distance between points. This is being defined so that we do
-%@@@ not have large gaps between subsequent points of the final boundary
-%@@@ polygon
+% Maximum distance between points. This is being defined so that we do
+% not have large gaps between subsequent points of the final boundary
+% polygon
 
 MAX_SEG_LENGTH = 0.25;
 
-%@@@ Polygon defining the bounding grid. Bounding grid is defined in the 
-%@@@ counter clockwise direction
+% Polygon defining the bounding grid. Bounding grid is defined in the
+% counter clockwise direction
 
 px = [lon_start lon_end lon_end lon_start lon_start];
 py = [lat_start lat_start lat_end lat_end lat_start];
 
-%@@@ Slope and intercepts for each of the 4 lines of the bounding box
+% Slope and intercepts for each of the 4 lines of the bounding box
  
 for i = 1:4
     if (px(i+1)==px(i))
@@ -118,23 +81,23 @@ end;
 norm(end+1,1) = norm(1,1);
 norm(end+1,2) = norm(1,2);
 
-%@@@ Initializing variables
+% Initializing variables
 
 N = length(bound);
 in_coord = 1;
 itmp = 0;
 
-%@@@ Loop through all the boundaries in the database
+% Loop through all the boundaries in the database
 
 for i = 1:N
     
-    %@@@ Limit boundaries to coastal type only. This flag needs to be 
-    %@@@ changed if interested in other boundaries. See GSHHS documentation 
-    %@@@ for boundary type flags
+    % Limit boundaries to coastal type only. This flag needs to be
+    % changed if interested in other boundaries. See GSHHS documentation
+    % for boundary type flags
    
     if (bound(i).level == bflg )
                                                      
-        %@@@ Determine if boundary lies completely outside the domain
+        % Determine if boundary lies completely outside the domain
         
         if (bound(i).west > lon_end || bound(i).east < lon_start ...     
               || bound(i).south > lat_end || bound(i).north < lat_start) 
@@ -145,7 +108,7 @@ for i = 1:N
 
         lev1 = bound(i).level;
 
-        %@@@ Determine if boundary lies completely inside the domain
+        % Determine if boundary lies completely inside the domain
 
         if (bound(i).west >= lon_start && bound(i).east <= lon_end && ...
                bound(i).south >= lat_start && bound(i).north <= lat_end)
@@ -154,24 +117,24 @@ for i = 1:N
             inside_grid = 0;
         end;
 
-        %@@@ Ignore boundaries outside the domain
+        % Ignore boundaries outside the domain
 
         if (in_grid)
 
-            %@@@ Modify boundaries that are not completely inside domain
+            % Modify boundaries that are not completely inside domain
  
             if (~inside_grid)
 
-                %@@@ Determine the points of the boundary that are 
-                %@@@ inside/on/outside the bounding box
+                % Determine the points of the boundary that are
+                % inside/on/outside the bounding box
  
                 [in_points,on_points] = inpolygon(bound(i).x,bound(i).y,px,py);
                 
                 loc1 = find(in_points == 1);
                 loc2 = find(on_points == 1);
 
-                %@@@ Ignore points that lie on the domain but neighboring 
-                %@@@ points do not
+                % Ignore points that lie on the domain but neighboring
+                % points do not
                 
                 for j = 1:length(loc2)
                     if (loc2(j) == 1)
@@ -189,7 +152,7 @@ for i = 1:N
                     end;
                 end;                
 
-                %@@@ Points of domain in the boundary
+                % Points of domain in the boundary
                 
                 domain_inb = inpolygon(px,py,bound(i).x,bound(i).y);
                 loc_t = find(domain_inb == 1);
@@ -212,14 +175,14 @@ for i = 1:N
                     clear loc_t domain_inb;
                 end;
                 
-                %@@@ Loop through only if there are points inside the domain
+                % Loop through only if there are points inside the domain
                 
                 if (~isempty(loc1)) 
                 
                     n = bound(i).n;
 
-                    %@@@ Flag the points where the boundary moves from in 
-                    %@@@ to out of the domain as well as out to in
+                    % Flag the points where the boundary moves from in
+                    % to out of the domain as well as out to in
 
                     in2out_count = 1;
                     out2in_count = 1;
@@ -245,8 +208,8 @@ for i = 1:N
                         return;
                     end;                
                
-                    %@@@ Crossing points are oriented to make sure we start 
-                    %@@@ from out to in
+                    % Crossing points are oriented to make sure we start
+                    % from out to in
 
                     if (in_points(1) > 0)
                         in2out_tmp = in2out;
@@ -258,7 +221,7 @@ for i = 1:N
                     
                     clear in2out_tmp;
                                   
-                    %@@@ For each in2out and out2in find a grid intersecting point
+                    % For each in2out and out2in find a grid intersecting point
                                     
                     clear in2out_gridbox in2out_gridboxdist in2out_xcross in2out_ycross;
                     clear out2in_gridbox out2in_gridboxdist out2in_xcross out2in_ycross;
@@ -345,7 +308,7 @@ for i = 1:N
                             in2out_gridboxdist(j) = k-1 + ...
                                 sqrt((px(k)-x)^2+(py(k)-y)^2)/box_length(k);
 
-                        end; %@@@ corresponds to if(on_points(in2out(j)) == 1)
+                        end; % corresponds to if(on_points(in2out(j)) == 1)
                         
                         if (on_points(out2in(j)+1) == 1)
 
@@ -417,11 +380,11 @@ for i = 1:N
                             out2in_gridboxdist(j) = k-1 + ...
                                 sqrt((px(k)-x)^2+(py(k)-y)^2)/box_length(k);
 
-                        end; %@@@ corresponds to if(on_points(out2in(j)) == 1)
+                        end; % corresponds to if(on_points(out2in(j)) == 1)
 
-                    end;     %@@@ end of j loop for all the intersection points
+                    end;     % end of j loop for all the intersection points
                 
-                    %@@@ Loop through the intersection points 
+                    % Loop through the intersection points
 
                     if (in2out_count > 0)
 
@@ -430,8 +393,8 @@ for i = 1:N
      
                         while(~isempty(find(subseg_acc == 0,1)))
                             
-                            %@@@ Starting from the closest unaccounted
-                            %@@@ segment
+                            % Starting from the closest unaccounted
+                            % segment
                             
                             min_pos = 0;
                             min_val = 4;
@@ -479,23 +442,23 @@ for i = 1:N
                                 bound_y = [bound_y;in2out_ycross(j)];
                             end;
 
-                            close_bound=0; %@@@ Flag initializing close boundary
+                            close_bound=0; % Flag initializing close boundary
                                 
                             starting_edge = out2in_gridbox(j);
                             ending_edge = in2out_gridbox(j);
                                 
                             subseg_acc(j) = 1;
                             
-                            %@@@ Find the next closest segment going
-                            %@@@ anti-clockwise
+                            % Find the next closest segment going
+                            % anti-clockwise
                             
                             seg_index = j;                           
                             
                             
                             while (close_bound == 0)
                                 
-                                %@@@ Check if last segment and see if can
-                                %@@@ proceed counter clockwise 
+                                % Check if last segment and see if can
+                                % proceed counter clockwise
                             
                                 if (isempty(find(subseg_acc == 0,1)))
                                     for k = in2out_gridbox(seg_index):4
@@ -533,7 +496,7 @@ for i = 1:N
                                     min_pos = 0;
                                     min_val = 4.0;
                                 
-                                    %@@@ Check all segments
+                                    % Check all segments
 
                                     for k1 = 1:in2out_count                                        
                                         if ((out2in_gridboxdist(k1)-start_dist) > eps ... 
@@ -560,10 +523,10 @@ for i = 1:N
                                         x_mid = [];
                                         y_mid = [];
 
-                                        %@@@ If the boundary polygon crosses 
-                                        %@@@ the grid domain along different
-                                        %@@@ domain edges then include the 
-                                        %@@@ common grid domain corner points
+                                        % If the boundary polygon crosses
+                                        % the grid domain along different
+                                        % domain edges then include the
+                                        % common grid domain corner points
 
                                         
                                         if (kstart ~= kend)
@@ -601,7 +564,7 @@ for i = 1:N
                                             bound_y = [bound_y;y_mid];
                                         end;
                                     
-                                        %@@@ Adding the segment
+                                        % Adding the segment
                                     
                                         if (~isnan(out2in_xcross(min_pos)))
                                             bound_x = [bound_x;...
@@ -640,7 +603,7 @@ for i = 1:N
                                 
                             end;
                             
-                            %@@@ Need to close the grid;
+                            % Need to close the grid;
                             
                             if (ending_edge ~= starting_edge)
                                 if (ending_edge < starting_edge)
@@ -675,8 +638,8 @@ for i = 1:N
                             bound_x(end+1) = bound_x(1);
                             bound_y(end+1) = bound_y(1);
                             
-                            %@@@ Making sure that the added points do not
-                            %@@@ exceed max. defined seg length
+                            % Making sure that the added points do not
+                            % exceed max. defined seg length
                             
                             clear xt1 xt2 yt1 yt2 dist loc x_set y_set;
                             nsample = length(bound_x);
@@ -730,7 +693,7 @@ for i = 1:N
                                 y_set = bound_y;
                             end;
                             
-                            %@@@ Setting up the boundary polygon
+                            % Setting up the boundary polygon
                             
                             bound_ingrid(in_coord).x = x_set;
                             bound_ingrid(in_coord).y = y_set;
@@ -746,24 +709,24 @@ for i = 1:N
                                             - bound_ingrid(in_coord).west;
                             bound_ingrid(in_coord).level = lev1;
                                                        
-                            in_coord=in_coord+1;    %@@@ increment boundary 
-                                                    %@@@ counter                                                                       
+                            in_coord=in_coord+1;    % increment boundary
+                                                    % counter
 
                             crnr_acc(1) = crnr_acc(end);
 
-                        end;         %@@@ corresponds to while loop that 
-                                     %@@@ checks if all sections (subseg_acc) 
-                                     %@@@ have been accounted for. 
+                        end;         % corresponds to while loop that
+                                     % checks if all sections (subseg_acc)
+                                     % have been accounted for.
                    
-                    end;             %@@@ corresponds to if in2out_count > 0 
+                    end;             % corresponds to if in2out_count > 0
                                    
-                end;                 %@@@ corresponds to if statement checking 
-                                     %@@@ if there are boundary points inside 
-                                     %@@@ the domain
+                end;                 % corresponds to if statement checking
+                                     % if there are boundary points inside
+                                     % the domain
 
-            else                     %@@@ boundary lies completely inside the grid
+            else                     % boundary lies completely inside the grid
 
-                %@@@ initializing and adding the boundary to the list
+                % initializing and adding the boundary to the list
                 bound_ingrid(in_coord).x = [];
                 bound_ingrid(in_coord).y = [];
                 bound_ingrid(in_coord).n = 0;
@@ -787,15 +750,15 @@ for i = 1:N
                 bound_ingrid(in_coord).level = lev1;
                 in_coord = in_coord+1;
 
-            end;     %@@@ corresponds to if statement that determines if boundary 
-                     %@@@ lies partially/completely in domain
+            end;     % corresponds to if statement that determines if boundary
+                     % lies partially/completely in domain
 
-        end;         %@@@ corresponds to if statement that determines if boundary  
-                     %@@@ lies outside the domain
+        end;         % corresponds to if statement that determines if boundary
+                     % lies outside the domain
 
-    end;             %@@@ corresponds to if statement that determines boundary type
+    end;             % corresponds to if statement that determines boundary type
 
-    %@@@ counter to keep tab on the level of processing
+    % counter to keep tab on the level of processing
 
     itmp_prev = itmp;
     itmp = floor(i/N*100);
@@ -804,7 +767,7 @@ for i = 1:N
             itmp,N,in_coord-1);
     end;
 
-end;     %@@@ end of for loop that loops through all the GSHHS boundaries
+end;     % end of for loop that loops through all the GSHHS boundaries
 
 Nb = in_coord-1;
 

@@ -1,5 +1,26 @@
-% Script to create the NCEP Global Wave Ensemble grid for v3.0.0 (Jan 2014)
-
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file create_glo_15m.m
+% @brief Example script for generating the NCEP Global Wave Ensemble 15-minute grid.
+% @details Initializes paths, configures grid boundaries, reads coastlines, generates bathymetry,
+% land/sea mask, obstructions, and exports grid files.
+%
+% @copyright © 2014-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2014-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 % 0. Initialization
 
 % 0.a Path to directories 

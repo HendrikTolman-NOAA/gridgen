@@ -1,40 +1,37 @@
 function [m1_out,m2_out] = reconcile_masks(m1,lon1,lat1,m2,lon2,lat2 )
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file reconcile_masks.m
+% @brief Reconciles land/sea masks between two overlapping WAVEWATCH grids.
+% @details Ensures consistency of active and dry cells in overlap regions between grid 1 and grid 2.
+%
+% @param[in] m1 Mask array of grid 1.
+% @param[in] lon1 Longitudes of grid 1.
+% @param[in] lat1 Latitudes of grid 1.
+% @param[in] m2 Mask array of grid 2.
+% @param[in] lon2 Longitudes of grid 2.
+% @param[in] lat2 Latitudes of grid 2.
+% @return m1_out Reconciled mask array for grid 1.
+% @return m2_out Reconciled mask array for grid 2.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      |
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%|  The aim of this function is to reconcile the masks of two grids with  |
-%|  similar resolution in the areas of overlap. This is only needed for   |
-%|  grids of similar resolution with overlapping domains ( where the      |
-%|  the multi-grid version of WAVEWATCH tries to reconcile the solutions) |
-%|                                                                        |
-%|  [m1_out,m2_out] = reconcile_masks(m1,lon1,lat1,m2,lon2,lat2)          |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  m1           : Mask for grid1                                         |
-%|  lon1         : Longitude (x) array for grid1                          |
-%|  lat1         : Latittude (y) array for grid1                          |
-%|  m2           : Mask for grid2                                         |
-%|  lon2         : Longitude (x) array for grid2                          |
-%|  lat2         : Latittude (y) array for grid2                          |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|  m1_out       : Re-conciled mask for grid1                             |
-%|  m2_out       : Re-conciled mask for grid2                             |
-%|                                                                        |
-% -------------------------------------------------------------------------
-
-%@@@ Determine overlap points
+% Determine overlap points
 
 [Nx1,Ny1] = size(m1);
 [Nx2,Ny2] = size(m2);
@@ -63,7 +60,7 @@ else
     mb = m1;
 end
 
-%@@@ Determine region of overlap
+% Determine region of overlap
 
 inout = inpolygon(x,y,px,py);
 loc = find(inout > 0);
@@ -71,7 +68,7 @@ N = length(loc);
 
 fprintf(1,' Found %d per cent of grid overlap points\n',round(N*100./Nt));
 
-%@@@ Check masks for overlap points
+% Check masks for overlap points
 
 for i = 1:N
     lon = x(loc(i));

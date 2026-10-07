@@ -1,8 +1,34 @@
-function [lat,lon]=stereographic_lon_lat(lat_min,resolution,earth_radius,eccentricity,north) 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Ali Abdolali EMC/NCEP/NOAA ali.abdolali@noaa.gov 26, March 2021
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+function [lat,lon]=stereographic_lon_lat(lat_min,resolution,earth_radius,eccentricity,north)
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file stereographic_lon_lat.m
+% @brief Generates polar stereographic grid coordinates (lat, lon).
+% @details Calculates latitude and longitude matrices for a polar stereographic grid defined by resolution and minimum latitude.
+%
+% @param[in] lat_min Minimum latitude bound (degrees).
+% @param[in] resolution Grid resolution (m).
+% @param[in] earth_radius Radius of Earth (m).
+% @param[in] eccentricity Ellipsoid eccentricity.
+% @param[in] north Hemisphere flag (1 for North, 0 for South).
+% @return lat 2D matrix of latitude coordinates.
+% @return lon 2D matrix of longitude coordinates.
+%
+% @copyright © 2021-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI), Ali Abdolali
+% @date Initial, 2021-03-26
+% @date Last update : 2026-10-07
+%
+% @note Originally written by Ali Abdolali (EMC/NCEP/NOAA) for WAVEWATCH grid generation.
+%
 
 %WGS84 - radius: 6378137.0 eccentricity: 0.08181919
 %  command in Matlab: axes2ecc(6378137.0, 6356752.3142)

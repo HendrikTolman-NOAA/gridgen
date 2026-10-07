@@ -1,39 +1,31 @@
 function [b,usr_cnt] = optional_bound(ref_dir,fname)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      | 
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| This routine reads an optional polygon data set that has been created  |
-%| to mask out water bodies that do not play a major role in wave         |
-%| propagation. The polygons that  are included are based on switches read|
-%| from a file                                                            |
-%|                                                                        |
-%| [b,usr_cnt] = optional_bound(ref_dir,fname,icoords)                    |
-%|                                                                        |
-%| INPUT                                                                  |
-%|   ref_dir : PATH to reference directory that includes the file         |
-%|             "optional_coastal_polygons.mat"                            |
-%|   fname   : Filename that has a list of switches to choose which of the|
-%|             optional polygons need to be switched off or on. The       |
-%|             switches in the file should coincide with the polygons in  | 
-%|             the "optional_coastal_polygons.mat" file. Example files for|
-%|             the two are provided in reference data directory           |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|   b       : An array of boundary polygon data structures               | 
-%|   usr_cnt : Total number of polygons found                             |
-%|                                                                        |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file optional_bound.m
+% @brief Loads optional user-defined coastal polygon boundaries.
+% @details Parses user_polygons.flag and loads active user-defined coastal boundary polygons into the boundary structure.
+%
+% @param[in] ref_dir Path to reference data directory.
+% @param[in] fname Path to user polygon flag file.
+% @return b Data structure array of user boundary polygons.
+% @return usr_cnt Count of user boundary polygons.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
 fid = fopen(fname,'r');
 

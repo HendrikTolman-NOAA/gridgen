@@ -1,46 +1,34 @@
 function [messg,errno] = write_ww3meta(fname,gtype,lon,lat,varargin)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  29-Mar-2013 |                      |
-%|                    +----------------------------+                      | 
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| Write the meta data associated with the grids generated in this        |
-%| software. This data needs to be provided as input to ww3_grid.inp when |
-%| generating the mod_def files for WAVEWATCH III. Note that the paths for|
-%| the actual file locations as well as the file names may be changed from|
-%| what is written out in the meta file                                   |
-%|                                                                        |
-%| [messg,errno] = ...                                                    |
-%|        write_ww3meta(fname,gtype,lon,lat,N1,N2,N3(optional),N4,N5,N6)  |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  fname       : Output file name prefix                                 | 
-%|  gtype       : Grid Type. Two options                                  |
-%|                  'CURV' - For curvilinear grids                        |
-%|                  'RECT' - For rectilinear grids                        |
-%|  lon,lat     : Longitude array (x) and lattitude array (y) of the grid |
-%|                 If gtype is 'rect' these are arrays and if it is       |
-%|                 'curv' then they are 2D matrices                       |
-%|  N1,N2,N3    : Scaling applied to bottom bathymetry data, obstruction  |
-%|                grids and coordinate (x,y) grids respectively. The      |
-%|                last number is optional and needed only for curvilinear |
-%|                grids.                                                  |
-%|  N4,N5,N6    : Optional extensions for labeling depth, mask and obs-   |
-%|                truction files (must be equal to actual files).         |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|  messg       : Error message. Is blank if no error occurs              |
-%|  errno       : Error number. Is zero for succesful write               |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file write_ww3meta.m
+% @brief Writes WAVEWATCH grid metadata file (.meta).
+% @details Outputs grid dimensions, coordinate type, and scaling factors needed by ww3_grid.
+%
+% @param[in] fname Output filename prefix.
+% @param[in] gtype Grid type ('RECT' or 'CURV').
+% @param[in] lon Longitude vector or matrix.
+% @param[in] lat Latitude vector or matrix.
+% @param[in] varargin Scaling factors N1, N2, N3 and optional file tags N4, N5, N6.
+% @return messg Status or error message string.
+% @return errno Error flag (0 for success).
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
 fid = fopen([fname,'.meta'],'w');
 

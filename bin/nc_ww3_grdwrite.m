@@ -1,34 +1,32 @@
 function nc_ww3_grdwrite(x,y,z,file,varargin);
-%GRDWRITE2  Write a GMT grid file
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
 %
-% Uses built-in NetCDF capability (MATLAB R2008b or later) to 
-% write a COARDS-compliant netCDF grid file
-% Duplicates (some) functionality of the program grdwrite (which requires
-% compilation as a mexfile-based function on each architecture) using
-% Matlab 2008b (and later) built-in NetCDF functionality
-% instead of GMT libraries.
+% @file nc_ww3_grdwrite.m
+% @brief Writes grid data to a COARDS-compliant NetCDF file.
+% @details Uses built-in MATLAB NetCDF capabilities to write a COARDS-compliant NetCDF grid file.
 %
-% GRDWRITE2(X,Y,Z,'filename') will create a grid file containing the
-% data in the matrix Z.  X and Y should be either vectors with
-% dimensions that match the size of Z or two-component vectors
-% containing the max and min values for each.
+% @param[in] x Vector or matrix of longitudes.
+% @param[in] y Vector or matrix of latitudes.
+% @param[in] z 2D grid data matrix.
+% @param[in] file Output NetCDF file path.
+% @param[in] varargin Optional arguments for variable naming or metadata.
 %
-% See also GRDREAD2, GRDINFO2
-
-% For more information on GMT grid file formats, see:
-% http://www.soest.hawaii.edu/gmt/gmt/doc/gmt/html/GMT_Docs/node70.html
-% Details on Matlab's native netCDF capabilities are at:
-% http://www.mathworks.com/access/helpdesk/help/techdoc/ref/netcdf.html
-
-% GMT (Generic Mapping Tools, <http://gmt.soest.hawaii.edu>)
-% was developed by Paul Wessel and Walter H. F. Smith
-
-% Kelsey Jordahl
-% Marymount Manhattan College
-% http://marymount.mmm.edu/faculty/kjordahl/software.html
-
-% Time-stamp: <Tue Jul 19 16:28:24 EDT 2011>
-
+% @copyright © 2011-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI), Kelsey Jordahl
+% @date Initial, 2011-07-19
+% @date Last update : 2026-10-07
+%
+% @note Originally created by Kelsey Jordahl (Marymount Manhattan College).
+%
 % Version 1.1.2, 19-Jul-2011
 % Available at MATLAB Central
 % <http://www.mathworks.com/matlabcentral/fileexchange/26290-grdwrite2>

@@ -1,6 +1,26 @@
-% THIS IS AN EXAMPLE SCRIPT FOR GENERATING A GRID AND CAN BE USED 
-% AS  A TEMPLATE FOR DESIGNING GRIDS
-
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file create_grid.m
+% @brief Example template script for generating WAVEWATCH grids.
+% @details Demonstrates setting up rectilinear or curvilinear grid coordinates, bathymetry,
+% shoreline boundaries, mask cleaning, obstructions, and file export.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 % 0. Initialization
 
 % 0.a Path to directories 

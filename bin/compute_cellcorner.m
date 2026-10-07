@@ -1,48 +1,41 @@
 function [c1,c2,c3,c4,wdth,hgt] = compute_cellcorner(x,y,j,k,Nx,Ny)
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file compute_cellcorner.m
+% @brief Computes cell corner coordinates and cell dimensions for a grid cell.
+% @details Calculates four corner coordinates and physical width and height for cell (j,k) in a 2D grid.
+%
+% @param[in] x 2D array specifying cell longitudes.
+% @param[in] y 2D array specifying cell latitudes.
+% @param[in] j Column index.
+% @param[in] k Row index.
+% @param[in] Nx Number of grid columns.
+% @param[in] Ny Number of grid rows.
+% @return c1 Corner 1 coordinates [lon, lat].
+% @return c2 Corner 2 coordinates [lon, lat].
+% @return c3 Corner 3 coordinates [lon, lat].
+% @return c4 Corner 4 coordinates [lon, lat].
+% @return wdth Cell width in longitude degrees.
+% @return hgt Cell height in latitude degrees.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  29-Mar-2013 |                      |
-%|                    +----------------------------+                      |
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| This function determines the corners of a particular cell at the jth   |
-%| row and kth column, given the 2D position matrices x and y. The        |
-%| function returns 4 2 element arrays where the first element refers to  |
-%| the x coordinate and the second element to the y coordinate. The       |
-%| corners are defined as shown below (* indicating the position of the   |
-%| cell in x,y space). The orientation of the cell will be determined by  |
-%| the neighboring x,y coordinates                                        |
-%|                                                                        |
-%|                   c3 _____ c2                                          |
-%|                     |     |                                            |
-%|                     |  *  |                                            |
-%|                   c4|_____|c1                                          |
-%|                                                                        |
-%| [c1,c2,c3,c4] = compute_cellcorner(x,y,j,k,Nx,Ny)                      | 
-%|                                                                        |
-%| INPUT                                                                  |
-%|  x            : A 2D array specifying the longitudes of each cell      | 
-%|  y            : A 2D array specifying the lattitudes of each cell      |
-%|  j,k          : jth column and kth row of the 2D array (x,y)           |
-%|  Nx,Ny        : Number of columns and rows of the 2D arrays            |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|  c1,c2,c3,c4  : Corners of the cell as shown above.In each first       |
-%|                 element is x coordinate and second element is y        |
-%|                 coordinate                                             |
-%|  wdth, hgt    : Cell width and height                                  |
-%|                                                                        |
-% -------------------------------------------------------------------------
-
-%@@@ Initialize variables
+% Initialize variables
 
 c1 = [];
 c2 = [];
@@ -50,11 +43,11 @@ c3 = [];
 c4 = [];
 
 x0 = x(k,j);
-%@@@ Compute the corners of the cell
+% Compute the corners of the cell
 
 if ( j > 1 && j < Nx && k > 1 && k < Ny )
     
-    %@@@ Internal points
+    % Internal points
     
     xt = x(k-1,j+1);
     if (abs(xt - x0) > 270)
@@ -86,7 +79,7 @@ else
     
     if ( j == 1 )
         
-        %@@@ Left edge
+        % Left edge
         
         switch k
             case 1
@@ -138,7 +131,7 @@ else
         
         if ( j == Nx )
             
-            %@@@ Right edge
+            % Right edge
             
             switch k
                 case 1
@@ -190,7 +183,7 @@ else
             
             if ( k == 1 )
                 
-                %@@@ Bottom edge
+                % Bottom edge
                 
                 xt = x(k+1,j+1);
                 if (abs(xt - x0) > 270)
@@ -211,7 +204,7 @@ else
                 
             else
                 
-                %@@@ Top edge
+                % Top edge
                 
                 xt = x(k-1,j-1);
                 if (abs(xt - x0) > 270)

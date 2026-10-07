@@ -1,51 +1,41 @@
 function mask = clean_mask(x,y,mask,bound_ingrid,lim,offset)
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file clean_mask.m
+% @brief Cleans and updates a land/sea mask using shoreline boundary polygons.
+% @details Checks wet cells in a 2D mask array against boundary polygons to determine whether they lie outside or inside land boundaries and updates cell mask values.
+%
+% @param[in] x A 2D array specifying cell longitudes.
+% @param[in] y A 2D array specifying cell latitudes.
+% @param[in] mask Initial 2D land/sea mask array.
+% @param[in] bound_ingrid Data structure array of boundary polygons inside the grid.
+% @param[in] lim Cut-off fraction (0 to 1) of cell area required inside polygon to mark dry.
+% @param[in] offset Additional buffer width around boundaries to check crossing.
+% @return mask Updated 2D land/sea mask array.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  29-Mar-2013 |                      |
-%|                    +----------------------------+                      |
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| This function checks all the wet cells in a 2D mask array and          |  
-%| determines if they lie outside the boundary polygons or not            |
-%|                                                                        |
-%| mask = clean_mask(x,y,mask,bound_ingrid,lim,offset)                    |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  x            : A 2D array specifying the longitudes of each cell      |
-%|  y            : A 2D array specifying the longitudes of each cell      |
-%|  mask         : A 2D mask array of size (Nx,Ny) of initial mask values |
-%|                 with wet cells having a flag of 1 and dry cells a flag |
-%|                 value of 0. The initial mask can be all set to 1 or for|
-%|		   better efficiency be based on the bathymetry data      |
-%|  bound_ingrid : Data structure array of boundary polygons that lie     |
-%|                 inside the grid                                        |
-%|  lim          : Fraction value between 0 and 1 that define the cut-off |
-%|                 limit for the proportion of a cell that has to lie     | 
-%|                 inside boundary polygons for the cell to be marked dry |
-%|  offset       : An additional width around the boundaries to check if  |
-%|                 wet cells are being crossed by the boundary. Typically |
-%|                 set it to largest grid resolution                      |
-%|                                                                        |
-%|  OUTPUT                                                                |
-%|    mask       : New land/sea mask array that is generated after        |
-%|                 checking with the boundary polygons                    |
-%|                                                                        |
-% -------------------------------------------------------------------------
-
-%@@@ Determine array limits
+% Determine array limits
 
 N1 = length(bound_ingrid);
 [Ny,Nx] = size(x);
 
-%@@@ Initialize 2D array specifying proportion of cell inside boundary(ies)
+% Initialize 2D array specifying proportion of cell inside boundary(ies)
 
 mask_obstr = zeros(Ny,Nx);
 mask_status = zeros(Ny,Nx);
@@ -55,19 +45,19 @@ mask_y = cell(Ny,Nx);
 
 itmp = 0;
 
-%@@@ Loop through all the boundaries
+% Loop through all the boundaries
 
 for i = 1:N1
 
-    %@@@ Determine limits of boundary
+    % Determine limits of boundary
 
     west = bound_ingrid(i).west-offset;
     south = bound_ingrid(i).south-offset;
     east = bound_ingrid(i).east+offset;
     north = bound_ingrid(i).north+offset;
 
-    %@@@ Determine the longitude and lattitude cells that lie within the 
-    %@@@ boundary range
+    % Determine the longitude and lattitude cells that lie within the
+    % boundary range
     
     py = [south south north north south]; 
     px = [west east east west west];
@@ -77,7 +67,7 @@ for i = 1:N1
     cell_loc = find(in_bnd > 0);
     [row_pos,column_pos] = ind2sub(size(in_bnd),cell_loc);
     
-    %@@@ Loop through all the cells that lie within the boundary range
+    % Loop through all the cells that lie within the boundary range
     
     N_cell = length(cell_loc);
     
@@ -86,11 +76,11 @@ for i = 1:N1
         k = row_pos(cell_indx);
         j = column_pos(cell_indx);
         
-        %@@@ Check if cell is within a boundary only if it is a wet cell
+        % Check if cell is within a boundary only if it is a wet cell
             
         if (mask(k,j) == 1)
             
-            %@@@ distribute points inside a cell (only have to do this once)
+            % distribute points inside a cell (only have to do this once)
             
             if (mask_status(k,j) == 0)
                 
@@ -118,7 +108,7 @@ for i = 1:N1
                 
             end;
             
-            %@@@ Check if cell points within boundary
+            % Check if cell points within boundary
             
             clear xt yt status loc inout;
                     
@@ -134,13 +124,13 @@ for i = 1:N1
                 clear loc;
             end;
             
-            %@@@ Update mask_obstr. This variable mantains an estimate for 
-            %@@@ proportion of cell that is covered by boundaries
+            % Update mask_obstr. This variable mantains an estimate for
+            % proportion of cell that is covered by boundaries
 
             loc = find(status > 0);
             mask_obstr(k,j) = round(length(loc)/Na*10)/10;
 
-            %@@@ If proportion exceeds user specified limit then mark the cell dry
+            % If proportion exceeds user specified limit then mark the cell dry
 
             if (mask_obstr(k,j) >= lim) 
                 mask(k,j) = 0;
@@ -148,11 +138,11 @@ for i = 1:N1
                 mask_points(k,j) = {status};
             end;
             
-        end; %@@@ Corresponds to wet cell check
+        end; % Corresponds to wet cell check
 
-    end;  %@@@ Corresponds to loop of cells within the boundary
+    end;  % Corresponds to loop of cells within the boundary
 
-    %@@@ Counter to update proportion of land sea mask clean up
+    % Counter to update proportion of land sea mask clean up
 
     itmp_prev = itmp;
     itmp = floor(i/N1*100);
@@ -160,6 +150,6 @@ for i = 1:N1
         fprintf(1,'Completed %d per cent of land sea mask clean up\n',itmp);
     end;
 
-end; %@@@ Corresponds to for loop of all the boundaries
+end; % Corresponds to for loop of all the boundaries
 
 return;

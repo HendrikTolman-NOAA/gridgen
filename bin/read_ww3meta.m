@@ -1,28 +1,30 @@
 function [lon,lat] = read_ww3meta(fname)
-
-% -------------------------------------------------------------------------
-%|                                                                        |
-%|                    +----------------------------+                      |
-%|                    | GRIDGEN          NOAA/NCEP |                      |
-%|                    |                            |                      |
-%|                    | Last Update :  23-Oct-2012 |                      |
-%|                    +----------------------------+                      | 
-%|                     Distributed with WAVEWATCH III                     |
-%|                                                                        |
-%|                 Copyright 2009 National Weather Service (NWS),         |
-%|  National Oceanic and Atmospheric Administration.  All rights reserved.|
-%|                                                                        |
-%| DESCRIPTION                                                            |
-%| Read the meta data file to obtain the lon and lat for a set of grids   |
-%|                                                                        |
-%| [lon,lat] = read_ww3meta(fname)                                        |
-%|                                                                        |
-%| INPUT                                                                  |
-%|  fname       : Input meta data file name                               |
-%|                                                                        |
-%| OUTPUT                                                                 |
-%|  lon,lat     : Longitude array (x) and lattitude array (y) of grid     |
-% -------------------------------------------------------------------------
+%       +--------------------------------------------------------+
+%       | WAVEWATCH IV, open source, code management by NOAA/NWS |
+%       +--------------------------------------------------------+
+%
+% @file read_ww3meta.m
+% @brief Reads grid metadata from a WAVEWATCH meta file.
+% @details Parses grid metadata (.meta) file to reconstruct longitude and latitude coordinate arrays.
+%
+% @param[in] fname Path to input metadata file.
+% @return lon Longitude coordinate vector or 2D matrix.
+% @return lat Latitude coordinate vector or 2D matrix.
+%
+% @copyright © 2009-2026 National Weather Service, National Oceanic and Atmospheric
+% Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks of the National
+% Weather Service.
+% NWS often uses Generative AI (GenAI) for code development and refactoring.
+% Whenever GenAI is used, NWS requires a full human review of code before it is
+% added to its repositories.
+%
+% @author Main Author(s): Aldgisl (AI Persona), Hendrik L. Tolman
+% @author Contributors: Jules (Agentic AI)
+% @date Initial, 2009-01-01
+% @date Last update : 2026-10-07
+%
+% @note Originally distributed with WAVEWATCH III gridgen package.
+%
 
 fid = fopen(fname,'r');
 
