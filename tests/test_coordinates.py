@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-07
 
 """Unit tests for grid coordinate generation routines."""
 
@@ -17,12 +17,15 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scipy.io import savemat
+
 from gridgen.coordinates import (
     create_grid_coordinates,
     create_lambert_conformal_grid,
     create_regular_grid,
     create_rotated_pole_grid,
     create_stereographic_grid,
+    load_custom_grid,
 )
 
 
@@ -130,6 +133,88 @@ def test_create_grid_coordinates_unified() -> None:
     assert lon4.shape == (10, 10)
     assert lat4.shape == (10, 10)
 
-    # 5. Invalid type
+    # 5. Custom Grid
+    # Tested via custom_grid file loading tests below
+
+    # 6. Invalid type
     with pytest.raises(ValueError, match="Unsupported grid_type"):
         create_grid_coordinates("mercator")
+
+
+def test_load_custom_grid_netcdf(tmp_path) -> None:
+    """Test loading custom grid coordinates from NetCDF file."""
+    import netCDF4 as nc
+
+    nc_file = tmp_path / "custom_grid.nc"
+    lon_in = np.array([[10.0, 11.0], [10.0, 11.0]])
+    lat_in = np.array([[20.0, 20.0], [21.0, 21.0]])
+
+    with nc.Dataset(nc_file, "w") as ds:
+        ds.createDimension("y", 2)
+        ds.createDimension("x", 2)
+        vlon = ds.createVariable("longitude", "f8", ("y", "x"))
+        vlat = ds.createVariable("latitude", "f8", ("y", "x"))
+        vlon[:] = lon_in
+        vlat[:] = lat_in
+
+    lon_out, lat_out = load_custom_grid(nc_file)
+    assert np.allclose(lon_out, lon_in)
+    assert np.allclose(lat_out, lat_in)
+
+
+def test_load_custom_grid_npz(tmp_path) -> None:
+    """Test loading custom grid coordinates from NPZ archive."""
+    npz_file = tmp_path / "custom_grid.npz"
+    lon_in, lat_in = np.meshgrid(np.linspace(140, 150, 5), np.linspace(40, 50, 5))
+    np.savez(npz_file, lon=lon_in, lat=lat_in)
+
+    lon_out, lat_out = load_custom_grid(npz_file)
+    assert np.allclose(lon_out, lon_in)
+    assert np.allclose(lat_out, lat_in)
+
+
+def test_load_custom_grid_mat(tmp_path) -> None:
+    """Test loading custom grid coordinates from MAT file."""
+    mat_file = tmp_path / "custom_grid.mat"
+    lon_in, lat_in = np.meshgrid(np.linspace(10, 20, 4), np.linspace(30, 40, 4))
+    savemat(mat_file, {"lon": lon_in, "lat": lat_in})
+
+    lon_out, lat_out = load_custom_grid(mat_file)
+    assert np.allclose(lon_out, lon_in)
+    assert np.allclose(lat_out, lat_in)
+
+
+def test_load_custom_grid_csv(tmp_path) -> None:
+    """Test loading custom grid coordinates from CSV file."""
+    csv_file = tmp_path / "custom_grid.csv"
+    data = np.array([[10.0, 20.0], [11.0, 21.0], [12.0, 22.0]])
+    np.savetxt(csv_file, data, delimiter=",")
+
+    lon_out, lat_out = load_custom_grid(csv_file)
+    assert lon_out.shape == (3, 3)
+    assert lat_out.shape == (3, 3)
+
+
+def test_load_custom_grid_errors(tmp_path) -> None:
+    """Test error handling in load_custom_grid for invalid or missing files."""
+    # 1. Missing file
+    with pytest.raises(FileNotFoundError, match="Custom grid file not found"):
+        load_custom_grid(tmp_path / "non_existent.nc")
+
+    # 2. Unsupported extension
+    dummy_file = tmp_path / "grid.unknown"
+    dummy_file.write_text("hello")
+    with pytest.raises(ValueError, match="Unsupported custom grid file format"):
+        load_custom_grid(dummy_file)
+
+
+def test_create_grid_coordinates_custom(tmp_path) -> None:
+    """Test create_grid_coordinates with grid_type='custom' and custom_grid path."""
+    npz_file = tmp_path / "my_custom_grid.npz"
+    lon_in, lat_in = np.meshgrid(np.linspace(100, 110, 3), np.linspace(10, 20, 3))
+    np.savez(npz_file, lon=lon_in, lat=lat_in)
+
+    lon_out, lat_out = create_grid_coordinates("custom", custom_grid=str(npz_file))
+    assert lon_out.shape == (3, 3)
+    assert lat_out.shape == (3, 3)
+    assert np.allclose(lon_out, lon_in)
