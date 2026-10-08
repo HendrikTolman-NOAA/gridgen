@@ -33,10 +33,30 @@ from .obstructions import create_obstr
 def main() -> None:
     """CLI driver for grid generation and multi-format export."""
     parser = argparse.ArgumentParser(
-        description="WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid Generation Tool"
+        description="WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid Generation Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--name", type=str, default="ww4_grid", help="Grid prefix name")
-    parser.add_argument(
+
+    # Group 1: General & Dimension Options (Meaningful for all grid types)
+    gen_group = parser.add_argument_group(
+        "General & Dimension Parameters (Common to all grid types)"
+    )
+    gen_group.add_argument(
+        "--nx",
+        type=int,
+        default=None,
+        help="[Mandatory/Recommended] Discrete grid dimension NX (number of longitude/X grid points)",
+    )
+    gen_group.add_argument(
+        "--ny",
+        type=int,
+        default=None,
+        help="[Mandatory/Recommended] Discrete grid dimension NY (number of latitude/Y grid points)",
+    )
+    gen_group.add_argument(
+        "--name", type=str, default="ww4_grid", help="Grid prefix identifier (default: ww4_grid)"
+    )
+    gen_group.add_argument(
         "--grid-type",
         type=str,
         default="regular",
@@ -50,86 +70,109 @@ def main() -> None:
         ],
         help="Grid coordinate projection/layout type (default: regular)",
     )
-    parser.add_argument("--dx", type=float, default=0.25, help="Grid lon increment dx")
-    parser.add_argument("--dy", type=float, default=0.25, help="Grid lat increment dy")
-    parser.add_argument("--lon-start", type=float, default=140.0, help="Min longitude")
-    parser.add_argument("--lon-end", type=float, default=160.0, help="Max longitude")
-    parser.add_argument("--lat-start", type=float, default=44.0, help="Min latitude")
-    parser.add_argument("--lat-end", type=float, default=54.0, help="Max latitude")
-    parser.add_argument(
-        "--center-lon",
-        type=float,
-        default=0.0,
-        help="Center longitude for stereographic/Lambert projection",
+    gen_group.add_argument(
+        "--out-dir", type=str, default=".", help="Output directory for generated files (default: .)"
     )
-    parser.add_argument(
-        "--center-lat",
-        type=float,
-        default=90.0,
-        help="Center latitude for stereographic/Lambert projection",
+    gen_group.add_argument(
+        "--ref-dir", type=str, default="reference_data", help="Reference data directory (default: reference_data)"
     )
-    parser.add_argument(
-        "--lat-1",
-        type=float,
-        default=30.0,
-        help="First standard parallel for Lambert conformal projection",
-    )
-    parser.add_argument(
-        "--lat-2",
-        type=float,
-        default=60.0,
-        help="Second standard parallel for Lambert conformal projection",
-    )
-    parser.add_argument(
-        "--extent-km",
-        type=float,
-        default=2000.0,
-        help="Half-width domain extent in km for stereographic/Lambert grid",
-    )
-    parser.add_argument(
-        "--resolution-km",
-        type=float,
-        default=50.0,
-        help="Grid spacing in km for stereographic/Lambert grid",
-    )
-    parser.add_argument(
-        "--pole-lon",
-        type=float,
-        default=180.0,
-        help="Rotated pole longitude for rotated_pole projection",
-    )
-    parser.add_argument(
-        "--pole-lat",
-        type=float,
-        default=60.0,
-        help="Rotated pole latitude for rotated_pole projection",
-    )
-    parser.add_argument(
-        "--nx", type=int, default=None, help="Number of longitude/x grid points"
-    )
-    parser.add_argument(
-        "--ny", type=int, default=None, help="Number of latitude/y grid points"
-    )
-    parser.add_argument(
-        "--custom-grid",
-        type=str,
-        default=None,
-        help="Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)",
-    )
-    parser.add_argument("--out-dir", type=str, default=".", help="Output directory")
-    parser.add_argument(
-        "--ref-dir", type=str, default="reference_data", help="Reference data directory"
-    )
-    parser.add_argument(
+    gen_group.add_argument(
         "--boundary-points",
         action="store_true",
         help="Define input boundary points (mask value 2) along regional grid boundaries",
     )
-    parser.add_argument(
+    gen_group.add_argument(
         "--user-polygons-flag",
         type=str,
         default=None,
         help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
+    )
+
+    # Group 2: Regular Grid Parameters
+    reg_group = parser.add_argument_group("Regular Grid Parameters (--grid-type regular)")
+    reg_group.add_argument(
+        "--sx", "--dx", dest="sx", type=float, default=None, help="Grid longitude increment/spacing in degrees (SX/DX)"
+    )
+    reg_group.add_argument(
+        "--sy", "--dy", dest="sy", type=float, default=None, help="Grid latitude increment/spacing in degrees (SY/DY)"
+    )
+    reg_group.add_argument(
+        "--lon-start", type=float, default=None, help="Lower-left corner longitude in degrees"
+    )
+    reg_group.add_argument(
+        "--lat-start", type=float, default=None, help="Lower-left corner latitude in degrees"
+    )
+    reg_group.add_argument(
+        "--lon-end", type=float, default=None, help="Upper-right corner longitude in degrees"
+    )
+    reg_group.add_argument(
+        "--lat-end", type=float, default=None, help="Upper-right corner latitude in degrees"
+    )
+
+    # Group 3: Rotated Pole Grid Parameters
+    rot_group = parser.add_argument_group("Rotated Pole Grid Parameters (--grid-type rotated_pole)")
+    rot_group.add_argument(
+        "--pole-lon",
+        type=float,
+        default=None,
+        help="[Mandatory] Longitude of rotated north pole in geographic coordinates",
+    )
+    rot_group.add_argument(
+        "--pole-lat",
+        type=float,
+        default=None,
+        help="[Mandatory] Latitude of rotated north pole in geographic coordinates",
+    )
+
+    # Group 4: Stereographic Projection Parameters
+    ste_group = parser.add_argument_group("Stereographic Grid Parameters (--grid-type stereographic)")
+    ste_group.add_argument(
+        "--center-lon",
+        type=float,
+        default=None,
+        help="[Mandatory] Projection center longitude in degrees (also anchor point for regular/rotated grids)",
+    )
+    ste_group.add_argument(
+        "--center-lat",
+        type=float,
+        default=None,
+        help="[Mandatory] Projection center latitude in degrees (also anchor point for regular/rotated grids)",
+    )
+    ste_group.add_argument(
+        "--extent-km",
+        type=float,
+        default=None,
+        help="[Mandatory] Half-width domain extent in kilometers",
+    )
+    ste_group.add_argument(
+        "--resolution-km",
+        type=float,
+        default=None,
+        help="[Mandatory] Grid resolution in kilometers",
+    )
+
+    # Group 5: Lambert Conformal Conic Parameters
+    lam_group = parser.add_argument_group("Lambert Conformal Conic Parameters (--grid-type lambert_conformal)")
+    lam_group.add_argument(
+        "--lat-1",
+        type=float,
+        default=None,
+        help="[Mandatory] First standard parallel in degrees",
+    )
+    lam_group.add_argument(
+        "--lat-2",
+        type=float,
+        default=None,
+        help="[Mandatory] Second standard parallel in degrees",
+    )
+
+    # Group 6: Custom Grid File Parameters
+    cus_group = parser.add_argument_group("Custom Grid Parameters (--grid-type custom)")
+    cus_group.add_argument(
+        "--custom-grid",
+        type=str,
+        default=None,
+        help="[Mandatory] Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)",
     )
 
     args = parser.parse_args()

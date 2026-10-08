@@ -25,35 +25,47 @@ import numpy as np
 
 
 def create_regular_grid(
-    lon_start: float = 140.0,
-    lon_end: float = 160.0,
-    lat_start: float = 44.0,
-    lat_end: float = 54.0,
-    dx: float = 0.25,
-    dy: float = 0.25,
+    lon_start: float | None = None,
+    lon_end: float | None = None,
+    lat_start: float | None = None,
+    lat_end: float | None = None,
+    center_lon: float | None = None,
+    center_lat: float | None = None,
+    dx: float | None = None,
+    dy: float | None = None,
+    sx: float | None = None,
+    sy: float | None = None,
     nx: int | None = None,
     ny: int | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D arrays of longitude and latitude for a regular grid.
 
+    Supports specification via lower-left corner anchor (lon_start, lat_start),
+    center anchor point (center_lon, center_lat), or bounding box limits, along
+    with grid spacings (sx/dx, sy/dy) and point counts (nx, ny).
+
     Parameters
     ----------
-    lon_start : float
-        Minimum longitude in degrees.
-    lon_end : float
+    lon_start : float | None
+        Minimum / lower-left longitude in degrees.
+    lon_end : float | None
         Maximum longitude in degrees.
-    lat_start : float
-        Minimum latitude in degrees.
-    lat_end : float
+    lat_start : float | None
+        Minimum / lower-left latitude in degrees.
+    lat_end : float | None
         Maximum latitude in degrees.
-    dx : float
-        Longitude resolution increment in degrees (used if nx is None).
-    dy : float
-        Latitude resolution increment in degrees (used if ny is None).
+    center_lon : float | None
+        Center point longitude in degrees.
+    center_lat : float | None
+        Center point latitude in degrees.
+    dx, sx : float | None
+        Longitude resolution increment in degrees.
+    dy, sy : float | None
+        Latitude resolution increment in degrees.
     nx : int | None
-        Number of longitude grid points (overrides dx if provided).
+        Number of longitude grid points.
     ny : int | None
-        Number of latitude grid points (overrides dy if provided).
+        Number of latitude grid points.
 
     Returns
     -------
@@ -62,15 +74,40 @@ def create_regular_grid(
     lat : np.ndarray
         2D latitude grid array of shape (Ny, Nx).
     """
+    inc_x = sx if sx is not None else (dx if dx is not None else 0.25)
+    inc_y = sy if sy is not None else (dy if dy is not None else 0.25)
+
+    # Resolve longitude bounds / center anchor
+    if center_lon is not None and nx is not None:
+        span_x = (nx - 1) * inc_x
+        lon_start = center_lon - span_x / 2.0
+        lon_end = center_lon + span_x / 2.0
+    elif lon_start is not None and nx is not None and lon_end is None:
+        lon_end = lon_start + (nx - 1) * inc_x
+    elif lon_start is None and lon_end is None:
+        lon_start = 140.0
+        lon_end = 160.0
+
+    # Resolve latitude bounds / center anchor
+    if center_lat is not None and ny is not None:
+        span_y = (ny - 1) * inc_y
+        lat_start = center_lat - span_y / 2.0
+        lat_end = center_lat + span_y / 2.0
+    elif lat_start is not None and ny is not None and lat_end is None:
+        lat_end = lat_start + (ny - 1) * inc_y
+    elif lat_start is None and lat_end is None:
+        lat_start = 44.0
+        lat_end = 54.0
+
     if nx is not None:
         lon1d = np.linspace(lon_start, lon_end, nx)
     else:
-        lon1d = np.arange(lon_start, lon_end + dx * 0.5, dx)
+        lon1d = np.arange(lon_start, lon_end + inc_x * 0.5, inc_x)
 
     if ny is not None:
         lat1d = np.linspace(lat_start, lat_end, ny)
     else:
-        lat1d = np.arange(lat_start, lat_end + dy * 0.5, dy)
+        lat1d = np.arange(lat_start, lat_end + inc_y * 0.5, inc_y)
 
     lon, lat = np.meshgrid(lon1d, lat1d)
     return lon, lat
@@ -257,34 +294,48 @@ def create_lambert_conformal_grid(
 
 
 def create_rotated_pole_grid(
-    lon_start: float = -20.0,
-    lon_end: float = 20.0,
-    lat_start: float = -20.0,
-    lat_end: float = 20.0,
+    lon_start: float | None = None,
+    lon_end: float | None = None,
+    lat_start: float | None = None,
+    lat_end: float | None = None,
+    center_lon: float | None = None,
+    center_lat: float | None = None,
     pole_lon: float = 180.0,
     pole_lat: float = 60.0,
-    nx: int = 81,
-    ny: int = 81,
+    dx: float | None = None,
+    dy: float | None = None,
+    sx: float | None = None,
+    sy: float | None = None,
+    nx: int | None = 81,
+    ny: int | None = 81,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a rotated pole spherical grid.
 
     Parameters
     ----------
-    lon_start : float
+    lon_start : float | None
         Start longitude in rotated system (degrees).
-    lon_end : float
+    lon_end : float | None
         End longitude in rotated system (degrees).
-    lat_start : float
+    lat_start : float | None
         Start latitude in rotated system (degrees).
-    lat_end : float
+    lat_end : float | None
         End latitude in rotated system (degrees).
+    center_lon : float | None
+        Center longitude in rotated system (degrees).
+    center_lat : float | None
+        Center latitude in rotated system (degrees).
     pole_lon : float
         Longitude of the rotated north pole in geographic coordinates.
     pole_lat : float
         Latitude of the rotated north pole in geographic coordinates.
-    nx : int
+    dx, sx : float | None
+        Longitude resolution increment in rotated system degrees.
+    dy, sy : float | None
+        Latitude resolution increment in rotated system degrees.
+    nx : int | None
         Number of grid points in longitude direction.
-    ny : int
+    ny : int | None
         Number of grid points in latitude direction.
 
     Returns
@@ -294,6 +345,32 @@ def create_rotated_pole_grid(
     lat : np.ndarray
         2D geographic latitude grid array of shape (Ny, Nx) in range [-90, 90].
     """
+    inc_x = sx if sx is not None else (dx if dx is not None else 0.5)
+    inc_y = sy if sy is not None else (dy if dy is not None else 0.5)
+
+    if center_lon is not None and nx is not None:
+        span_x = (nx - 1) * inc_x
+        lon_start = center_lon - span_x / 2.0
+        lon_end = center_lon + span_x / 2.0
+    elif lon_start is not None and nx is not None and lon_end is None:
+        lon_end = lon_start + (nx - 1) * inc_x
+    elif lon_start is None and lon_end is None:
+        lon_start = -20.0
+        lon_end = 20.0
+
+    if center_lat is not None and ny is not None:
+        span_y = (ny - 1) * inc_y
+        lat_start = center_lat - span_y / 2.0
+        lat_end = center_lat + span_y / 2.0
+    elif lat_start is not None and ny is not None and lat_end is None:
+        lat_end = lat_start + (ny - 1) * inc_y
+    elif lat_start is None and lat_end is None:
+        lat_start = -20.0
+        lat_end = 20.0
+
+    nx = nx if nx is not None else 81
+    ny = ny if ny is not None else 81
+
     rlon1d = np.linspace(lon_start, lon_end, nx)
     rlat1d = np.linspace(lat_start, lat_end, ny)
     rlon, rlat = np.meshgrid(rlon1d, rlat1d)
@@ -461,6 +538,74 @@ def _filter_kwargs(func, kwargs: dict) -> dict:
     return {k: v for k, v in kwargs.items() if k in valid_params and v is not None}
 
 
+def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
+    """Validate mandatory input parameters for the requested grid type.
+
+    Parameters
+    ----------
+    grid_type : str
+        Normalized grid type identifier.
+    kwargs : dict
+        Keyword arguments supplied for grid creation.
+
+    Raises
+    ------
+    ValueError
+        If required parameters for the specified grid type are missing or invalid.
+    """
+    gtype = grid_type.lower().strip()
+
+    if gtype == "custom":
+        custom_file = kwargs.get("custom_grid") or kwargs.get("filepath")
+        if not custom_file:
+            raise ValueError(
+                "Missing mandatory parameter '--custom-grid' for custom grid type."
+            )
+        return
+
+    # Check discrete dimensions nx and ny if provided or required
+    nx = kwargs.get("nx")
+    ny = kwargs.get("ny")
+    if nx is not None and int(nx) <= 0:
+        raise ValueError(f"Grid dimension nx must be positive, got {nx}")
+    if ny is not None and int(ny) <= 0:
+        raise ValueError(f"Grid dimension ny must be positive, got {ny}")
+
+    if gtype in ("regular", "latlon", "rectilinear"):
+        # Regular grid parameters
+        pass
+
+    elif gtype in ("stereographic", "polar_stereographic"):
+        missing = []
+        for param in ("center_lon", "center_lat"):
+            if kwargs.get(param) is None:
+                missing.append(f"--{param.replace('_', '-')}")
+        if missing:
+            raise ValueError(
+                f"Missing mandatory parameter(s) for stereographic grid: {', '.join(missing)}"
+            )
+
+    elif gtype in ("lambert_conformal", "lambert"):
+        missing = []
+        for param in ("center_lon", "center_lat", "lat_1", "lat_2"):
+            if kwargs.get(param) is None:
+                missing.append(f"--{param.replace('_', '-')}")
+        if missing:
+            raise ValueError(
+                f"Missing mandatory parameter(s) for Lambert conformal grid: {', '.join(missing)}"
+            )
+
+    elif gtype in ("rotated_pole", "curvilinear"):
+        missing = []
+        for param in ("pole_lon", "pole_lat"):
+            if kwargs.get(param) is None:
+                missing.append(f"--{param.replace('_', '-')}")
+        if missing:
+            raise ValueError(
+                f"Missing mandatory parameter(s) for rotated_pole grid: {', '.join(missing)}"
+            )
+
+
 def create_grid_coordinates(
     grid_type: str = "regular",
     **kwargs,
@@ -487,6 +632,9 @@ def create_grid_coordinates(
         2D latitude array of shape (Ny, Nx).
     """
     gtype = grid_type.lower().strip()
+
+    validate_grid_parameters(gtype, kwargs)
+
     custom_file = kwargs.get("custom_grid") or kwargs.get("filepath")
     if gtype == "custom" or custom_file is not None:
         if not custom_file:

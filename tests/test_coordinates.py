@@ -30,13 +30,14 @@ from gridgen.coordinates import (
 
 def test_create_regular_grid() -> None:
     """Test regular 2D lon-lat grid generation."""
+    # 1. Lower-left corner anchor
     lon, lat = create_regular_grid(
         lon_start=100.0,
         lon_end=110.0,
         lat_start=20.0,
         lat_end=30.0,
-        dx=2.0,
-        dy=2.0,
+        sx=2.0,
+        sy=2.0,
     )
 
     assert lon.shape == (6, 6)
@@ -45,6 +46,47 @@ def test_create_regular_grid() -> None:
     assert np.isclose(lon[0, -1], 110.0)
     assert np.isclose(lat[0, 0], 20.0)
     assert np.isclose(lat[-1, 0], 30.0)
+
+    # 2. Center anchor with NX/NY
+    lon_c, lat_c = create_regular_grid(
+        center_lon=105.0,
+        center_lat=25.0,
+        sx=2.0,
+        sy=2.0,
+        nx=6,
+        ny=6,
+    )
+    assert lon_c.shape == (6, 6)
+    assert lat_c.shape == (6, 6)
+    assert np.isclose((lon_c[0, 0] + lon_c[0, -1]) / 2.0, 105.0)
+    assert np.isclose((lat_c[0, 0] + lat_c[-1, 0]) / 2.0, 25.0)
+
+
+def test_grid_parameter_validation_errors() -> None:
+    """Test parameter validation error messages for missing required grid inputs."""
+    # 1. Missing custom_grid path for custom grid type
+    with pytest.raises(ValueError, match="Missing mandatory parameter '--custom-grid'"):
+        create_grid_coordinates("custom")
+
+    # 2. Missing center_lon/center_lat for stereographic grid
+    with pytest.raises(
+        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --center-lon, --center-lat"
+    ):
+        create_grid_coordinates("stereographic")
+
+    # 3. Missing standard parallels for Lambert conformal grid
+    with pytest.raises(
+        ValueError, match=r"Missing mandatory parameter\(s\) for Lambert conformal grid: --lat-1, --lat-2"
+    ):
+        create_grid_coordinates(
+            "lambert_conformal", center_lon=0.0, center_lat=40.0
+        )
+
+    # 4. Missing pole_lon/pole_lat for rotated_pole grid
+    with pytest.raises(
+        ValueError, match=r"Missing mandatory parameter\(s\) for rotated_pole grid: --pole-lon, --pole-lat"
+    ):
+        create_grid_coordinates("rotated_pole")
 
 
 def test_create_stereographic_grid() -> None:
@@ -121,20 +163,28 @@ def test_create_grid_coordinates_unified() -> None:
 
     # 2. General Stereographic
     lon2, lat2 = create_grid_coordinates(
-        "stereographic", extent_km=200, resolution_km=50
+        "stereographic", center_lon=0.0, center_lat=90.0, extent_km=200, resolution_km=50
     )
     assert lon2.ndim == 2
     assert lat2.ndim == 2
 
     # 3. Lambert Conformal
     lon3, lat3 = create_grid_coordinates(
-        "lambert_conformal", extent_km=200, resolution_km=50
+        "lambert_conformal",
+        center_lon=-95.0,
+        center_lat=35.0,
+        lat_1=30.0,
+        lat_2=60.0,
+        extent_km=200,
+        resolution_km=50,
     )
     assert lon3.ndim == 2
     assert lat3.ndim == 2
 
     # 4. Rotated Pole
-    lon4, lat4 = create_grid_coordinates("rotated_pole", nx=10, ny=10)
+    lon4, lat4 = create_grid_coordinates(
+        "rotated_pole", pole_lon=180.0, pole_lat=60.0, nx=10, ny=10
+    )
     assert lon4.shape == (10, 10)
     assert lat4.shape == (10, 10)
 
