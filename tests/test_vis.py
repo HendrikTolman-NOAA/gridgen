@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-08
 
 from __future__ import annotations
 
@@ -134,6 +134,24 @@ def test_view_grid_script_help():
     assert "Usage: ./view_grid.sh" in result.stdout
 
 
+def test_plot_grid_script_missing_input_file(tmp_path: Path):
+    """Verify plot_grid.sh error reporting when specified input dataset file does not exist."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+    non_existent_nc = tmp_path / "non_existent_grid.nc"
+
+    result = subprocess.run(
+        [str(script_path), "-i", str(non_existent_nc)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "Error: Input grid dataset file or prefix" in result.stderr
+    assert "./run_gridgen.sh" in result.stderr
+
+
 def test_view_grid_script_missing_file(tmp_path: Path):
     """Verify view_grid.sh error reporting when specified image file does not exist."""
     repo_root = Path(__file__).parent.parent
@@ -148,7 +166,8 @@ def test_view_grid_script_missing_file(tmp_path: Path):
     )
 
     assert result.returncode != 0
-    assert "Grid graphics image file not found" in result.stderr
+    assert "Grid graphics image file" in result.stderr
+    assert "./plot_grid.sh" in result.stderr
 
 
 def test_view_grid_script_display_check(tmp_path: Path):

@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-08
 #
 # Utility script to display generated grid plot graphics in the present window.
 
@@ -76,8 +76,9 @@ if [ -z "$IMAGE_FILE" ]; then
 fi
 
 if [ -z "$IMAGE_FILE" ] || [ ! -f "$IMAGE_FILE" ]; then
-  echo "Error: Grid graphics image file not found." >&2
-  echo "Please generate plot graphics first using './plot_grid.sh' or specify an image file path." >&2
+  echo "Error: Grid graphics image file was not found." >&2
+  echo "Please generate plot graphics first by running:" >&2
+  echo "  ./plot_grid.sh" >&2
   exit 1
 fi
 
