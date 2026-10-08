@@ -75,8 +75,9 @@ if [ -z "$IMAGE_FILE" ]; then
   done
 fi
 
+TARGET_IMG="${IMAGE_FILE:-ww4_grid.jpg}"
 if [ -z "$IMAGE_FILE" ] || [ ! -f "$IMAGE_FILE" ]; then
-  echo "Error: Grid graphics image file was not found." >&2
+  echo "Error: Grid graphics image file '${TARGET_IMG}' was not found." >&2
   echo "Please generate plot graphics first by running:" >&2
   echo "  ./plot_grid.sh" >&2
   exit 1
