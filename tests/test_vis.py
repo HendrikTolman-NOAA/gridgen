@@ -192,7 +192,7 @@ def test_view_grid_script_display_check(tmp_path: Path):
     )
 
     assert result.returncode == 0
-    assert "Displaying WAVEWATCH Grid Graphics" in result.stdout
+    assert "WAVEWATCH III / IV Grid Graphics Display Tool" in result.stdout
     assert (
         "WARNING: Neither DISPLAY nor WAYLAND_DISPLAY environment variable is set."
         in result.stdout

@@ -65,6 +65,10 @@ if [ "$IMAGE_FILE_SPECIFIED" -eq 1 ] && [[ "$IMAGE_FILE" != /* ]]; then
   IMAGE_FILE="${ORIG_DIR}/${IMAGE_FILE}"
 fi
 
+echo "========================================================================"
+echo " WAVEWATCH III / IV Grid Graphics Display Tool"
+echo "========================================================================"
+
 # If no image file provided, search for default generated image files
 if [ -z "$IMAGE_FILE" ]; then
   for candidate in "ww4_grid.jpg" "ww4_grid.png" "ww4_grid.gif" "ww4_grid_display.jpg" "ww4_grid_display.gif" "ww4_grid_display.png"; do
@@ -82,10 +86,6 @@ if [ -z "$IMAGE_FILE" ] || [ ! -f "$IMAGE_FILE" ]; then
   echo "  ./plot_grid.sh" >&2
   exit 1
 fi
-
-echo "========================================================================"
-echo " Displaying WAVEWATCH Grid Graphics: ${IMAGE_FILE}"
-echo "========================================================================"
 
 # Display using Python Matplotlib/PIL viewer in present window
 python3 - << EOF
