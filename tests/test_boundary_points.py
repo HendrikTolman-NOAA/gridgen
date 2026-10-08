@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-08
 
 """Unit tests for defining input boundary points in regional grids."""
 
@@ -23,7 +23,7 @@ from gridgen.masking import define_boundary_points, modify_mask
 def test_define_boundary_points_edges() -> None:
     """Test setting outer domain boundary wet cells to mask value 2."""
     lon, lat = create_regular_grid(
-        lon_start=0, lon_end=4, lat_start=0, lat_end=4, dx=1, dy=1
+        LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
     )
     mask = np.ones((5, 5), dtype=int)
     # Set one cell to dry land
@@ -43,7 +43,7 @@ def test_define_boundary_points_edges() -> None:
 def test_define_boundary_points_active_poly() -> None:
     """Test defining active computation polygon region and internal boundaries."""
     lon, lat = create_regular_grid(
-        lon_start=0, lon_end=10, lat_start=0, lat_end=10, dx=1, dy=1
+        LON_START=0, LON_END=10, LAT_START=0, LAT_END=10, NX=11, NY=11
     )
     mask = np.ones((11, 11), dtype=int)
 
@@ -62,7 +62,7 @@ def test_define_boundary_points_active_poly() -> None:
 def test_modify_mask_alias() -> None:
     """Test modify_mask backward compatibility alias."""
     lon, lat = create_regular_grid(
-        lon_start=0, lon_end=4, lat_start=0, lat_end=4, dx=1, dy=1
+        LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
     )
     mask = np.ones((5, 5), dtype=int)
 
