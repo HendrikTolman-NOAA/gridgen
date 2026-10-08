@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-08
 
 """Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
@@ -63,6 +63,8 @@ def test_run_gridgen_missing_ref_dir_fails(tmp_path: Path):
 
     assert result.returncode != 0
     assert "Error: Reference bathymetry dataset files were not found" in result.stderr
+    assert "./populate_reference_data.sh" in result.stderr
+    assert "--target-dir" not in result.stderr
 
 
 def test_run_gridgen_different_grid_types(tmp_path: Path):
@@ -346,18 +348,33 @@ def test_run_gridgen_missing_deps(tmp_path: Path):
 
 
 def test_run_gridgen_cleanup(tmp_path: Path):
-    """Verify that run_gridgen.sh --cleanup removes generated output grid files."""
+    """Verify that run_gridgen.sh --cleanup removes generated output grid files and graphics files."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "run_gridgen.sh"
     out_dir = tmp_path / "grid_output"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Create dummy output files
-    (out_dir / "clean_test.depth_ascii").touch()
-    (out_dir / "clean_test_ugrid.nc").touch()
-    (out_dir / "clean_test.jpg").touch()
-
-    assert (out_dir / "clean_test.depth_ascii").exists()
+    # Create dummy output grid and graphics files (exact and suffix variants across formats)
+    dummy_files = [
+        out_dir / "clean_test.depth_ascii",
+        out_dir / "clean_test.maskorig_ascii",
+        out_dir / "clean_test.obstr_lev1",
+        out_dir / "clean_test.meta",
+        out_dir / "clean_test_coards.nc",
+        out_dir / "clean_test_ugrid.nc",
+        out_dir / "clean_test.jpg",
+        out_dir / "clean_test.jpeg",
+        out_dir / "clean_test.png",
+        out_dir / "clean_test.pdf",
+        out_dir / "clean_test.eps",
+        out_dir / "clean_test.gif",
+        out_dir / "clean_test_ugrid.jpg",
+        out_dir / "clean_test_coards.png",
+        out_dir / "clean_test_plot.pdf",
+    ]
+    for f in dummy_files:
+        f.touch()
+        assert f.exists()
 
     result = subprocess.run(
         [
@@ -374,9 +391,8 @@ def test_run_gridgen_cleanup(tmp_path: Path):
     )
 
     assert result.returncode == 0
-    assert not (out_dir / "clean_test.depth_ascii").exists()
-    assert not (out_dir / "clean_test_ugrid.nc").exists()
-    assert not (out_dir / "clean_test.jpg").exists()
+    for f in dummy_files:
+        assert not f.exists(), f"File {f.name} should have been removed during cleanup"
 
 
 def test_run_gridgen_from_external_directory_default_out(tmp_path: Path):

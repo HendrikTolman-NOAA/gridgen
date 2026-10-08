@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-08
 -->
 
 <p align="center">
@@ -130,7 +130,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). |
 | `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). |
 | `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). |
-| `-c, --clean, --cleanup` | Remove generated output grid files for specified `--name` from output directory. |
+| `-c, --clean, --cleanup` | Remove generated output grid files and graphics files for specified `--name` from output directory. |
 | `-h, --help` | Display usage help message and exit. |
 
 #### Output Formats
@@ -204,7 +204,7 @@ Gridgen now does not require the grids to be rectilinear to allow for developmen
 
 ---
 
-**Last updated:** October 7, 2026
+**Last updated:** October 8, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">

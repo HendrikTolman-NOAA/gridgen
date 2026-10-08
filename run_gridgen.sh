@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-08
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -76,7 +76,7 @@ Options:
   --custom-grid FILE       Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)
   -o, --out-dir DIR        Output directory for generated grid files (default: .)
   -r, --ref-dir DIR        Reference data directory (default: ./reference_data)
-  -c, --clean, --cleanup   Remove generated grid files for NAME from output directory
+  -c, --clean, --cleanup   Remove generated grid files and graphics files for NAME from output directory
   -h, --help               Display this help message and exit
 
 Description:
@@ -219,7 +219,7 @@ echo "========================================================================"
 
 # Check for cleanup option
 if [ "$CLEANUP" -eq 1 ]; then
-  echo "Cleaning up generated grid files for prefix '${NAME}' in directory '${OUT_DIR}'..."
+  echo "Cleaning up generated grid files and graphics files for prefix '${NAME}' in directory '${OUT_DIR}'..."
   rm -rf "${OUT_DIR}/${NAME}.depth_ascii" \
          "${OUT_DIR}/${NAME}.maskorig_ascii" \
          "${OUT_DIR}/${NAME}.obstr_lev1" \
@@ -227,10 +227,17 @@ if [ "$CLEANUP" -eq 1 ]; then
          "${OUT_DIR}/${NAME}_coards.nc" \
          "${OUT_DIR}/${NAME}_ugrid.nc" \
          "${OUT_DIR}/${NAME}.jpg" \
+         "${OUT_DIR}/${NAME}.jpeg" \
          "${OUT_DIR}/${NAME}.png" \
          "${OUT_DIR}/${NAME}.pdf" \
          "${OUT_DIR}/${NAME}.eps" \
-         "${OUT_DIR}/${NAME}.gif"
+         "${OUT_DIR}/${NAME}.gif" \
+         "${OUT_DIR}/${NAME}"*.jpg \
+         "${OUT_DIR}/${NAME}"*.jpeg \
+         "${OUT_DIR}/${NAME}"*.png \
+         "${OUT_DIR}/${NAME}"*.pdf \
+         "${OUT_DIR}/${NAME}"*.eps \
+         "${OUT_DIR}/${NAME}"*.gif
   echo "Cleanup finished successfully."
   exit 0
 fi
@@ -239,7 +246,7 @@ fi
 if [ ! -d "$REF_DIR" ] || [ -z "$(ls -A "$REF_DIR"/*.nc "$REF_DIR"/*.tif 2>/dev/null)" ]; then
   echo "Error: Reference bathymetry dataset files were not found in '${REF_DIR}'." >&2
   echo "Please populate reference data first by running:" >&2
-  echo "  ./populate_reference_data.sh --target-dir '${REF_DIR}'" >&2
+  echo "  ./populate_reference_data.sh" >&2
   exit 1
 fi
 
