@@ -63,6 +63,8 @@ def test_run_gridgen_missing_ref_dir_fails(tmp_path: Path):
 
     assert result.returncode != 0
     assert "Error: Reference bathymetry dataset files were not found" in result.stderr
+    assert "./populate_reference_data.sh" in result.stderr
+    assert "--target-dir" not in result.stderr
 
 
 def test_run_gridgen_different_grid_types(tmp_path: Path):

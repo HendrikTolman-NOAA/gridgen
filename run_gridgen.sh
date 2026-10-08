@@ -246,7 +246,7 @@ fi
 if [ ! -d "$REF_DIR" ] || [ -z "$(ls -A "$REF_DIR"/*.nc "$REF_DIR"/*.tif 2>/dev/null)" ]; then
   echo "Error: Reference bathymetry dataset files were not found in '${REF_DIR}'." >&2
   echo "Please populate reference data first by running:" >&2
-  echo "  ./populate_reference_data.sh --target-dir '${REF_DIR}'" >&2
+  echo "  ./populate_reference_data.sh" >&2
   exit 1
 fi
 
