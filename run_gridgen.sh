@@ -52,50 +52,51 @@ usage() {
   cat << 'EOF'
 Usage: ./run_gridgen.sh [OPTIONS]
 
-Utility script to manage and execute WAVEWATCH III / IV Python grid generation tools.
+Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
 
 1. General & Dimension Options (Common to all grid types):
-  --nx NX                  [Mandatory/Recommended] Discrete grid dimension NX (number of longitude/X points)
-  --ny NY                  [Mandatory/Recommended] Discrete grid dimension NY (number of latitude/Y points)
-  -n, --name NAME          Grid prefix identifier (default: ww4_grid)
-  -g, --grid-type TYPE     Grid type: regular, stereographic, lambert_conformal, rotated_pole, custom (default: regular)
-  -o, --out-dir DIR        Output directory for generated grid files (default: .)
-  -r, --ref-dir DIR        Reference data directory (default: ./reference_data)
-  -c, --clean, --cleanup   Remove generated grid files and graphics files for NAME from output directory
-  -h, --help               Display this help message and exit
+  --nx NX                [Mandatory/Recommended] Grid dimension NX (X points)
+  --ny NY                [Mandatory/Recommended] Grid dimension NY (Y points)
+  -n, --name NAME        Grid prefix identifier (default: ww4_grid)
+  -g, --grid-type TYPE   Grid type: regular, stereographic, lambert_conformal,
+                         rotated_pole, custom (default: regular)
+  -o, --out-dir DIR      Output directory for generated grid files (default: .)
+  -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
+  -c, --clean, --cleanup Remove generated grid files and graphics for NAME
+  -h, --help             Display this help message and exit
 
 2. Regular Grid Parameters (--grid-type regular):
-  --sx, --dx SX            Grid longitude increment/spacing in degrees (SX/DX)
-  --sy, --dy SY            Grid latitude increment/spacing in degrees (SY/DY)
-  --lon-start LON          Lower-left corner longitude in degrees
-  --lat-start LAT          Lower-left corner latitude in degrees
-  --lon-end LON            Upper-right corner longitude in degrees
-  --lat-end LAT            Upper-right corner latitude in degrees
+  --sx, --dx SX          Grid longitude increment/spacing in degrees (SX/DX)
+  --sy, --dy SY          Grid latitude increment/spacing in degrees (SY/DY)
+  --lon-start LON        Lower-left corner longitude in degrees
+  --lat-start LAT        Lower-left corner latitude in degrees
+  --lon-end LON          Upper-right corner longitude in degrees
+  --lat-end LAT          Upper-right corner latitude in degrees
 
 3. Rotated Pole Grid Parameters (--grid-type rotated_pole):
-  --pole-lon LON           [Mandatory] Longitude of rotated north pole in geographic coordinates
-  --pole-lat LAT           [Mandatory] Latitude of rotated north pole in geographic coordinates
+  --pole-lon LON         [Mandatory] Rotated north pole longitude (degrees)
+  --pole-lat LAT         [Mandatory] Rotated north pole latitude (degrees)
 
 4. Stereographic Grid Parameters (--grid-type stereographic):
-  --center-lon LON         [Mandatory] Projection center longitude in degrees
-  --center-lat LAT         [Mandatory] Projection center latitude in degrees
-  --extent-km KM           [Mandatory] Half-width domain extent in kilometers
-  --resolution-km KM       [Mandatory] Grid resolution in kilometers
+  --center-lon LON       [Mandatory] Projection center longitude in degrees
+  --center-lat LAT       [Mandatory] Projection center latitude in degrees
+  --extent-km KM         [Mandatory] Half-width domain extent in kilometers
+  --resolution-km KM     [Mandatory] Grid resolution in kilometers
 
 5. Lambert Conformal Conic Parameters (--grid-type lambert_conformal):
-  --lat-1 LAT              [Mandatory] First standard parallel in degrees
-  --lat-2 LAT              [Mandatory] Second standard parallel in degrees
+  --lat-1 LAT            [Mandatory] First standard parallel in degrees
+  --lat-2 LAT            [Mandatory] Second standard parallel in degrees
 
 6. Custom Grid Parameters (--grid-type custom):
-  --custom-grid FILE       [Mandatory] Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)
+  --custom-grid FILE     [Mandatory] Path to custom layout file
+                         (.nc, .npz, .npy, .mat, .dat, .txt, .csv)
 
 Description:
-  This script checks that reference bathymetry and shoreline datasets are present
-  in the reference data directory before invoking the Python grid generation
-  pipeline (`ww4gridgen` / `gridgen.cli`).
+  This script checks that reference bathymetry and shoreline datasets are
+  present in the reference data directory before invoking Python gridgen.
 
   Exported formats include:
-    1. Legacy WW3 ASCII grid (.depth_ascii, .maskorig_ascii, .obstr_lev1, .meta)
+    1. Legacy WW3 ASCII grid (.depth_ascii, .maskorig_ascii, .obstr_lev1)
     2. Legacy GMT/NetCDF COARDS grid (_coards.nc)
     3. WW4 NetCDF-UGRID 1.0 grid (_ugrid.nc)
 EOF
@@ -225,6 +226,56 @@ fi
 
 echo "========================================================================"
 echo " WAVEWATCH III / IV Python Grid Generation Driver"
+echo "========================================================================"
+
+# Display verbose input parameter summary for active grid configuration
+echo "Grid Configuration Summary:"
+echo "  Prefix Name          : ${NAME}"
+echo "  Grid Type            : ${GRID_TYPE}"
+echo "  Output Directory     : ${OUT_DIR}"
+echo "  Reference Directory  : ${REF_DIR}"
+if [ -n "$NX" ]; then echo "  NX (Lon/X Points)    : ${NX}"; fi
+if [ -n "$NY" ]; then echo "  NY (Lat/Y Points)    : ${NY}"; fi
+
+case "${GRID_TYPE}" in
+  regular|latlon|rectilinear)
+    if [ -n "$SX" ]; then echo "  SX / DX Spacing      : ${SX} deg"; fi
+    if [ -n "$SY" ]; then echo "  SY / DY Spacing      : ${SY} deg"; fi
+    if [ -n "$LON_START" ]; then echo "  Lon Start (Lower-Left): ${LON_START} deg"; fi
+    if [ -n "$LAT_START" ]; then echo "  Lat Start (Lower-Left): ${LAT_START} deg"; fi
+    if [ -n "$LON_END" ]; then echo "  Lon End (Upper-Right)  : ${LON_END} deg"; fi
+    if [ -n "$LAT_END" ]; then echo "  Lat End (Upper-Right)  : ${LAT_END} deg"; fi
+    if [ -n "$CENTER_LON" ]; then echo "  Center Lon (Anchor)   : ${CENTER_LON} deg"; fi
+    if [ -n "$CENTER_LAT" ]; then echo "  Center Lat (Anchor)   : ${CENTER_LAT} deg"; fi
+    ;;
+  rotated_pole|curvilinear)
+    if [ -n "$POLE_LON" ]; then echo "  Rotated Pole Lon     : ${POLE_LON} deg"; fi
+    if [ -n "$POLE_LAT" ]; then echo "  Rotated Pole Lat     : ${POLE_LAT} deg"; fi
+    if [ -n "$SX" ]; then echo "  SX Spacing (Rotated) : ${SX} deg"; fi
+    if [ -n "$SY" ]; then echo "  SY Spacing (Rotated) : ${SY} deg"; fi
+    if [ -n "$LON_START" ]; then echo "  Lon Start (Rotated)  : ${LON_START} deg"; fi
+    if [ -n "$LAT_START" ]; then echo "  Lat Start (Rotated)  : ${LAT_START} deg"; fi
+    if [ -n "$CENTER_LON" ]; then echo "  Center Lon (Rotated) : ${CENTER_LON} deg"; fi
+    if [ -n "$CENTER_LAT" ]; then echo "  Center Lat (Rotated) : ${CENTER_LAT} deg"; fi
+    ;;
+  stereographic|polar_stereographic)
+    if [ -n "$CENTER_LON" ]; then echo "  Center Lon (Proj)    : ${CENTER_LON} deg"; fi
+    if [ -n "$CENTER_LAT" ]; then echo "  Center Lat (Proj)    : ${CENTER_LAT} deg"; fi
+    if [ -n "$EXTENT_KM" ]; then echo "  Domain Extent        : ${EXTENT_KM} km"; fi
+    if [ -n "$RESOLUTION_KM" ]; then echo "  Grid Resolution      : ${RESOLUTION_KM} km"; fi
+    ;;
+  lambert_conformal|lambert)
+    if [ -n "$CENTER_LON" ]; then echo "  Center Lon (Proj)    : ${CENTER_LON} deg"; fi
+    if [ -n "$CENTER_LAT" ]; then echo "  Center Lat (Proj)    : ${CENTER_LAT} deg"; fi
+    if [ -n "$LAT_1" ]; then echo "  Standard Parallel 1  : ${LAT_1} deg"; fi
+    if [ -n "$LAT_2" ]; then echo "  Standard Parallel 2  : ${LAT_2} deg"; fi
+    if [ -n "$EXTENT_KM" ]; then echo "  Domain Extent        : ${EXTENT_KM} km"; fi
+    if [ -n "$RESOLUTION_KM" ]; then echo "  Grid Resolution      : ${RESOLUTION_KM} km"; fi
+    ;;
+  custom)
+    if [ -n "$CUSTOM_GRID" ]; then echo "  Custom Grid File     : ${CUSTOM_GRID}"; fi
+    ;;
+esac
 echo "========================================================================"
 
 # Check for cleanup option
