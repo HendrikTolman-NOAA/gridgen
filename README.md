@@ -27,6 +27,16 @@ Documentation is available at three levels:
 2. Comments in the scripts explaining what individual parts of the code are doing.
 3. Brief explanations in each module and package subroutine.
 
+## Dependencies
+
+The package requires Python 3.9+ and the following scientific Python libraries:
+- `numpy` (>= 1.20)
+- `scipy` (>= 1.7)
+- `xarray` (>= 2022.03)
+- `netCDF4` (>= 1.5)
+- `shapely` (>= 2.0)
+- `matplotlib` (>= 3.5)
+
 ## Installation
 
 It is assumed that basic Python (v3.9 or higher) is installed already on your system.
@@ -168,36 +178,6 @@ To display the generated grid plot image in the present window:
 ```bash
 ./view_grid.sh [IMAGE_FILE]
 ```
-
-## Dependencies
-
-The package requires Python 3.9+ and the following scientific Python libraries:
-- `numpy` (>= 1.20)
-- `scipy` (>= 1.7)
-- `xarray` (>= 2022.03)
-- `netCDF4` (>= 1.5)
-- `shapely` (>= 2.0)
-- `matplotlib` (>= 3.5)
-
-## Files
-
-There are 3 sub-directories:
-- `bin/`: Stores utility scripts and tools used in grid generation workflows.
-- `examples/`: Stores examples of master scripts that call the different routines for creating grids.
-- `reference_data/`: Stores reference data needed for creating grids, including global bathymetry datasets, GSHHS shoreline polygon databases, and optional user-defined polygon databases.
-
-## Addendums
-
-1. The `generate_grid` function now has two extra parameters that need to be set before the call can be made — a cut-off depth and a representative depth for dry cells.
-2. A series of bugs were cleaned up:
-   - Getting rid of spurious `NaN` values in `generate_grid`
-   - Changing the algorithm in `compute_boundary` to remove errors associated with improper closing of certain boundaries
-   - Speed up in the `clean_mask` routine
-   - Generating grids only in the 0 - 360 lon range (this is the range in which the boundaries are defined, and switching to -180 - 180 range was leading to improper treatment of boundary closure in certain cases).
-
-## Important
-
-Gridgen now does not require the grids to be rectilinear to allow for development support for curvilinear grids. Thus lat / lon arrays are 2-dimensional to allow for varying resolution. Gridgen will not make the arrays needed for the grids. There are a number of software options available for that, but given the 2D arrays, Gridgen will generate all other features — bathymetry, masks, and obstruction grids. See examples for how to generate 2D grids.
 
 ---
 
