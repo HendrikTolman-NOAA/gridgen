@@ -203,6 +203,34 @@ else
   REF_DIR="${SCRIPT_DIR}/reference_data"
 fi
 
+# Check for cleanup option
+if [ "$CLEANUP" -eq 1 ]; then
+  echo "========================================================================"
+  echo " WAVEWATCH III / IV Python Grid Generation Driver"
+  echo "========================================================================"
+  echo "Cleaning up generated grid files and graphics files for prefix '${NAME}' in directory '${OUT_DIR}'..."
+  rm -rf "${OUT_DIR}/${NAME}.depth_ascii" \
+         "${OUT_DIR}/${NAME}.maskorig_ascii" \
+         "${OUT_DIR}/${NAME}.obstr_lev1" \
+         "${OUT_DIR}/${NAME}.meta" \
+         "${OUT_DIR}/${NAME}_coards.nc" \
+         "${OUT_DIR}/${NAME}_ugrid.nc" \
+         "${OUT_DIR}/${NAME}.jpg" \
+         "${OUT_DIR}/${NAME}.jpeg" \
+         "${OUT_DIR}/${NAME}.png" \
+         "${OUT_DIR}/${NAME}.pdf" \
+         "${OUT_DIR}/${NAME}.eps" \
+         "${OUT_DIR}/${NAME}.gif" \
+         "${OUT_DIR}/${NAME}"*.jpg \
+         "${OUT_DIR}/${NAME}"*.jpeg \
+         "${OUT_DIR}/${NAME}"*.png \
+         "${OUT_DIR}/${NAME}"*.pdf \
+         "${OUT_DIR}/${NAME}"*.eps \
+         "${OUT_DIR}/${NAME}"*.gif
+  echo "Cleanup finished successfully."
+  exit 0
+fi
+
 echo "========================================================================"
 echo " WAVEWATCH III / IV Python Grid Generation Driver"
 echo "========================================================================"
@@ -237,31 +265,6 @@ case "${GRID_TYPE}" in
     ;;
 esac
 echo "========================================================================"
-
-# Check for cleanup option
-if [ "$CLEANUP" -eq 1 ]; then
-  echo "Cleaning up generated grid files and graphics files for prefix '${NAME}' in directory '${OUT_DIR}'..."
-  rm -rf "${OUT_DIR}/${NAME}.depth_ascii" \
-         "${OUT_DIR}/${NAME}.maskorig_ascii" \
-         "${OUT_DIR}/${NAME}.obstr_lev1" \
-         "${OUT_DIR}/${NAME}.meta" \
-         "${OUT_DIR}/${NAME}_coards.nc" \
-         "${OUT_DIR}/${NAME}_ugrid.nc" \
-         "${OUT_DIR}/${NAME}.jpg" \
-         "${OUT_DIR}/${NAME}.jpeg" \
-         "${OUT_DIR}/${NAME}.png" \
-         "${OUT_DIR}/${NAME}.pdf" \
-         "${OUT_DIR}/${NAME}.eps" \
-         "${OUT_DIR}/${NAME}.gif" \
-         "${OUT_DIR}/${NAME}"*.jpg \
-         "${OUT_DIR}/${NAME}"*.jpeg \
-         "${OUT_DIR}/${NAME}"*.png \
-         "${OUT_DIR}/${NAME}"*.pdf \
-         "${OUT_DIR}/${NAME}"*.eps \
-         "${OUT_DIR}/${NAME}"*.gif
-  echo "Cleanup finished successfully."
-  exit 0
-fi
 
 # 1. Check Reference Data Directory
 if [ ! -d "$REF_DIR" ] || [ -z "$(ls -A "$REF_DIR"/*.nc "$REF_DIR"/*.tif 2>/dev/null)" ]; then
