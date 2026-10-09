@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 
 """Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
@@ -68,7 +68,7 @@ def test_run_gridgen_missing_ref_dir_fails(tmp_path: Path):
 
 
 def test_run_gridgen_different_grid_types(tmp_path: Path):
-    """Verify run_gridgen.sh supports rotated_pole, stereographic, and custom grid types."""
+    """Verify run_gridgen.sh supports regular (with optional rotated pole), stereographic (km and deg), and custom grid options."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "run_gridgen.sh"
     out_dir = tmp_path / "grid_output"
@@ -88,14 +88,22 @@ def test_run_gridgen_different_grid_types(tmp_path: Path):
     )
     ds.to_netcdf(ref_dir / "etopo1.nc")
 
-    # 1. Rotated pole grid
+    # 1. Regular grid with rotated pole options
     res1 = subprocess.run(
         [
             str(script_path),
             "--name",
             "rot_grid",
             "-g",
-            "rotated_pole",
+            "regular",
+            "--LON-START",
+            "-10.0",
+            "--LON-END",
+            "10.0",
+            "--LAT-START",
+            "-10.0",
+            "--LAT-END",
+            "10.0",
             "--POLE-LON",
             "180.0",
             "--POLE-LAT",
@@ -116,7 +124,7 @@ def test_run_gridgen_different_grid_types(tmp_path: Path):
     assert res1.returncode == 0
     assert (out_dir / "rot_grid_ugrid.nc").exists()
 
-    # 2. Stereographic grid
+    # 2. Stereographic grid using arc degree parameters
     res2 = subprocess.run(
         [
             str(script_path),
@@ -124,14 +132,16 @@ def test_run_gridgen_different_grid_types(tmp_path: Path):
             "stereo_grid",
             "-g",
             "stereographic",
-            "--CENTER-LON",
+            "--center-lon",
             "0.0",
-            "--CENTER-LAT",
+            "--center-lat",
             "90.0",
-            "--EXTENT-KM",
-            "500.0",
-            "--RESOLUTION-KM",
-            "100.0",
+            "--extent-deg",
+            "4.5",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
             "-r",
             str(ref_dir),
             "-o",

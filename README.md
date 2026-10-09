@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 -->
 
 <p align="center">
@@ -26,6 +26,16 @@ Documentation is available at three levels:
 1. Grid generation manual: `grid_generation.pdf` (can be found on the wiki page).
 2. Comments in the scripts explaining what individual parts of the code are doing.
 3. Brief explanations in each module and package subroutine.
+
+## Dependencies
+
+The package requires Python 3.9+ and the following scientific Python libraries:
+- `numpy` (>= 1.20)
+- `scipy` (>= 1.7)
+- `xarray` (>= 2022.03)
+- `netCDF4` (>= 1.5)
+- `shapely` (>= 2.0)
+- `matplotlib` (>= 3.5)
 
 ## Installation
 
@@ -109,29 +119,26 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 
 | Option | Description |
 | :--- | :--- |
-| `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). |
-| `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `lambert_conformal`, `rotated_pole`, `custom` (default: `regular`). |
-| `--dx DX` | Longitude grid resolution increment in degrees (default: `0.25`). |
-| `--dy DY` | Latitude grid resolution increment in degrees (default: `0.25`). |
-| `--lon-start LON` | Minimum longitude in degrees (default: `140.0`). |
-| `--lon-end LON` | Maximum longitude in degrees (default: `160.0`). |
-| `--lat-start LAT` | Minimum latitude in degrees (default: `44.0`). |
-| `--lat-end LAT` | Maximum latitude in degrees (default: `54.0`). |
-| `--center-lon LON` | Center longitude for stereographic/Lambert projection (default: `0.0`). |
-| `--center-lat LAT` | Center latitude for stereographic/Lambert projection (default: `90.0`). |
-| `--lat-1 LAT` | First standard parallel for Lambert conformal projection (default: `30.0`). |
-| `--lat-2 LAT` | Second standard parallel for Lambert conformal projection (default: `60.0`). |
-| `--extent-km KM` | Half-width domain extent in km for stereographic/Lambert grid (default: `2000.0`). |
-| `--resolution-km KM` | Grid resolution in km for stereographic/Lambert grid (default: `50.0`). |
-| `--pole-lon LON` | Rotated pole longitude for `rotated_pole` projection (default: `180.0`). |
-| `--pole-lat LAT` | Rotated pole latitude for `rotated_pole` projection (default: `60.0`). |
-| `--nx NX` | Number of longitude/x grid points. |
-| `--ny NY` | Number of latitude/y grid points. |
-| `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). |
-| `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). |
-| `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). |
-| `-c, --clean, --cleanup` | Remove generated output grid files and graphics files for specified `--name` from output directory. |
-| `-h, --help` | Display usage help message and exit. |
+| `--nx NX` | Discrete grid dimension NX (default: `401`). Common to all grid options. `[Optional]` |
+| `--ny NY` | Discrete grid dimension NY (default: `125`). Common to all grid options. `[Optional]` |
+| `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). `[Optional]` |
+| `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
+| `--lon-start LON` | Lower-left corner longitude in degrees (default: `140.0`). `[Optional for regular grid]` |
+| `--lat-start LAT` | Lower-left corner latitude in degrees (default: `44.0`). `[Optional for regular grid]` |
+| `--lon-end LON` | Upper-right corner longitude in degrees (default: `240.0`). `[Optional for regular grid]` |
+| `--lat-end LAT` | Upper-right corner latitude in degrees (default: `75.0`). `[Optional for regular grid]` |
+| `--pole-lon LON` | Rotated north pole longitude in degrees. `[Optional for regular grid]` |
+| `--pole-lat LAT` | Rotated north pole latitude in degrees (reverts to regular grid when lat is 90.0). `[Optional for regular grid]` |
+| `--center-lon LON` | Center longitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
+| `--center-lat LAT` | Center latitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
+| `--extent-km KM` | Half-width domain extent in km for stereographic grid. `[Mandatory if --extent-deg omitted]` |
+| `--extent-deg DEG` | Half-width domain extent in arc degrees for stereographic grid. `[Mandatory if --extent-km omitted]` |
+| `--rotation ROTATION` | Grid rotation angle in degrees on stereographic projection plane (default: `0.0`). `[Optional for stereographic grid]` |
+| `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). `[Mandatory for custom grid]` |
+| `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). `[Optional]` |
+| `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). `[Optional]` |
+| `-c, --clean, --cleanup` | Remove generated output grid files and graphics files for specified `--name` from output directory. `[Optional]` |
+| `-h, --help` | Display usage help message and exit. `[Optional]` |
 
 #### Output Formats
 
@@ -172,39 +179,9 @@ To display the generated grid plot image in the present window:
 ./view_grid.sh [IMAGE_FILE]
 ```
 
-## Dependencies
-
-The package requires Python 3.9+ and the following scientific Python libraries:
-- `numpy` (>= 1.20)
-- `scipy` (>= 1.7)
-- `xarray` (>= 2022.03)
-- `netCDF4` (>= 1.5)
-- `shapely` (>= 2.0)
-- `matplotlib` (>= 3.5)
-
-## Files
-
-There are 3 sub-directories:
-- `bin/`: Stores utility scripts and tools used in grid generation workflows.
-- `examples/`: Stores examples of master scripts that call the different routines for creating grids.
-- `reference_data/`: Stores reference data needed for creating grids, including global bathymetry datasets, GSHHS shoreline polygon databases, and optional user-defined polygon databases.
-
-## Addendums
-
-1. The `generate_grid` function now has two extra parameters that need to be set before the call can be made — a cut-off depth and a representative depth for dry cells.
-2. A series of bugs were cleaned up:
-   - Getting rid of spurious `NaN` values in `generate_grid`
-   - Changing the algorithm in `compute_boundary` to remove errors associated with improper closing of certain boundaries
-   - Speed up in the `clean_mask` routine
-   - Generating grids only in the 0 - 360 lon range (this is the range in which the boundaries are defined, and switching to -180 - 180 range was leading to improper treatment of boundary closure in certain cases).
-
-## Important
-
-Gridgen now does not require the grids to be rectilinear to allow for development support for curvilinear grids. Thus lat / lon arrays are 2-dimensional to allow for varying resolution. Gridgen will not make the arrays needed for the grids. There are a number of software options available for that, but given the 2D arrays, Gridgen will generate all other features — bathymetry, masks, and obstruction grids. See examples for how to generate 2D grids.
-
 ---
 
-**Last updated:** October 8, 2026
+**Last updated:** October 9, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">

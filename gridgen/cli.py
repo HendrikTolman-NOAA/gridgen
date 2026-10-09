@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -37,21 +37,23 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    # Group 1: General & Dimension Options (Common to all grid types)
+    # Group 1: General & Dimension Options (Common to all grid options)
     gen_group = parser.add_argument_group(
-        "General & Dimension Parameters (Common to all grid types)"
+        "General & Dimension Parameters (Common to all grid options)"
     )
     gen_group.add_argument(
-        "--NX",
+        "--nx",
         type=int,
-        default=None,
-        help="Discrete grid dimension NX (number of longitude/X grid points)",
+        default=401,
+        metavar="NX",
+        help="[Optional] Discrete grid dimension NX (number of X points, default: 401)",
     )
     gen_group.add_argument(
-        "--NY",
+        "--ny",
         type=int,
-        default=None,
-        help="Discrete grid dimension NY (number of latitude/Y grid points)",
+        default=125,
+        metavar="NY",
+        help="[Optional] Discrete grid dimension NY (number of Y points, default: 125)",
     )
     gen_group.add_argument(
         "--name", type=str, default="ww4_grid", help="Grid prefix identifier (default: ww4_grid)"
@@ -63,7 +65,6 @@ def main() -> None:
         choices=[
             "regular",
             "stereographic",
-            "rotated_pole",
             "custom",
         ],
         help="Grid coordinate projection/layout type (default: regular)",
@@ -89,66 +90,93 @@ def main() -> None:
     # Group 2: Regular Grid Parameters
     reg_group = parser.add_argument_group("Regular Grid Parameters (--grid-type regular)")
     reg_group.add_argument(
-        "--LON-START", type=float, default=None, help="[Mandatory] Lower-left corner longitude in degrees"
+        "--lon-start",
+        type=float,
+        default=140.0,
+        metavar="LON_START",
+        help="[Optional] Lower-left corner longitude in degrees (default: 140.0)",
     )
     reg_group.add_argument(
-        "--LAT-START", type=float, default=None, help="[Mandatory] Lower-left corner latitude in degrees"
+        "--lat-start",
+        type=float,
+        default=44.0,
+        metavar="LAT_START",
+        help="[Optional] Lower-left corner latitude in degrees (default: 44.0)",
     )
     reg_group.add_argument(
-        "--LON-END", type=float, default=None, help="[Mandatory] Upper-right corner longitude in degrees"
+        "--lon-end",
+        type=float,
+        default=240.0,
+        metavar="LON_END",
+        help="[Optional] Upper-right corner longitude in degrees (default: 240.0)",
     )
     reg_group.add_argument(
-        "--LAT-END", type=float, default=None, help="[Mandatory] Upper-right corner latitude in degrees"
+        "--lat-end",
+        type=float,
+        default=75.0,
+        metavar="LAT_END",
+        help="[Optional] Upper-right corner latitude in degrees (default: 75.0)",
     )
-
-    # Group 3: Rotated Pole Grid Parameters
-    rot_group = parser.add_argument_group("Rotated Pole Grid Parameters (--grid-type rotated_pole)")
-    rot_group.add_argument(
-        "--POLE-LON",
+    reg_group.add_argument(
+        "--pole-lon",
         type=float,
         default=None,
-        help="[Mandatory] Longitude of rotated north pole in geographic coordinates",
+        metavar="POLE_LON",
+        help="[Optional] Longitude of rotated north pole in geographic coordinates",
     )
-    rot_group.add_argument(
-        "--POLE-LAT",
+    reg_group.add_argument(
+        "--pole-lat",
         type=float,
         default=None,
-        help="[Mandatory] Latitude of rotated north pole in geographic coordinates",
+        metavar="POLE_LAT",
+        help="[Optional] Latitude of rotated north pole in geographic coordinates",
     )
 
-    # Group 4: Stereographic Projection Parameters
+    # Group 3: Stereographic Projection Parameters
     ste_group = parser.add_argument_group("Stereographic Grid Parameters (--grid-type stereographic)")
     ste_group.add_argument(
-        "--CENTER-LON",
+        "--center-lon",
         type=float,
         default=None,
+        metavar="CENTER_LON",
         help="[Mandatory] Projection center longitude in degrees",
     )
     ste_group.add_argument(
-        "--CENTER-LAT",
+        "--center-lat",
         type=float,
         default=None,
+        metavar="CENTER_LAT",
         help="[Mandatory] Projection center latitude in degrees",
     )
     ste_group.add_argument(
-        "--EXTENT-KM",
+        "--extent-km",
         type=float,
         default=None,
-        help="[Mandatory] Half-width domain extent in kilometers",
+        metavar="EXTENT_KM",
+        help="[Mandatory if --extent-deg omitted] Half-width domain extent in kilometers",
     )
     ste_group.add_argument(
-        "--RESOLUTION-KM",
+        "--extent-deg",
         type=float,
         default=None,
-        help="[Mandatory] Grid resolution in kilometers",
+        metavar="EXTENT_DEG",
+        help="[Mandatory if --extent-km omitted] Half-width domain extent in arc degrees",
+    )
+    ste_group.add_argument(
+        "--rotation",
+        type=float,
+        default=0.0,
+        metavar="ROTATION",
+        help="[Optional] Grid rotation angle in degrees on projection plane (default: 0.0)",
     )
 
-    # Group 5: Custom Grid File Parameters
+    # Group 4: Custom Grid File Parameters
     cus_group = parser.add_argument_group("Custom Grid Parameters (--grid-type custom)")
     cus_group.add_argument(
         "--custom-grid",
         type=str,
         default=None,
+        metavar="CUSTOM_GRID",
         help="[Mandatory] Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)",
     )
 

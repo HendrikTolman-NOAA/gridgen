@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 
 """Grid coordinate generation module for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4).
 
@@ -25,17 +25,21 @@ import numpy as np
 
 
 def create_regular_grid(
-    LON_START: float,
-    LON_END: float,
-    LAT_START: float,
-    LAT_END: float,
-    NX: int,
-    NY: int,
+    LON_START: float = 140.0,
+    LON_END: float = 240.0,
+    LAT_START: float = 44.0,
+    LAT_END: float = 75.0,
+    NX: int = 401,
+    NY: int = 125,
+    POLE_LON: float | None = None,
+    POLE_LAT: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D arrays of longitude and latitude for a regular grid.
 
-    Requires mandatory corner bounding points (LON_START, LON_END, LAT_START, LAT_END)
-    and discrete matrix dimensions (NX, NY).
+    Accepts corner bounding points (LON_START, LON_END, LAT_START, LAT_END, default: 140-240, 44-75)
+    and discrete matrix dimensions (NX, NY). Optionally accepts rotated pole coordinates
+    (POLE_LON, POLE_LAT). If POLE_LAT is None or 90.0, the grid reverts to standard
+    unrotated regular geographic coordinates.
 
     Parameters
     ----------
@@ -51,6 +55,10 @@ def create_regular_grid(
         Number of grid points in longitude / X direction.
     NY : int
         Number of grid points in latitude / Y direction.
+    POLE_LON : float | None
+        Longitude of rotated north pole in geographic coordinates (optional).
+    POLE_LAT : float | None
+        Latitude of rotated north pole in geographic coordinates (optional, default: 90.0).
 
     Returns
     -------
@@ -59,24 +67,40 @@ def create_regular_grid(
     lat : np.ndarray
         2D latitude grid array of shape (NY, NX).
     """
-    lon1d = np.linspace(LON_START, LON_END, NX)
-    lat1d = np.linspace(LAT_START, LAT_END, NY)
-    lon, lat = np.meshgrid(lon1d, lat1d)
-    return lon, lat
+    if POLE_LAT is None or POLE_LAT == 90.0:
+        lon1d = np.linspace(LON_START, LON_END, NX)
+        lat1d = np.linspace(LAT_START, LAT_END, NY)
+        lon, lat = np.meshgrid(lon1d, lat1d)
+        return lon, lat
+
+    pole_lon = 0.0 if POLE_LON is None else POLE_LON
+    return create_rotated_pole_grid(
+        POLE_LON=pole_lon,
+        POLE_LAT=POLE_LAT,
+        LON_START=LON_START,
+        LON_END=LON_END,
+        LAT_START=LAT_START,
+        LAT_END=LAT_END,
+        NX=NX,
+        NY=NY,
+    )
 
 
 def create_stereographic_grid(
     CENTER_LON: float,
     CENTER_LAT: float,
-    EXTENT_KM: float,
-    RESOLUTION_KM: float,
-    NX: int | None = None,
-    NY: int | None = None,
+    EXTENT_KM: float | None = None,
+    EXTENT_DEG: float | None = None,
+    NX: int | None = 401,
+    NY: int | None = 125,
+    ROTATION: float = 0.0,
     k0: float = 1.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a general stereographic grid.
 
-    Supports polar, oblique, and equatorial stereographic projections.
+    Supports domain size definition either in kilometers (EXTENT_KM)
+    or in arc degrees (EXTENT_DEG) over discrete dimensions (NX, NY) with optional
+    planar rotation angle ROTATION in degrees.
 
     Parameters
     ----------
@@ -84,14 +108,16 @@ def create_stereographic_grid(
         Central meridian of projection in degrees.
     CENTER_LAT : float
         Central latitude of projection in degrees (-90 to +90).
-    EXTENT_KM : float
+    EXTENT_KM : float | None
         Half-width extent of domain in kilometers.
-    RESOLUTION_KM : float
-        Grid spacing in kilometers.
+    EXTENT_DEG : float | None
+        Half-width extent of domain in arc degrees.
     NX : int | None
-        Number of grid points in x direction.
+        Number of grid points in x direction (default: 401).
     NY : int | None
-        Number of grid points in y direction.
+        Number of grid points in y direction (default: 125).
+    ROTATION : float
+        Optional grid rotation angle in degrees on projection plane (default: 0.0).
     k0 : float
         Scale factor at projection origin (default: 1.0).
 
@@ -102,28 +128,35 @@ def create_stereographic_grid(
     lat : np.ndarray
         2D latitude grid array of shape (NY, NX) in degrees [-90, 90].
     """
-    if NX is not None:
-        x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, NX)
-    else:
-        x1d = np.arange(
-            -EXTENT_KM * 1000.0,
-            EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
-            RESOLUTION_KM * 1000.0,
-        )
+    radius_earth = 6371000.0  # meters
+    deg_to_km = (radius_earth / 1000.0) * (np.pi / 180.0)  # ~111.1949266 km/deg
 
-    if NY is not None:
-        y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, NY)
-    else:
-        y1d = np.arange(
-            -EXTENT_KM * 1000.0,
-            EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
-            RESOLUTION_KM * 1000.0,
-        )
+    if EXTENT_KM is None:
+        if EXTENT_DEG is not None:
+            EXTENT_KM = EXTENT_DEG * deg_to_km
+        else:
+            raise ValueError(
+                "Either EXTENT_KM or EXTENT_DEG must be provided for stereographic grid."
+            )
+
+    nx_val = NX if NX is not None else 401
+    ny_val = NY if NY is not None else 125
+    x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, nx_val)
+    y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, ny_val)
 
     x, y = np.meshgrid(x1d, y1d)
-    radius_earth = 6371000.0
 
-    rho = np.hypot(x, y)
+    if ROTATION != 0.0:
+        rot_rad = np.radians(ROTATION)
+        cos_r = np.cos(rot_rad)
+        sin_r = np.sin(rot_rad)
+        xr = x * cos_r - y * sin_r
+        yr = x * sin_r + y * cos_r
+    else:
+        xr = x
+        yr = y
+
+    rho = np.hypot(xr, yr)
     c = 2.0 * np.arctan2(rho, 2.0 * k0 * radius_earth)
 
     lat0_rad = np.radians(CENTER_LAT)
@@ -138,11 +171,11 @@ def create_stereographic_grid(
 
         rho_safe = np.where(rho == 0, 1.0, rho)
 
-        lat_rad = np.arcsin(cos_c * sin_lat0 + (y * sin_c * cos_lat0) / rho_safe)
+        lat_rad = np.arcsin(cos_c * sin_lat0 + (yr * sin_c * cos_lat0) / rho_safe)
 
         lon_rad = lon0_rad + np.arctan2(
-            x * sin_c,
-            rho_safe * cos_lat0 * cos_c - y * sin_lat0 * sin_c,
+            xr * sin_c,
+            rho_safe * cos_lat0 * cos_c - yr * sin_lat0 * sin_c,
         )
 
     lat_rad[rho == 0] = lat0_rad
@@ -364,6 +397,8 @@ def _filter_kwargs(func, kwargs: dict) -> dict:
                 res[k] = v
             elif k.upper() in valid_params:
                 res[k.upper()] = v
+            elif k.lower() in valid_params:
+                res[k.lower()] = v
     return res
 
 
@@ -393,49 +428,37 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
         return
 
     # Check discrete dimensions NX and NY if provided or required
-    nx = kwargs.get("NX") or kwargs.get("nx")
-    ny = kwargs.get("NY") or kwargs.get("ny")
+    nx = kwargs.get("NX") if kwargs.get("NX") is not None else kwargs.get("nx")
+    ny = kwargs.get("NY") if kwargs.get("NY") is not None else kwargs.get("ny")
     if nx is not None and int(nx) <= 0:
         raise ValueError(f"Grid dimension NX must be positive, got {nx}")
     if ny is not None and int(ny) <= 0:
         raise ValueError(f"Grid dimension NY must be positive, got {ny}")
 
     if gtype == "regular":
-        missing = []
-        for param in ("LON_START", "LON_END", "LAT_START", "LAT_END", "NX", "NY"):
-            val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
-            if val is None:
-                missing.append(f"--{param.replace('_', '-')}")
-        if missing:
-            raise ValueError(
-                f"Missing mandatory parameter(s) for regular grid: {', '.join(missing)}"
-            )
+        # LON_START, LON_END, LAT_START, LAT_END have defaults (140-240, 44-75)
+        return
 
     elif gtype == "stereographic":
         missing = []
-        for param in ("CENTER_LON", "CENTER_LAT", "EXTENT_KM", "RESOLUTION_KM"):
+        for param in ("CENTER_LON", "CENTER_LAT"):
             val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
             if val is None:
-                missing.append(f"--{param.replace('_', '-')}")
+                missing.append(f"--{param.lower().replace('_', '-')}")
+
+        ext_km = kwargs.get("EXTENT_KM") if kwargs.get("EXTENT_KM") is not None else kwargs.get("extent_km")
+        ext_deg = kwargs.get("EXTENT_DEG") if kwargs.get("EXTENT_DEG") is not None else kwargs.get("extent_deg")
+        if ext_km is None and ext_deg is None:
+            missing.append("--extent-km or --extent-deg")
+
         if missing:
             raise ValueError(
                 f"Missing mandatory parameter(s) for stereographic grid: {', '.join(missing)}"
             )
-
-    elif gtype == "rotated_pole":
-        missing = []
-        for param in ("POLE_LON", "POLE_LAT"):
-            val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
-            if val is None:
-                missing.append(f"--{param.replace('_', '-')}")
-        if missing:
-            raise ValueError(
-                f"Missing mandatory parameter(s) for rotated_pole grid: {', '.join(missing)}"
-            )
     else:
         raise ValueError(
             f"Unsupported grid_type '{grid_type}'. Supported grid types: "
-            "'regular', 'stereographic', 'rotated_pole', 'custom'."
+            "'regular', 'stereographic', 'custom'."
         )
 
 
@@ -449,9 +472,8 @@ def create_grid_coordinates(
     ----------
     grid_type : str
         Grid projection or layout type. Supported options:
-        - 'regular': Regular 2D lon-lat grid.
-        - 'stereographic': General stereographic grid.
-        - 'rotated_pole': Rotated pole spherical grid.
+        - 'regular': Regular 2D lon-lat grid (with optional rotated pole via POLE_LON, POLE_LAT).
+        - 'stereographic': General stereographic grid (via EXTENT_KM/RESOLUTION_KM or EXTENT_DEG/RESOLUTION_DEG).
         - 'custom': Custom grid loaded from a layout file specified via custom_grid/filepath parameter.
     **kwargs
         Parameters passed to the specific grid generator or custom_grid filepath.
@@ -481,11 +503,8 @@ def create_grid_coordinates(
     elif gtype == "stereographic":
         filtered = _filter_kwargs(create_stereographic_grid, kwargs)
         return create_stereographic_grid(**filtered)
-    elif gtype == "rotated_pole":
-        filtered = _filter_kwargs(create_rotated_pole_grid, kwargs)
-        return create_rotated_pole_grid(**filtered)
     else:
         raise ValueError(
             f"Unsupported grid_type '{grid_type}'. Supported grid types: "
-            "'regular', 'stereographic', 'rotated_pole', 'custom'."
+            "'regular', 'stereographic', 'custom'."
         )
