@@ -63,7 +63,6 @@ def main() -> None:
         choices=[
             "regular",
             "stereographic",
-            "rotated_pole",
             "custom",
         ],
         help="Grid coordinate projection/layout type (default: regular)",
@@ -100,23 +99,20 @@ def main() -> None:
     reg_group.add_argument(
         "--LAT-END", type=float, default=None, help="[Mandatory] Upper-right corner latitude in degrees"
     )
-
-    # Group 3: Rotated Pole Grid Parameters
-    rot_group = parser.add_argument_group("Rotated Pole Grid Parameters (--grid-type rotated_pole)")
-    rot_group.add_argument(
+    reg_group.add_argument(
         "--POLE-LON",
         type=float,
         default=None,
-        help="[Mandatory] Longitude of rotated north pole in geographic coordinates",
+        help="[Optional] Longitude of rotated north pole in geographic coordinates",
     )
-    rot_group.add_argument(
+    reg_group.add_argument(
         "--POLE-LAT",
         type=float,
         default=None,
-        help="[Mandatory] Latitude of rotated north pole in geographic coordinates",
+        help="[Optional] Latitude of rotated north pole in geographic coordinates",
     )
 
-    # Group 4: Stereographic Projection Parameters
+    # Group 3: Stereographic Projection Parameters
     ste_group = parser.add_argument_group("Stereographic Grid Parameters (--grid-type stereographic)")
     ste_group.add_argument(
         "--CENTER-LON",
@@ -134,16 +130,28 @@ def main() -> None:
         "--EXTENT-KM",
         type=float,
         default=None,
-        help="[Mandatory] Half-width domain extent in kilometers",
+        help="[Optional] Half-width domain extent in kilometers",
     )
     ste_group.add_argument(
         "--RESOLUTION-KM",
         type=float,
         default=None,
-        help="[Mandatory] Grid resolution in kilometers",
+        help="[Optional] Grid resolution in kilometers",
+    )
+    ste_group.add_argument(
+        "--EXTENT-DEG",
+        type=float,
+        default=None,
+        help="[Optional] Half-width domain extent in arc degrees",
+    )
+    ste_group.add_argument(
+        "--RESOLUTION-DEG",
+        type=float,
+        default=None,
+        help="[Optional] Grid resolution in arc degrees",
     )
 
-    # Group 5: Custom Grid File Parameters
+    # Group 4: Custom Grid File Parameters
     cus_group = parser.add_argument_group("Custom Grid Parameters (--grid-type custom)")
     cus_group.add_argument(
         "--custom-grid",

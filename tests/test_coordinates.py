@@ -28,7 +28,8 @@ from gridgen.coordinates import (
 
 
 def test_create_regular_grid() -> None:
-    """Test regular 2D lon-lat grid generation with mandatory corner bounds and dimensions."""
+    """Test regular 2D lon-lat grid generation with mandatory corner bounds and optional rotated pole."""
+    # 1. Standard regular grid (unrotated)
     lon, lat = create_regular_grid(
         LON_START=100.0,
         LON_END=110.0,
@@ -45,6 +46,35 @@ def test_create_regular_grid() -> None:
     assert np.isclose(lat[0, 0], 20.0)
     assert np.isclose(lat[-1, 0], 30.0)
 
+    # 2. Rotated pole specified (lat != 90)
+    rlon, rlat = create_regular_grid(
+        LON_START=-10.0,
+        LON_END=10.0,
+        LAT_START=-10.0,
+        LAT_END=10.0,
+        NX=15,
+        NY=15,
+        POLE_LON=180.0,
+        POLE_LAT=60.0,
+    )
+    assert rlon.shape == (15, 15)
+    assert rlat.shape == (15, 15)
+    assert np.all(rlon >= 0.0) and np.all(rlon < 360.0)
+
+    # 3. Pole at North Pole (lat = 90.0) reverts to standard unrotated regular grid
+    lon_np, lat_np = create_regular_grid(
+        LON_START=100.0,
+        LON_END=110.0,
+        LAT_START=20.0,
+        LAT_END=30.0,
+        NX=6,
+        NY=6,
+        POLE_LON=0.0,
+        POLE_LAT=90.0,
+    )
+    assert np.allclose(lon_np, lon)
+    assert np.allclose(lat_np, lat)
+
 
 def test_grid_parameter_validation_errors() -> None:
     """Test parameter validation error messages for missing required grid inputs."""
@@ -60,20 +90,20 @@ def test_grid_parameter_validation_errors() -> None:
 
     # 3. Missing CENTER_LON/CENTER_LAT for stereographic grid
     with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --CENTER-LON, --CENTER-LAT, --EXTENT-KM, --RESOLUTION-KM"
+        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --CENTER-LON, --CENTER-LAT"
     ):
         create_grid_coordinates("stereographic")
 
-    # 4. Missing POLE_LON/POLE_LAT for rotated_pole grid
+    # 4. Missing stereographic extent and resolution parameters
     with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for rotated_pole grid: --POLE-LON, --POLE-LAT"
+        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --EXTENT-KM or --EXTENT-DEG, --RESOLUTION-KM, --RESOLUTION-DEG, or --NX and --NY"
     ):
-        create_grid_coordinates("rotated_pole")
+        create_grid_coordinates("stereographic", CENTER_LON=0.0, CENTER_LAT=90.0)
 
 
 def test_create_stereographic_grid() -> None:
-    """Test general stereographic grid generation for oblique and polar centers."""
-    # 1. Polar center
+    """Test general stereographic grid generation using km and arc degree options."""
+    # 1. Polar center with km options
     lon1, lat1 = create_stereographic_grid(
         CENTER_LON=0.0,
         CENTER_LAT=90.0,
@@ -85,7 +115,18 @@ def test_create_stereographic_grid() -> None:
     cy, cx = lon1.shape[0] // 2, lon1.shape[1] // 2
     assert np.isclose(lat1[cy, cx], 90.0, atol=1e-3)
 
-    # 2. Oblique center
+    # 2. Polar center with arc degree options
+    lon_deg, lat_deg = create_stereographic_grid(
+        CENTER_LON=0.0,
+        CENTER_LAT=90.0,
+        EXTENT_DEG=4.4966,  # ~500 km
+        RESOLUTION_DEG=0.8993,  # ~100 km
+    )
+    assert lon_deg.shape == lon1.shape
+    assert lat_deg.shape == lat1.shape
+    assert np.isclose(lat_deg[cy, cx], 90.0, atol=1e-3)
+
+    # 3. Oblique center
     lon2, lat2 = create_stereographic_grid(
         CENTER_LON=-75.0,
         CENTER_LAT=40.0,
@@ -98,7 +139,7 @@ def test_create_stereographic_grid() -> None:
 
 
 def test_create_rotated_pole_grid() -> None:
-    """Test rotated pole spherical grid generation."""
+    """Test rotated pole spherical grid helper routine."""
     lon, lat = create_rotated_pole_grid(
         LON_START=-10.0,
         LON_END=10.0,
@@ -118,26 +159,41 @@ def test_create_rotated_pole_grid() -> None:
 
 def test_create_grid_coordinates_unified() -> None:
     """Test unified entry point create_grid_coordinates."""
-    # 1. Regular
+    # 1. Regular unrotated
     lon1, lat1 = create_grid_coordinates(
         "regular", LON_START=0, LON_END=10, LAT_START=0, LAT_END=10, NX=11, NY=11
     )
     assert lon1.shape == (11, 11)
     assert lat1.shape == (11, 11)
 
-    # 2. General Stereographic
+    # 2. Regular rotated pole
+    lon_rot, lat_rot = create_grid_coordinates(
+        "regular",
+        LON_START=-10,
+        LON_END=10,
+        LAT_START=-10,
+        LAT_END=10,
+        NX=11,
+        NY=11,
+        POLE_LON=180.0,
+        POLE_LAT=60.0,
+    )
+    assert lon_rot.shape == (11, 11)
+    assert lat_rot.shape == (11, 11)
+
+    # 3. General Stereographic in km
     lon2, lat2 = create_grid_coordinates(
         "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_KM=200, RESOLUTION_KM=50
     )
     assert lon2.ndim == 2
     assert lat2.ndim == 2
 
-    # 3. Rotated Pole
+    # 4. General Stereographic in arc degrees
     lon3, lat3 = create_grid_coordinates(
-        "rotated_pole", POLE_LON=180.0, POLE_LAT=60.0, NX=10, NY=10
+        "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_DEG=2.0, RESOLUTION_DEG=0.5
     )
-    assert lon3.shape == (10, 10)
-    assert lat3.shape == (10, 10)
+    assert lon3.ndim == 2
+    assert lat3.ndim == 2
 
     # 4. Invalid type
     with pytest.raises(ValueError, match="Unsupported grid_type"):
