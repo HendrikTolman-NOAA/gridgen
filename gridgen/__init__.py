@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-08
 #
 # Code Heritage:
 # Converted from MATLAB gridgen suite originally authored by NCEP/NOAA
@@ -20,7 +20,6 @@ from __future__ import annotations
 
 from .coordinates import (
     create_grid_coordinates,
-    create_lambert_conformal_grid,
     create_regular_grid,
     create_rotated_pole_grid,
     create_stereographic_grid,
@@ -41,7 +40,6 @@ __all__ = [
     "clean_mask",
     "compute_boundary",
     "create_grid_coordinates",
-    "create_lambert_conformal_grid",
     "create_regular_grid",
     "create_rotated_pole_grid",
     "create_stereographic_grid",

@@ -8,12 +8,12 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-08
 
 """Grid coordinate generation module for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4).
 
 Provides 2D coordinate generation routines for regular, general stereographic,
-Lambert Conformal Conic, rotated pole grid geometries, and custom grid layout files.
+rotated pole grid geometries, and custom grid layout files.
 """
 
 from __future__ import annotations
@@ -25,64 +25,53 @@ import numpy as np
 
 
 def create_regular_grid(
-    lon_start: float = 140.0,
-    lon_end: float = 160.0,
-    lat_start: float = 44.0,
-    lat_end: float = 54.0,
-    dx: float = 0.25,
-    dy: float = 0.25,
-    nx: int | None = None,
-    ny: int | None = None,
+    LON_START: float,
+    LON_END: float,
+    LAT_START: float,
+    LAT_END: float,
+    NX: int,
+    NY: int,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D arrays of longitude and latitude for a regular grid.
 
+    Requires mandatory corner bounding points (LON_START, LON_END, LAT_START, LAT_END)
+    and discrete matrix dimensions (NX, NY).
+
     Parameters
     ----------
-    lon_start : float
-        Minimum longitude in degrees.
-    lon_end : float
-        Maximum longitude in degrees.
-    lat_start : float
-        Minimum latitude in degrees.
-    lat_end : float
-        Maximum latitude in degrees.
-    dx : float
-        Longitude resolution increment in degrees (used if nx is None).
-    dy : float
-        Latitude resolution increment in degrees (used if ny is None).
-    nx : int | None
-        Number of longitude grid points (overrides dx if provided).
-    ny : int | None
-        Number of latitude grid points (overrides dy if provided).
+    LON_START : float
+        Lower-left corner longitude in degrees.
+    LON_END : float
+        Upper-right corner longitude in degrees.
+    LAT_START : float
+        Lower-left corner latitude in degrees.
+    LAT_END : float
+        Upper-right corner latitude in degrees.
+    NX : int
+        Number of grid points in longitude / X direction.
+    NY : int
+        Number of grid points in latitude / Y direction.
 
     Returns
     -------
     lon : np.ndarray
-        2D longitude grid array of shape (Ny, Nx).
+        2D longitude grid array of shape (NY, NX).
     lat : np.ndarray
-        2D latitude grid array of shape (Ny, Nx).
+        2D latitude grid array of shape (NY, NX).
     """
-    if nx is not None:
-        lon1d = np.linspace(lon_start, lon_end, nx)
-    else:
-        lon1d = np.arange(lon_start, lon_end + dx * 0.5, dx)
-
-    if ny is not None:
-        lat1d = np.linspace(lat_start, lat_end, ny)
-    else:
-        lat1d = np.arange(lat_start, lat_end + dy * 0.5, dy)
-
+    lon1d = np.linspace(LON_START, LON_END, NX)
+    lat1d = np.linspace(LAT_START, LAT_END, NY)
     lon, lat = np.meshgrid(lon1d, lat1d)
     return lon, lat
 
 
 def create_stereographic_grid(
-    center_lon: float = 0.0,
-    center_lat: float = 90.0,
-    extent_km: float = 2000.0,
-    resolution_km: float = 50.0,
-    nx: int | None = None,
-    ny: int | None = None,
+    CENTER_LON: float,
+    CENTER_LAT: float,
+    EXTENT_KM: float,
+    RESOLUTION_KM: float,
+    NX: int | None = None,
+    NY: int | None = None,
     k0: float = 1.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a general stereographic grid.
@@ -91,17 +80,17 @@ def create_stereographic_grid(
 
     Parameters
     ----------
-    center_lon : float
+    CENTER_LON : float
         Central meridian of projection in degrees.
-    center_lat : float
+    CENTER_LAT : float
         Central latitude of projection in degrees (-90 to +90).
-    extent_km : float
+    EXTENT_KM : float
         Half-width extent of domain in kilometers.
-    resolution_km : float
+    RESOLUTION_KM : float
         Grid spacing in kilometers.
-    nx : int | None
+    NX : int | None
         Number of grid points in x direction.
-    ny : int | None
+    NY : int | None
         Number of grid points in y direction.
     k0 : float
         Scale factor at projection origin (default: 1.0).
@@ -109,26 +98,26 @@ def create_stereographic_grid(
     Returns
     -------
     lon : np.ndarray
-        2D longitude grid array of shape (Ny, Nx) in degrees [0, 360).
+        2D longitude grid array of shape (NY, NX) in degrees [0, 360).
     lat : np.ndarray
-        2D latitude grid array of shape (Ny, Nx) in degrees [-90, 90].
+        2D latitude grid array of shape (NY, NX) in degrees [-90, 90].
     """
-    if nx is not None:
-        x1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, nx)
+    if NX is not None:
+        x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, NX)
     else:
         x1d = np.arange(
-            -extent_km * 1000.0,
-            extent_km * 1000.0 + resolution_km * 500.0,
-            resolution_km * 1000.0,
+            -EXTENT_KM * 1000.0,
+            EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
+            RESOLUTION_KM * 1000.0,
         )
 
-    if ny is not None:
-        y1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, ny)
+    if NY is not None:
+        y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, NY)
     else:
         y1d = np.arange(
-            -extent_km * 1000.0,
-            extent_km * 1000.0 + resolution_km * 500.0,
-            resolution_km * 1000.0,
+            -EXTENT_KM * 1000.0,
+            EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
+            RESOLUTION_KM * 1000.0,
         )
 
     x, y = np.meshgrid(x1d, y1d)
@@ -137,8 +126,8 @@ def create_stereographic_grid(
     rho = np.hypot(x, y)
     c = 2.0 * np.arctan2(rho, 2.0 * k0 * radius_earth)
 
-    lat0_rad = np.radians(center_lat)
-    lon0_rad = np.radians(center_lon)
+    lat0_rad = np.radians(CENTER_LAT)
+    lon0_rad = np.radians(CENTER_LON)
 
     sin_lat0 = np.sin(lat0_rad)
     cos_lat0 = np.cos(lat0_rad)
@@ -166,142 +155,52 @@ def create_stereographic_grid(
     return lon, lat
 
 
-def create_lambert_conformal_grid(
-    center_lon: float = 0.0,
-    center_lat: float = 40.0,
-    lat_1: float = 30.0,
-    lat_2: float = 60.0,
-    extent_km: float = 2000.0,
-    resolution_km: float = 50.0,
-    nx: int | None = None,
-    ny: int | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Generate 2D geographic coordinates for a Lambert Conformal Conic grid.
-
-    Parameters
-    ----------
-    center_lon : float
-        Central meridian of projection in degrees.
-    center_lat : float
-        Central latitude of projection in degrees.
-    lat_1 : float
-        First standard parallel in degrees.
-    lat_2 : float
-        Second standard parallel in degrees.
-    extent_km : float
-        Half-width extent of domain in kilometers.
-    resolution_km : float
-        Grid spacing in kilometers.
-    nx : int | None
-        Number of grid points in x direction.
-    ny : int | None
-        Number of grid points in y direction.
-
-    Returns
-    -------
-    lon : np.ndarray
-        2D longitude grid array of shape (Ny, Nx) in degrees [0, 360).
-    lat : np.ndarray
-        2D latitude grid array of shape (Ny, Nx) in degrees [-90, 90].
-    """
-    if nx is not None:
-        x1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, nx)
-    else:
-        x1d = np.arange(
-            -extent_km * 1000.0,
-            extent_km * 1000.0 + resolution_km * 500.0,
-            resolution_km * 1000.0,
-        )
-
-    if ny is not None:
-        y1d = np.linspace(-extent_km * 1000.0, extent_km * 1000.0, ny)
-    else:
-        y1d = np.arange(
-            -extent_km * 1000.0,
-            extent_km * 1000.0 + resolution_km * 500.0,
-            resolution_km * 1000.0,
-        )
-
-    x, y = np.meshgrid(x1d, y1d)
-    radius_earth = 6371000.0
-
-    phi_0 = np.radians(center_lat)
-    phi_1 = np.radians(lat_1)
-    phi_2 = np.radians(lat_2)
-    lam_0 = np.radians(center_lon)
-
-    if abs(phi_1 - phi_2) < 1e-8:
-        n = np.sin(phi_1)
-    else:
-        n = np.log(np.cos(phi_1) / np.cos(phi_2)) / np.log(
-            np.tan(np.pi / 4.0 + phi_2 / 2.0) / np.tan(np.pi / 4.0 + phi_1 / 2.0)
-        )
-
-    F = (np.cos(phi_1) * (np.tan(np.pi / 4.0 + phi_1 / 2.0) ** n)) / n
-    r_0 = radius_earth * F / (np.tan(np.pi / 4.0 + phi_0 / 2.0) ** n)
-
-    sign_n = np.sign(n) if n != 0 else 1.0
-
-    r = sign_n * np.hypot(x, r_0 - y)
-    theta = np.arctan2(sign_n * x, sign_n * (r_0 - y))
-
-    lon_rad = lam_0 + theta / n
-    with np.errstate(divide="ignore", invalid="ignore"):
-        lat_rad = 2.0 * np.arctan((radius_earth * F / r) ** (1.0 / n)) - np.pi / 2.0
-
-    lon = np.degrees(lon_rad)
-    lat = np.degrees(lat_rad)
-
-    lon = np.mod(lon, 360.0)
-    return lon, lat
-
-
 def create_rotated_pole_grid(
-    lon_start: float = -20.0,
-    lon_end: float = 20.0,
-    lat_start: float = -20.0,
-    lat_end: float = 20.0,
-    pole_lon: float = 180.0,
-    pole_lat: float = 60.0,
-    nx: int = 81,
-    ny: int = 81,
+    POLE_LON: float,
+    POLE_LAT: float,
+    LON_START: float = -20.0,
+    LON_END: float = 20.0,
+    LAT_START: float = -20.0,
+    LAT_END: float = 20.0,
+    NX: int = 81,
+    NY: int = 81,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a rotated pole spherical grid.
 
     Parameters
     ----------
-    lon_start : float
-        Start longitude in rotated system (degrees).
-    lon_end : float
-        End longitude in rotated system (degrees).
-    lat_start : float
-        Start latitude in rotated system (degrees).
-    lat_end : float
-        End latitude in rotated system (degrees).
-    pole_lon : float
+    POLE_LON : float
         Longitude of the rotated north pole in geographic coordinates.
-    pole_lat : float
+    POLE_LAT : float
         Latitude of the rotated north pole in geographic coordinates.
-    nx : int
+    LON_START : float
+        Start longitude in rotated system (degrees).
+    LON_END : float
+        End longitude in rotated system (degrees).
+    LAT_START : float
+        Start latitude in rotated system (degrees).
+    LAT_END : float
+        End latitude in rotated system (degrees).
+    NX : int
         Number of grid points in longitude direction.
-    ny : int
+    NY : int
         Number of grid points in latitude direction.
 
     Returns
     -------
     lon : np.ndarray
-        2D geographic longitude grid array of shape (Ny, Nx) in range [0, 360).
+        2D geographic longitude grid array of shape (NY, NX) in range [0, 360).
     lat : np.ndarray
-        2D geographic latitude grid array of shape (Ny, Nx) in range [-90, 90].
+        2D geographic latitude grid array of shape (NY, NX) in range [-90, 90].
     """
-    rlon1d = np.linspace(lon_start, lon_end, nx)
-    rlat1d = np.linspace(lat_start, lat_end, ny)
+    rlon1d = np.linspace(LON_START, LON_END, NX)
+    rlat1d = np.linspace(LAT_START, LAT_END, NY)
     rlon, rlat = np.meshgrid(rlon1d, rlat1d)
 
     rlon_rad = np.radians(rlon)
     rlat_rad = np.radians(rlat)
-    p_lon_rad = np.radians(pole_lon)
-    p_lat_rad = np.radians(pole_lat)
+    p_lon_rad = np.radians(POLE_LON)
+    p_lat_rad = np.radians(POLE_LAT)
 
     sin_plat = np.sin(p_lat_rad)
     cos_plat = np.cos(p_lat_rad)
@@ -337,9 +236,9 @@ def load_custom_grid(filepath: str | Path) -> tuple[np.ndarray, np.ndarray]:
     Returns
     -------
     lon : np.ndarray
-        2D longitude array of shape (Ny, Nx).
+        2D longitude array of shape (NY, NX).
     lat : np.ndarray
-        2D latitude array of shape (Ny, Nx).
+        2D latitude array of shape (NY, NX).
     """
     path = Path(filepath)
     if not path.exists():
@@ -458,7 +357,86 @@ def _filter_kwargs(func, kwargs: dict) -> dict:
     """Helper to extract valid keyword arguments for a target function."""
     sig = inspect.signature(func)
     valid_params = set(sig.parameters.keys())
-    return {k: v for k, v in kwargs.items() if k in valid_params and v is not None}
+    res = {}
+    for k, v in kwargs.items():
+        if v is not None:
+            if k in valid_params:
+                res[k] = v
+            elif k.upper() in valid_params:
+                res[k.upper()] = v
+    return res
+
+
+def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
+    """Validate mandatory input parameters for the requested grid type.
+
+    Parameters
+    ----------
+    grid_type : str
+        Normalized grid type identifier.
+    kwargs : dict
+        Keyword arguments supplied for grid creation.
+
+    Raises
+    ------
+    ValueError
+        If required parameters for the specified grid type are missing or invalid.
+    """
+    gtype = grid_type.lower().strip()
+
+    if gtype == "custom":
+        custom_file = kwargs.get("custom_grid") or kwargs.get("filepath")
+        if not custom_file:
+            raise ValueError(
+                "Missing mandatory parameter '--custom-grid' for custom grid type."
+            )
+        return
+
+    # Check discrete dimensions NX and NY if provided or required
+    nx = kwargs.get("NX") or kwargs.get("nx")
+    ny = kwargs.get("NY") or kwargs.get("ny")
+    if nx is not None and int(nx) <= 0:
+        raise ValueError(f"Grid dimension NX must be positive, got {nx}")
+    if ny is not None and int(ny) <= 0:
+        raise ValueError(f"Grid dimension NY must be positive, got {ny}")
+
+    if gtype == "regular":
+        missing = []
+        for param in ("LON_START", "LON_END", "LAT_START", "LAT_END", "NX", "NY"):
+            val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
+            if val is None:
+                missing.append(f"--{param.replace('_', '-')}")
+        if missing:
+            raise ValueError(
+                f"Missing mandatory parameter(s) for regular grid: {', '.join(missing)}"
+            )
+
+    elif gtype == "stereographic":
+        missing = []
+        for param in ("CENTER_LON", "CENTER_LAT", "EXTENT_KM", "RESOLUTION_KM"):
+            val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
+            if val is None:
+                missing.append(f"--{param.replace('_', '-')}")
+        if missing:
+            raise ValueError(
+                f"Missing mandatory parameter(s) for stereographic grid: {', '.join(missing)}"
+            )
+
+    elif gtype == "rotated_pole":
+        missing = []
+        for param in ("POLE_LON", "POLE_LAT"):
+            val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
+            if val is None:
+                missing.append(f"--{param.replace('_', '-')}")
+        if missing:
+            raise ValueError(
+                f"Missing mandatory parameter(s) for rotated_pole grid: {', '.join(missing)}"
+            )
+    else:
+        raise ValueError(
+            f"Unsupported grid_type '{grid_type}'. Supported grid types: "
+            "'regular', 'stereographic', 'rotated_pole', 'custom'."
+        )
 
 
 def create_grid_coordinates(
@@ -471,10 +449,9 @@ def create_grid_coordinates(
     ----------
     grid_type : str
         Grid projection or layout type. Supported options:
-        - 'regular', 'latlon', 'rectilinear': Regular 2D lon-lat grid.
-        - 'stereographic', 'polar_stereographic': General stereographic grid.
-        - 'lambert_conformal', 'lambert': Lambert Conformal Conic grid.
-        - 'rotated_pole', 'curvilinear': Rotated pole spherical grid.
+        - 'regular': Regular 2D lon-lat grid.
+        - 'stereographic': General stereographic grid.
+        - 'rotated_pole': Rotated pole spherical grid.
         - 'custom': Custom grid loaded from a layout file specified via custom_grid/filepath parameter.
     **kwargs
         Parameters passed to the specific grid generator or custom_grid filepath.
@@ -482,11 +459,14 @@ def create_grid_coordinates(
     Returns
     -------
     lon : np.ndarray
-        2D longitude array of shape (Ny, Nx).
+        2D longitude array of shape (NY, NX).
     lat : np.ndarray
-        2D latitude array of shape (Ny, Nx).
+        2D latitude array of shape (NY, NX).
     """
     gtype = grid_type.lower().strip()
+
+    validate_grid_parameters(gtype, kwargs)
+
     custom_file = kwargs.get("custom_grid") or kwargs.get("filepath")
     if gtype == "custom" or custom_file is not None:
         if not custom_file:
@@ -495,20 +475,17 @@ def create_grid_coordinates(
             )
         return load_custom_grid(custom_file)
 
-    if gtype in ("regular", "latlon", "rectilinear"):
+    if gtype == "regular":
         filtered = _filter_kwargs(create_regular_grid, kwargs)
         return create_regular_grid(**filtered)
-    elif gtype in ("stereographic", "polar_stereographic"):
+    elif gtype == "stereographic":
         filtered = _filter_kwargs(create_stereographic_grid, kwargs)
         return create_stereographic_grid(**filtered)
-    elif gtype in ("lambert_conformal", "lambert"):
-        filtered = _filter_kwargs(create_lambert_conformal_grid, kwargs)
-        return create_lambert_conformal_grid(**filtered)
-    elif gtype in ("rotated_pole", "curvilinear"):
+    elif gtype == "rotated_pole":
         filtered = _filter_kwargs(create_rotated_pole_grid, kwargs)
         return create_rotated_pole_grid(**filtered)
     else:
         raise ValueError(
             f"Unsupported grid_type '{grid_type}'. Supported grid types: "
-            "'regular', 'stereographic', 'lambert_conformal', 'rotated_pole', 'custom'."
+            "'regular', 'stereographic', 'rotated_pole', 'custom'."
         )
