@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -36,8 +36,8 @@ EXTENT_DEG=""
 RESOLUTION_DEG=""
 POLE_LON=""
 POLE_LAT=""
-NX=""
-NY=""
+NX="401"
+NY="125"
 CUSTOM_GRID=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
@@ -52,32 +52,33 @@ Usage: ./run_gridgen.sh [OPTIONS]
 
 Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
 
-1. General & Dimension Options (Common to all grid types):
-  --NX NX                Discrete grid dimension NX (number of X points)
-  --NY NY                Discrete grid dimension NY (number of Y points)
-  -n, --name NAME        Grid prefix identifier (default: ww4_grid)
+1. General & Dimension Options (Common to all grid options):
+  --nx NX                Discrete grid dimension NX (default: 401) [Optional]
+  --ny NY                Discrete grid dimension NY (default: 125) [Optional]
+  -n, --name NAME        Grid prefix identifier (default: ww4_grid) [Optional]
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
-                         (default: regular)
-  -o, --out-dir DIR      Output directory for generated grid files (default: .)
+                         (default: regular) [Optional]
+  -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
+                         [Optional]
   -c, --clean, --cleanup Remove generated grid files and graphics for NAME
   -h, --help             Display this help message and exit
 
 2. Regular Grid Parameters (--grid-type regular):
-  --LON-START LON        [Mandatory] Lower-left corner longitude in degrees
-  --LAT-START LAT        [Mandatory] Lower-left corner latitude in degrees
-  --LON-END LON          [Mandatory] Upper-right corner longitude in degrees
-  --LAT-END LAT          [Mandatory] Upper-right corner latitude in degrees
-  --POLE-LON LON         [Optional] Rotated north pole longitude (degrees)
-  --POLE-LAT LAT         [Optional] Rotated north pole latitude (degrees)
+  --lon-start LON        [Mandatory] Lower-left corner longitude in degrees
+  --lat-start LAT        [Mandatory] Lower-left corner latitude in degrees
+  --lon-end LON          [Mandatory] Upper-right corner longitude in degrees
+  --lat-end LAT          [Mandatory] Upper-right corner latitude in degrees
+  --pole-lon LON         [Optional] Rotated north pole longitude (degrees)
+  --pole-lat LAT         [Optional] Rotated north pole latitude (degrees)
 
 3. Stereographic Grid Parameters (--grid-type stereographic):
-  --CENTER-LON LON       [Mandatory] Projection center longitude in degrees
-  --CENTER-LAT LAT       [Mandatory] Projection center latitude in degrees
-  --EXTENT-KM KM         [Optional] Half-width domain extent in kilometers
-  --RESOLUTION-KM KM     [Optional] Grid resolution in kilometers
-  --EXTENT-DEG DEG       [Optional] Half-width domain extent in arc degrees
-  --RESOLUTION-DEG DEG   [Optional] Grid resolution in arc degrees
+  --center-lon LON       [Mandatory] Projection center longitude in degrees
+  --center-lat LAT       [Mandatory] Projection center latitude in degrees
+  --extent-km KM         [Mandatory if --extent-deg omitted] Half-width in km
+  --resolution-km KM     [Optional] Grid resolution in kilometers
+  --extent-deg DEG       [Mandatory if --extent-km omitted] Half-width in deg
+  --resolution-deg DEG   [Optional] Grid resolution in arc degrees
 
 4. Custom Grid Parameters (--grid-type custom):
   --custom-grid FILE     [Mandatory] Path to custom layout file
@@ -105,59 +106,59 @@ while [[ $# -gt 0 ]]; do
       GRID_TYPE="$2"
       shift 2
       ;;
-    --LON-START)
+    --lon-start|--LON-START)
       LON_START="$2"
       shift 2
       ;;
-    --LON-END)
+    --lon-end|--LON-END)
       LON_END="$2"
       shift 2
       ;;
-    --LAT-START)
+    --lat-start|--LAT-START)
       LAT_START="$2"
       shift 2
       ;;
-    --LAT-END)
+    --lat-end|--LAT-END)
       LAT_END="$2"
       shift 2
       ;;
-    --CENTER-LON)
+    --center-lon|--CENTER-LON)
       CENTER_LON="$2"
       shift 2
       ;;
-    --CENTER-LAT)
+    --center-lat|--CENTER-LAT)
       CENTER_LAT="$2"
       shift 2
       ;;
-    --EXTENT-KM)
+    --extent-km|--EXTENT-KM)
       EXTENT_KM="$2"
       shift 2
       ;;
-    --RESOLUTION-KM)
+    --resolution-km|--RESOLUTION-KM)
       RESOLUTION_KM="$2"
       shift 2
       ;;
-    --EXTENT-DEG)
+    --extent-deg|--EXTENT-DEG)
       EXTENT_DEG="$2"
       shift 2
       ;;
-    --RESOLUTION-DEG)
+    --resolution-deg|--RESOLUTION-DEG)
       RESOLUTION_DEG="$2"
       shift 2
       ;;
-    --POLE-LON)
+    --pole-lon|--POLE-LON)
       POLE_LON="$2"
       shift 2
       ;;
-    --POLE-LAT)
+    --pole-lat|--POLE-LAT)
       POLE_LAT="$2"
       shift 2
       ;;
-    --NX)
+    --nx|--NX)
       NX="$2"
       shift 2
       ;;
-    --NY)
+    --ny|--NY)
       NY="$2"
       shift 2
       ;;
@@ -303,20 +304,20 @@ CMD_ARGS=(
   --ref-dir "$REF_DIR"
 )
 
-if [ -n "$LON_START" ]; then CMD_ARGS+=(--LON-START "$LON_START"); fi
-if [ -n "$LON_END" ]; then CMD_ARGS+=(--LON-END "$LON_END"); fi
-if [ -n "$LAT_START" ]; then CMD_ARGS+=(--LAT-START "$LAT_START"); fi
-if [ -n "$LAT_END" ]; then CMD_ARGS+=(--LAT-END "$LAT_END"); fi
-if [ -n "$CENTER_LON" ]; then CMD_ARGS+=(--CENTER-LON "$CENTER_LON"); fi
-if [ -n "$CENTER_LAT" ]; then CMD_ARGS+=(--CENTER-LAT "$CENTER_LAT"); fi
-if [ -n "$EXTENT_KM" ]; then CMD_ARGS+=(--EXTENT-KM "$EXTENT_KM"); fi
-if [ -n "$RESOLUTION_KM" ]; then CMD_ARGS+=(--RESOLUTION-KM "$RESOLUTION_KM"); fi
-if [ -n "$EXTENT_DEG" ]; then CMD_ARGS+=(--EXTENT-DEG "$EXTENT_DEG"); fi
-if [ -n "$RESOLUTION_DEG" ]; then CMD_ARGS+=(--RESOLUTION-DEG "$RESOLUTION_DEG"); fi
-if [ -n "$POLE_LON" ]; then CMD_ARGS+=(--POLE-LON "$POLE_LON"); fi
-if [ -n "$POLE_LAT" ]; then CMD_ARGS+=(--POLE-LAT "$POLE_LAT"); fi
-if [ -n "$NX" ]; then CMD_ARGS+=(--NX "$NX"); fi
-if [ -n "$NY" ]; then CMD_ARGS+=(--NY "$NY"); fi
+if [ -n "$LON_START" ]; then CMD_ARGS+=(--lon-start "$LON_START"); fi
+if [ -n "$LON_END" ]; then CMD_ARGS+=(--lon-end "$LON_END"); fi
+if [ -n "$LAT_START" ]; then CMD_ARGS+=(--lat-start "$LAT_START"); fi
+if [ -n "$LAT_END" ]; then CMD_ARGS+=(--lat-end "$LAT_END"); fi
+if [ -n "$CENTER_LON" ]; then CMD_ARGS+=(--center-lon "$CENTER_LON"); fi
+if [ -n "$CENTER_LAT" ]; then CMD_ARGS+=(--center-lat "$CENTER_LAT"); fi
+if [ -n "$EXTENT_KM" ]; then CMD_ARGS+=(--extent-km "$EXTENT_KM"); fi
+if [ -n "$RESOLUTION_KM" ]; then CMD_ARGS+=(--resolution-km "$RESOLUTION_KM"); fi
+if [ -n "$EXTENT_DEG" ]; then CMD_ARGS+=(--extent-deg "$EXTENT_DEG"); fi
+if [ -n "$RESOLUTION_DEG" ]; then CMD_ARGS+=(--resolution-deg "$RESOLUTION_DEG"); fi
+if [ -n "$POLE_LON" ]; then CMD_ARGS+=(--pole-lon "$POLE_LON"); fi
+if [ -n "$POLE_LAT" ]; then CMD_ARGS+=(--pole-lat "$POLE_LAT"); fi
+if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi
+if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"

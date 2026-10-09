@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 
 """Unit tests for grid coordinate generation routines."""
 
@@ -84,19 +84,19 @@ def test_grid_parameter_validation_errors() -> None:
 
     # 2. Missing mandatory parameters for regular grid
     with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for regular grid: --LON-START, --LON-END, --LAT-START, --LAT-END, --NX, --NY"
+        ValueError, match=r"Missing mandatory parameter\(s\) for regular grid: --lon-start, --lon-end, --lat-start, --lat-end"
     ):
         create_grid_coordinates("regular")
 
     # 3. Missing CENTER_LON/CENTER_LAT for stereographic grid
     with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --CENTER-LON, --CENTER-LAT"
+        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --center-lon, --center-lat"
     ):
         create_grid_coordinates("stereographic")
 
-    # 4. Missing stereographic extent and resolution parameters
+    # 4. Missing stereographic extent parameter
     with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --EXTENT-KM or --EXTENT-DEG, --RESOLUTION-KM, --RESOLUTION-DEG, or --NX and --NY"
+        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --extent-km or --extent-deg"
     ):
         create_grid_coordinates("stereographic", CENTER_LON=0.0, CENTER_LAT=90.0)
 

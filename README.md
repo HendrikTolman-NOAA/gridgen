@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 -->
 
 <p align="center">
@@ -109,27 +109,27 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 
 | Option | Description |
 | :--- | :--- |
-| `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). |
-| `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). |
-| `--LON-START LON` | Minimum longitude in degrees for regular grid. |
-| `--LON-END LON` | Maximum longitude in degrees for regular grid. |
-| `--LAT-START LAT` | Minimum latitude in degrees for regular grid. |
-| `--LAT-END LAT` | Maximum latitude in degrees for regular grid. |
-| `--POLE-LON LON` | Optional rotated north pole longitude in degrees for regular grid. |
-| `--POLE-LAT LAT` | Optional rotated north pole latitude in degrees for regular grid (reverts to regular grid when lat is 90.0). |
-| `--CENTER-LON LON` | Center longitude for stereographic projection in degrees. |
-| `--CENTER-LAT LAT` | Center latitude for stereographic projection in degrees. |
-| `--EXTENT-KM KM` | Half-width domain extent in km for stereographic grid. |
-| `--RESOLUTION-KM KM` | Grid resolution in km for stereographic grid. |
-| `--EXTENT-DEG DEG` | Half-width domain extent in arc degrees for stereographic grid. |
-| `--RESOLUTION-DEG DEG` | Grid resolution in arc degrees for stereographic grid. |
-| `--NX NX` | Number of longitude/x grid points. |
-| `--NY NY` | Number of latitude/y grid points. |
-| `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). |
-| `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). |
-| `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). |
-| `-c, --clean, --cleanup` | Remove generated output grid files and graphics files for specified `--name` from output directory. |
-| `-h, --help` | Display usage help message and exit. |
+| `--nx NX` | Discrete grid dimension NX (default: `401`). Common to all grid options. `[Optional]` |
+| `--ny NY` | Discrete grid dimension NY (default: `125`). Common to all grid options. `[Optional]` |
+| `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). `[Optional]` |
+| `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
+| `--lon-start LON` | Lower-left corner longitude in degrees. `[Mandatory for regular grid]` |
+| `--lat-start LAT` | Lower-left corner latitude in degrees. `[Mandatory for regular grid]` |
+| `--lon-end LON` | Upper-right corner longitude in degrees. `[Mandatory for regular grid]` |
+| `--lat-end LAT` | Upper-right corner latitude in degrees. `[Mandatory for regular grid]` |
+| `--pole-lon LON` | Rotated north pole longitude in degrees. `[Optional for regular grid]` |
+| `--pole-lat LAT` | Rotated north pole latitude in degrees (reverts to regular grid when lat is 90.0). `[Optional for regular grid]` |
+| `--center-lon LON` | Center longitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
+| `--center-lat LAT` | Center latitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
+| `--extent-km KM` | Half-width domain extent in km for stereographic grid. `[Mandatory if --extent-deg omitted]` |
+| `--resolution-km KM` | Grid resolution in km for stereographic grid. `[Optional]` |
+| `--extent-deg DEG` | Half-width domain extent in arc degrees for stereographic grid. `[Mandatory if --extent-km omitted]` |
+| `--resolution-deg DEG` | Grid resolution in arc degrees for stereographic grid. `[Optional]` |
+| `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). `[Mandatory for custom grid]` |
+| `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). `[Optional]` |
+| `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). `[Optional]` |
+| `-c, --clean, --cleanup` | Remove generated output grid files and graphics files for specified `--name` from output directory. `[Optional]` |
+| `-h, --help` | Display usage help message and exit. `[Optional]` |
 
 #### Output Formats
 
@@ -202,7 +202,7 @@ Gridgen now does not require the grids to be rectilinear to allow for developmen
 
 ---
 
-**Last updated:** October 8, 2026
+**Last updated:** October 9, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">

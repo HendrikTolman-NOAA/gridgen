@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-09
 
 """Grid coordinate generation module for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4).
 
@@ -29,8 +29,8 @@ def create_regular_grid(
     LON_END: float,
     LAT_START: float,
     LAT_END: float,
-    NX: int,
-    NY: int,
+    NX: int = 401,
+    NY: int = 125,
     POLE_LON: float | None = None,
     POLE_LAT: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -93,8 +93,8 @@ def create_stereographic_grid(
     RESOLUTION_KM: float | None = None,
     EXTENT_DEG: float | None = None,
     RESOLUTION_DEG: float | None = None,
-    NX: int | None = None,
-    NY: int | None = None,
+    NX: int | None = 401,
+    NY: int | None = 125,
     k0: float = 1.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a general stereographic grid.
@@ -141,31 +141,25 @@ def create_stereographic_grid(
                 "Either EXTENT_KM or EXTENT_DEG must be provided for stereographic grid."
             )
 
-    if RESOLUTION_KM is None:
-        if RESOLUTION_DEG is not None:
-            RESOLUTION_KM = RESOLUTION_DEG * deg_to_km
-        elif NX is None or NY is None:
-            raise ValueError(
-                "Either RESOLUTION_KM, RESOLUTION_DEG, or both NX and NY must be provided for stereographic grid."
-            )
+    if RESOLUTION_KM is None and RESOLUTION_DEG is not None:
+        RESOLUTION_KM = RESOLUTION_DEG * deg_to_km
 
-    if NX is not None:
-        x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, NX)
-    else:
+    if RESOLUTION_KM is not None:
         x1d = np.arange(
             -EXTENT_KM * 1000.0,
             EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
             RESOLUTION_KM * 1000.0,
         )
-
-    if NY is not None:
-        y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, NY)
-    else:
         y1d = np.arange(
             -EXTENT_KM * 1000.0,
             EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
             RESOLUTION_KM * 1000.0,
         )
+    else:
+        nx_val = NX if NX is not None else 401
+        ny_val = NY if NY is not None else 125
+        x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, nx_val)
+        y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, ny_val)
 
     x, y = np.meshgrid(x1d, y1d)
     radius_earth = 6371000.0
@@ -411,6 +405,8 @@ def _filter_kwargs(func, kwargs: dict) -> dict:
                 res[k] = v
             elif k.upper() in valid_params:
                 res[k.upper()] = v
+            elif k.lower() in valid_params:
+                res[k.lower()] = v
     return res
 
 
@@ -449,10 +445,10 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
 
     if gtype == "regular":
         missing = []
-        for param in ("LON_START", "LON_END", "LAT_START", "LAT_END", "NX", "NY"):
+        for param in ("LON_START", "LON_END", "LAT_START", "LAT_END"):
             val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
             if val is None:
-                missing.append(f"--{param.replace('_', '-')}")
+                missing.append(f"--{param.lower().replace('_', '-')}")
         if missing:
             raise ValueError(
                 f"Missing mandatory parameter(s) for regular grid: {', '.join(missing)}"
@@ -463,17 +459,12 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
         for param in ("CENTER_LON", "CENTER_LAT"):
             val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
             if val is None:
-                missing.append(f"--{param.replace('_', '-')}")
+                missing.append(f"--{param.lower().replace('_', '-')}")
 
         ext_km = kwargs.get("EXTENT_KM") if kwargs.get("EXTENT_KM") is not None else kwargs.get("extent_km")
         ext_deg = kwargs.get("EXTENT_DEG") if kwargs.get("EXTENT_DEG") is not None else kwargs.get("extent_deg")
         if ext_km is None and ext_deg is None:
-            missing.append("--EXTENT-KM or --EXTENT-DEG")
-
-        res_km = kwargs.get("RESOLUTION_KM") if kwargs.get("RESOLUTION_KM") is not None else kwargs.get("resolution_km")
-        res_deg = kwargs.get("RESOLUTION_DEG") if kwargs.get("RESOLUTION_DEG") is not None else kwargs.get("resolution_deg")
-        if res_km is None and res_deg is None and (nx is None or ny is None):
-            missing.append("--RESOLUTION-KM, --RESOLUTION-DEG, or --NX and --NY")
+            missing.append("--extent-km or --extent-deg")
 
         if missing:
             raise ValueError(
