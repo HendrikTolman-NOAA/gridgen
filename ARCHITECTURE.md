@@ -33,7 +33,7 @@ flowchart TD
         B[populate_reference_data.sh]
         B --> C1["Download / Extract Legacy Datasets<br/>etopo1.nc, etopo2.nc, coastal_bound_*.mat"]
         B --> C2["download newer reference data<br/>ETOPO_2022_v1_60s_N90W180_bed.nc<br/>GEBCO_2024.nc<br/>gshhg-bin-2.3.7.zip"]
-        C3["User supplied custom data (user copy)"]
+        C3["User supplied custom data (copied by user)"]
         C1 --> D[(reference_data/ Directory)]
         C2 --> D
         C3 --> D
