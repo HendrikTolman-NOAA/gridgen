@@ -79,10 +79,10 @@ The `populate_reference_data.sh` script supports the following command-line opti
 | `-d, --target-dir DIR` | Specify target output directory (default: `./reference_data`). |
 | `-c, --clean, --cleanup` | Remove all reference dataset files from the target directory. |
 | `--legacy` | Pull legacy reference datasets (`etopo1.nc`, `etopo2.nc`, `coastal_bound_*.mat`). |
-| `--etopo2022` | Pull newer NOAA NCEI ETOPO 2022 global relief model dataset (`ETOPO_2022_v1_60s_N90W180_bed.tif`). |
-| `--gebco` | Display instructions and links for GEBCO global bathymetry grid. |
-| `--gshhg` | Display instructions and links for GSHHG v2.3.7 vector shoreline database. |
-| `--all` | Pull all available external datasets (legacy + ETOPO 2022) and display source information. |
+| `--etopo2022` | Pull newer NOAA NCEI ETOPO 2022 global relief model NetCDF dataset (`ETOPO_2022_v1_60s_N90W180_bed.nc`). |
+| `--gebco` | Pull GEBCO global bathymetry grid NetCDF dataset (`GEBCO_2024.nc`). |
+| `--gshhg` | Pull GSHHG v2.3.7 vector shoreline database (`gshhg-bin-2.3.7.zip`). |
+| `--all` | Pull all available external datasets (legacy + ETOPO 2022, GEBCO, GSHHG). |
 | `-h, --help` | Display usage help message and exit. |
 
 #### Default Behavior and Sources

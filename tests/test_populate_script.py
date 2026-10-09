@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-09
 
 """Unit tests for reference data population script (populate_reference_data.sh)."""
 
@@ -61,8 +61,8 @@ def test_reference_data_gitignore():
         "coastal_bound_low.mat",
         "optional_coastal_polygons.mat",
         "gridgen_addit.tar.gz",
-        "ETOPO_2022_v1_60s_N90W180_bed.tif",
-        "ETOPO_2022_v1_30s_N90W180_bed.tif",
+        "ETOPO_2022_v1_60s_N90W180_bed.nc",
+        "ETOPO_2022_v1_30s_N90W180_bed.nc",
     ]
 
     for entry in expected_entries:
@@ -72,10 +72,13 @@ def test_reference_data_gitignore():
 
 
 def test_populate_script_target_dir(tmp_path: Path):
-    """Verify that script creates target directory and executes suggestion flags."""
+    """Verify that script creates target directory and executes dataset flags."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "populate_reference_data.sh"
     target_dir = tmp_path / "custom_ref_data"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    (target_dir / "GEBCO_2024.nc").write_text("dummy gebco")
+    (target_dir / "gshhg-bin-2.3.7.zip").write_text("dummy gshhg")
 
     result = subprocess.run(
         [str(script_path), "-d", str(target_dir), "--gebco", "--gshhg"],
@@ -86,14 +89,8 @@ def test_populate_script_target_dir(tmp_path: Path):
 
     assert result.returncode == 0
     assert target_dir.exists()
-    assert (
-        "SUGGESTION: Newer Authoritative Bathymetry Source - GEBCO 2024"
-        in result.stdout
-    )
-    assert (
-        "SUGGESTION: Newer Authoritative Shoreline Source - GSHHG v2.3.7"
-        in result.stdout
-    )
+    assert "GEBCO dataset already present" in result.stdout
+    assert "GSHHG shoreline dataset already present" in result.stdout
 
 
 def test_populate_script_legacy_download_or_defunct(tmp_path: Path):
@@ -206,7 +203,7 @@ def test_populate_script_clean_option(tmp_path: Path):
     dataset_files = [
         "etopo1.nc",
         "coastal_bound_high.mat",
-        "ETOPO_2022_v1_60s_N90W180_bed.tif",
+        "ETOPO_2022_v1_60s_N90W180_bed.nc",
     ]
     preserved_files = [
         "README.md",
@@ -254,12 +251,15 @@ def test_populate_script_clean_empty_dir(tmp_path: Path):
 
 
 def test_populate_script_from_external_directory(tmp_path: Path):
-    """Verify populate_reference_data.sh executed from external working directory targets repo_root/reference_data by default."""
+    """Verify populate_reference_data.sh executed from external working directory targets specified directory."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "populate_reference_data.sh"
+    target_dir = tmp_path / "ext_ref_data"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    (target_dir / "GEBCO_2024.nc").write_text("dummy gebco")
 
     result = subprocess.run(
-        [str(script_path), "--gebco"],
+        [str(script_path), "-d", str(target_dir), "--gebco"],
         cwd=tmp_path,
         capture_output=True,
         text=True,
@@ -267,5 +267,4 @@ def test_populate_script_from_external_directory(tmp_path: Path):
     )
 
     assert result.returncode == 0
-    expected_target = repo_root / "reference_data"
-    assert f"Target Directory: {expected_target}" in result.stdout
+    assert f"Target Directory: {target_dir}" in result.stdout

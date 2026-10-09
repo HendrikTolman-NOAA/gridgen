@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-09
 #
 # Utility tool to populate the reference_data directory with authoritative
 # bathymetry, shoreline, and regional polygon datasets required by WAVEWATCH.
@@ -25,8 +25,10 @@ TARGET_DIR_SPECIFIED=0
 
 # URLs for authoritative data sources
 NCEP_GRIDGEN_URL="ftp://polar.ncep.noaa.gov/waves/gridgen/gridgen_addit.tar.gz"
-ETOPO2022_60S_TIF_URL="https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/data/60s/60s_bed_elev_gtif/ETOPO_2022_v1_60s_N90W180_bed.tif"
-ETOPO2022_30S_TIF_URL="https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/data/30s/30s_bed_elev_gtif/ETOPO_2022_v1_30s_N90W180_bed.tif"
+ETOPO2022_60S_NC_URL="https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/60s/60s_bed_elev_netcdf/ETOPO_2022_v1_60s_N90W180_bed.nc"
+ETOPO2022_30S_NC_URL="https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/30s/30s_bed_elev_netcdf/ETOPO_2022_v1_30s_N90W180_bed.nc"
+GEBCO2024_NC_URL="https://dap.ceda.ac.uk/bodc/gebco/global/gebco_2024/ice_surface_elevation/netcdf/GEBCO_2024_CF.nc"
+GSHHG_ZIP_URL="https://www.soest.hawaii.edu/wessel/gshhg/gshhg-bin-2.3.7.zip"
 
 # Flags
 FETCH_LEGACY=false
@@ -47,10 +49,10 @@ Options:
   -d, --target-dir DIR   Specify target output directory (default: ./reference_data)
   -c, --clean, --cleanup Remove all reference datasets from target directory
   --legacy               Pull legacy reference datasets (etopo1.nc, etopo2.nc, coastal_bound_*.mat)
-  --etopo2022            Pull newer NOAA NCEI ETOPO 2022 global relief model dataset
-  --gebco                Display instructions & links for GEBCO global bathymetry grid
-  --gshhg                Display instructions & links for GSHHG v2.3.7 vector shoreline database
-  --all                  Pull all available external datasets (legacy + newer ETOPO 2022)
+  --etopo2022            Pull newer NOAA NCEI ETOPO 2022 global relief model NetCDF dataset
+  --gebco                Pull GEBCO global bathymetry grid NetCDF dataset
+  --gshhg                Pull GSHHG v2.3.7 vector shoreline database
+  --all                  Pull all available external datasets (legacy + ETOPO 2022, GEBCO, GSHHG)
   -h, --help             Display this help message and exit
 
 Default Behavior:
@@ -63,13 +65,13 @@ Authoritative External Data Sources:
      ftp://polar.ncep.noaa.gov/waves/gridgen/gridgen_addit.tar.gz
      Provides: etopo1.nc, etopo2.nc, coastal_bound_*.mat, optional_coastal_polygons.mat
   2. ETOPO 2022 (NOAA NCEI):
-     https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/data/
+     https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/
      Replaces ETOPO1/2 with higher resolution 15s/30s/60s global bathymetry & topography.
   3. GEBCO (IHO/IOC):
      https://www.gebco.net/data_and_products/gridded_bathymetry_data/
      15 arc-second global grid of ocean bathymetry.
   4. GSHHG v2.3.7 (NOAA/SOEST):
-     https://www.ngdc.noaa.gov/mgg/shorelines/
+     https://www.soest.hawaii.edu/wessel/gshhg/
      Global Self-consistent, Hierarchical, High-resolution Geography database.
 EOF
 }
@@ -266,37 +268,44 @@ fi
 if [ "$FETCH_ETOPO2022" = true ]; then
   echo ""
   echo "--> Processing ETOPO 2022 Global Relief Model (NOAA NCEI)..."
-  ETOPO_DEST="${TARGET_DIR}/ETOPO_2022_v1_60s_N90W180_bed.tif"
+  ETOPO_DEST="${TARGET_DIR}/ETOPO_2022_v1_60s_N90W180_bed.nc"
   if [ ! -f "$ETOPO_DEST" ]; then
-    download_file "$ETOPO2022_60S_TIF_URL" "$ETOPO_DEST"
-    echo "Downloaded ETOPO 2022 (60s bed elevation GeoTIFF)."
+    download_file "$ETOPO2022_60S_NC_URL" "$ETOPO_DEST"
+    echo "Downloaded ETOPO 2022 (60s bed elevation NetCDF)."
   else
     echo "ETOPO 2022 dataset already present at ${ETOPO_DEST}."
   fi
 fi
 
-# 3. Suggest GEBCO Data Source
-if [ "$FETCH_GEBCO" = true ] || [ "$CLI_SPECIFIED" = false ]; then
+# 3. Fetch GEBCO Data Source
+if [ "$FETCH_GEBCO" = true ]; then
   echo ""
-  echo "========================================================================"
-  echo " SUGGESTION: Newer Authoritative Bathymetry Source - GEBCO 2024"
-  echo "========================================================================"
-  echo " The General Bathymetric Chart of the Oceans (GEBCO) provides a global"
-  echo " 15 arc-second bathymetry grid (GEBCO_2024 NetCDF format)."
-  echo " You can obtain GEBCO bathymetry directly from:"
-  echo "   https://www.gebco.net/data_and_products/gridded_bathymetry_data/"
+  echo "--> Processing GEBCO Global Bathymetry Grid (IHO/IOC)..."
+  GEBCO_DEST="${TARGET_DIR}/GEBCO_2024.nc"
+  if [ ! -f "$GEBCO_DEST" ] && [ ! -f "${TARGET_DIR}/GEBCO_2024_CF.nc" ]; then
+    download_file "$GEBCO2024_NC_URL" "$GEBCO_DEST"
+    echo "Downloaded GEBCO 2024 NetCDF dataset."
+  else
+    echo "GEBCO dataset already present in ${TARGET_DIR}."
+  fi
 fi
 
-# 4. Suggest GSHHG Shoreline Data Source
-if [ "$FETCH_GSHHG" = true ] || [ "$CLI_SPECIFIED" = false ]; then
+# 4. Fetch GSHHG Shoreline Data Source
+if [ "$FETCH_GSHHG" = true ]; then
   echo ""
-  echo "========================================================================"
-  echo " SUGGESTION: Newer Authoritative Shoreline Source - GSHHG v2.3.7"
-  echo "========================================================================"
-  echo " GSHHG v2.3.7 is the latest release of the Global Self-consistent,"
-  echo " Hierarchical, High-resolution Geography database."
-  echo " Shapefiles and NetCDF vectors can be obtained directly from:"
-  echo "   https://www.ngdc.noaa.gov/mgg/shorelines/"
+  echo "--> Processing GSHHG Vector Shoreline Database (NOAA/SOEST)..."
+  GSHHG_DEST="${TARGET_DIR}/gshhg-bin-2.3.7.zip"
+  if [ ! -f "$GSHHG_DEST" ] && [ ! -d "${TARGET_DIR}/gshhg-bin-2.3.7" ] && [ ! -f "${TARGET_DIR}/bshore-f.b" ]; then
+    download_file "$GSHHG_ZIP_URL" "$GSHHG_DEST"
+    echo "Downloaded GSHHG v2.3.7 shoreline database."
+    if command -v unzip &> /dev/null; then
+      echo "Extracting GSHHG shoreline files..."
+      unzip -q -o "$GSHHG_DEST" -d "$TARGET_DIR" || true
+      echo "Extraction complete."
+    fi
+  else
+    echo "GSHHG shoreline dataset already present in ${TARGET_DIR}."
+  fi
 fi
 
 echo ""

@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-09
 -->
 
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Reference Data
@@ -92,7 +92,7 @@ For high-resolution modeling, newer authoritative external datasets are recommen
 ### 1. ETOPO 2022 Global Relief Model (NOAA NCEI)
 * **Authoritative Source**: NOAA National Centers for Environmental Information (NCEI)
 * **Resolutions Available**: 15 arc-second (~450m), 30 arc-second (~900m), 60 arc-second (~1.8km)
-* **Formats**: GeoTIFF (`.tif`) and NetCDF (`.nc`)
+* **Format**: NetCDF (`.nc`)
 * **Description**: Replaces ETOPO1 and ETOPO2 with significantly improved global relief, updated coastal bathymetry, and modern geoid/ice surface options.
 * **Retrieval**:
   ```bash
