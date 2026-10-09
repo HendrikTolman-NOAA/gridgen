@@ -76,17 +76,20 @@ def test_create_regular_grid() -> None:
     assert np.allclose(lat_np, lat)
 
 
-def test_grid_parameter_validation_errors() -> None:
-    """Test parameter validation error messages for missing required grid inputs."""
-    # 1. Missing custom_grid path for custom grid type
+def test_grid_parameter_defaults_and_validation_errors() -> None:
+    """Test default values and parameter validation error messages for required grid inputs."""
+    # 1. Regular grid with default parameters (lon: 140-240, lat: 44-75, nx: 401, ny: 125)
+    lon, lat = create_grid_coordinates("regular")
+    assert lon.shape == (125, 401)
+    assert lat.shape == (125, 401)
+    assert np.isclose(lon[0, 0], 140.0)
+    assert np.isclose(lon[0, -1], 240.0)
+    assert np.isclose(lat[0, 0], 44.0)
+    assert np.isclose(lat[-1, 0], 75.0)
+
+    # 2. Missing custom_grid path for custom grid type
     with pytest.raises(ValueError, match="Missing mandatory parameter '--custom-grid'"):
         create_grid_coordinates("custom")
-
-    # 2. Missing mandatory parameters for regular grid
-    with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for regular grid: --lon-start, --lon-end, --lat-start, --lat-end"
-    ):
-        create_grid_coordinates("regular")
 
     # 3. Missing CENTER_LON/CENTER_LAT for stereographic grid
     with pytest.raises(
@@ -102,25 +105,27 @@ def test_grid_parameter_validation_errors() -> None:
 
 
 def test_create_stereographic_grid() -> None:
-    """Test general stereographic grid generation using km and arc degree options."""
-    # 1. Polar center with km options
+    """Test general stereographic grid generation using km and arc degree options over discrete dimensions."""
+    # 1. Polar center with km option
     lon1, lat1 = create_stereographic_grid(
         CENTER_LON=0.0,
         CENTER_LAT=90.0,
         EXTENT_KM=500.0,
-        RESOLUTION_KM=100.0,
+        NX=11,
+        NY=11,
     )
-    assert lon1.ndim == 2
-    assert lat1.ndim == 2
+    assert lon1.shape == (11, 11)
+    assert lat1.shape == (11, 11)
     cy, cx = lon1.shape[0] // 2, lon1.shape[1] // 2
     assert np.isclose(lat1[cy, cx], 90.0, atol=1e-3)
 
-    # 2. Polar center with arc degree options
+    # 2. Polar center with arc degree option
     lon_deg, lat_deg = create_stereographic_grid(
         CENTER_LON=0.0,
         CENTER_LAT=90.0,
         EXTENT_DEG=4.4966,  # ~500 km
-        RESOLUTION_DEG=0.8993,  # ~100 km
+        NX=11,
+        NY=11,
     )
     assert lon_deg.shape == lon1.shape
     assert lat_deg.shape == lat1.shape
@@ -131,7 +136,8 @@ def test_create_stereographic_grid() -> None:
         CENTER_LON=-75.0,
         CENTER_LAT=40.0,
         EXTENT_KM=300.0,
-        RESOLUTION_KM=50.0,
+        NX=13,
+        NY=13,
     )
     cy2, cx2 = lon2.shape[0] // 2, lon2.shape[1] // 2
     assert np.isclose(lat2[cy2, cx2], 40.0, atol=1e-3)
@@ -183,17 +189,17 @@ def test_create_grid_coordinates_unified() -> None:
 
     # 3. General Stereographic in km
     lon2, lat2 = create_grid_coordinates(
-        "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_KM=200, RESOLUTION_KM=50
+        "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_KM=200, NX=11, NY=11
     )
-    assert lon2.ndim == 2
-    assert lat2.ndim == 2
+    assert lon2.shape == (11, 11)
+    assert lat2.shape == (11, 11)
 
     # 4. General Stereographic in arc degrees
     lon3, lat3 = create_grid_coordinates(
-        "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_DEG=2.0, RESOLUTION_DEG=0.5
+        "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_DEG=2.0, NX=11, NY=11
     )
-    assert lon3.ndim == 2
-    assert lat3.ndim == 2
+    assert lon3.shape == (11, 11)
+    assert lat3.shape == (11, 11)
 
     # 4. Invalid type
     with pytest.raises(ValueError, match="Unsupported grid_type"):

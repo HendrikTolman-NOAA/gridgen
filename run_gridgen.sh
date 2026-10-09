@@ -24,16 +24,14 @@ export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 # Default Configuration
 NAME="ww4_grid"
 GRID_TYPE="regular"
-LON_START=""
-LON_END=""
-LAT_START=""
-LAT_END=""
+LON_START="140.0"
+LON_END="240.0"
+LAT_START="44.0"
+LAT_END="75.0"
 CENTER_LON=""
 CENTER_LAT=""
 EXTENT_KM=""
-RESOLUTION_KM=""
 EXTENT_DEG=""
-RESOLUTION_DEG=""
 POLE_LON=""
 POLE_LAT=""
 NX="401"
@@ -65,20 +63,18 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -h, --help             Display this help message and exit
 
 2. Regular Grid Parameters (--grid-type regular):
-  --lon-start LON        [Mandatory] Lower-left corner longitude in degrees
-  --lat-start LAT        [Mandatory] Lower-left corner latitude in degrees
-  --lon-end LON          [Mandatory] Upper-right corner longitude in degrees
-  --lat-end LAT          [Mandatory] Upper-right corner latitude in degrees
-  --pole-lon LON         [Optional] Rotated north pole longitude (degrees)
-  --pole-lat LAT         [Optional] Rotated north pole latitude (degrees)
+  --lon-start LON        Lower-left longitude (default: 140.0) [Optional]
+  --lat-start LAT        Lower-left latitude (default: 44.0) [Optional]
+  --lon-end LON          Upper-right longitude (default: 240.0) [Optional]
+  --lat-end LAT          Upper-right latitude (default: 75.0) [Optional]
+  --pole-lon LON         Rotated north pole longitude in deg [Optional]
+  --pole-lat LAT         Rotated north pole latitude in deg [Optional]
 
 3. Stereographic Grid Parameters (--grid-type stereographic):
   --center-lon LON       [Mandatory] Projection center longitude in degrees
   --center-lat LAT       [Mandatory] Projection center latitude in degrees
   --extent-km KM         [Mandatory if --extent-deg omitted] Half-width in km
-  --resolution-km KM     [Optional] Grid resolution in kilometers
   --extent-deg DEG       [Mandatory if --extent-km omitted] Half-width in deg
-  --resolution-deg DEG   [Optional] Grid resolution in arc degrees
 
 4. Custom Grid Parameters (--grid-type custom):
   --custom-grid FILE     [Mandatory] Path to custom layout file
@@ -134,16 +130,8 @@ while [[ $# -gt 0 ]]; do
       EXTENT_KM="$2"
       shift 2
       ;;
-    --resolution-km|--RESOLUTION-KM)
-      RESOLUTION_KM="$2"
-      shift 2
-      ;;
     --extent-deg|--EXTENT-DEG)
       EXTENT_DEG="$2"
-      shift 2
-      ;;
-    --resolution-deg|--RESOLUTION-DEG)
-      RESOLUTION_DEG="$2"
       shift 2
       ;;
     --pole-lon|--POLE-LON)
@@ -235,9 +223,7 @@ case "${GRID_TYPE}" in
     if [ -n "$CENTER_LON" ]; then echo "  CENTER_LON (Proj)    : ${CENTER_LON} deg"; fi
     if [ -n "$CENTER_LAT" ]; then echo "  CENTER_LAT (Proj)    : ${CENTER_LAT} deg"; fi
     if [ -n "$EXTENT_KM" ]; then echo "  EXTENT_KM            : ${EXTENT_KM} km"; fi
-    if [ -n "$RESOLUTION_KM" ]; then echo "  RESOLUTION_KM        : ${RESOLUTION_KM} km"; fi
     if [ -n "$EXTENT_DEG" ]; then echo "  EXTENT_DEG           : ${EXTENT_DEG} deg"; fi
-    if [ -n "$RESOLUTION_DEG" ]; then echo "  RESOLUTION_DEG       : ${RESOLUTION_DEG} deg"; fi
     ;;
   custom)
     if [ -n "$CUSTOM_GRID" ]; then echo "  Custom Grid File     : ${CUSTOM_GRID}"; fi
@@ -311,9 +297,7 @@ if [ -n "$LAT_END" ]; then CMD_ARGS+=(--lat-end "$LAT_END"); fi
 if [ -n "$CENTER_LON" ]; then CMD_ARGS+=(--center-lon "$CENTER_LON"); fi
 if [ -n "$CENTER_LAT" ]; then CMD_ARGS+=(--center-lat "$CENTER_LAT"); fi
 if [ -n "$EXTENT_KM" ]; then CMD_ARGS+=(--extent-km "$EXTENT_KM"); fi
-if [ -n "$RESOLUTION_KM" ]; then CMD_ARGS+=(--resolution-km "$RESOLUTION_KM"); fi
 if [ -n "$EXTENT_DEG" ]; then CMD_ARGS+=(--extent-deg "$EXTENT_DEG"); fi
-if [ -n "$RESOLUTION_DEG" ]; then CMD_ARGS+=(--resolution-deg "$RESOLUTION_DEG"); fi
 if [ -n "$POLE_LON" ]; then CMD_ARGS+=(--pole-lon "$POLE_LON"); fi
 if [ -n "$POLE_LAT" ]; then CMD_ARGS+=(--pole-lat "$POLE_LAT"); fi
 if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi

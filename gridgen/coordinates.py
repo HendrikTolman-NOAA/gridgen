@@ -25,10 +25,10 @@ import numpy as np
 
 
 def create_regular_grid(
-    LON_START: float,
-    LON_END: float,
-    LAT_START: float,
-    LAT_END: float,
+    LON_START: float = 140.0,
+    LON_END: float = 240.0,
+    LAT_START: float = 44.0,
+    LAT_END: float = 75.0,
     NX: int = 401,
     NY: int = 125,
     POLE_LON: float | None = None,
@@ -36,7 +36,7 @@ def create_regular_grid(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D arrays of longitude and latitude for a regular grid.
 
-    Requires mandatory corner bounding points (LON_START, LON_END, LAT_START, LAT_END)
+    Accepts corner bounding points (LON_START, LON_END, LAT_START, LAT_END, default: 140-240, 44-75)
     and discrete matrix dimensions (NX, NY). Optionally accepts rotated pole coordinates
     (POLE_LON, POLE_LAT). If POLE_LAT is None or 90.0, the grid reverts to standard
     unrotated regular geographic coordinates.
@@ -90,17 +90,15 @@ def create_stereographic_grid(
     CENTER_LON: float,
     CENTER_LAT: float,
     EXTENT_KM: float | None = None,
-    RESOLUTION_KM: float | None = None,
     EXTENT_DEG: float | None = None,
-    RESOLUTION_DEG: float | None = None,
     NX: int | None = 401,
     NY: int | None = 125,
     k0: float = 1.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a general stereographic grid.
 
-    Supports domain size definition either in kilometers (EXTENT_KM, RESOLUTION_KM)
-    or in arc degrees (EXTENT_DEG, RESOLUTION_DEG).
+    Supports domain size definition either in kilometers (EXTENT_KM)
+    or in arc degrees (EXTENT_DEG) over discrete dimensions (NX, NY).
 
     Parameters
     ----------
@@ -110,16 +108,12 @@ def create_stereographic_grid(
         Central latitude of projection in degrees (-90 to +90).
     EXTENT_KM : float | None
         Half-width extent of domain in kilometers.
-    RESOLUTION_KM : float | None
-        Grid spacing in kilometers.
     EXTENT_DEG : float | None
         Half-width extent of domain in arc degrees.
-    RESOLUTION_DEG : float | None
-        Grid spacing in arc degrees.
     NX : int | None
-        Number of grid points in x direction.
+        Number of grid points in x direction (default: 401).
     NY : int | None
-        Number of grid points in y direction.
+        Number of grid points in y direction (default: 125).
     k0 : float
         Scale factor at projection origin (default: 1.0).
 
@@ -141,25 +135,10 @@ def create_stereographic_grid(
                 "Either EXTENT_KM or EXTENT_DEG must be provided for stereographic grid."
             )
 
-    if RESOLUTION_KM is None and RESOLUTION_DEG is not None:
-        RESOLUTION_KM = RESOLUTION_DEG * deg_to_km
-
-    if RESOLUTION_KM is not None:
-        x1d = np.arange(
-            -EXTENT_KM * 1000.0,
-            EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
-            RESOLUTION_KM * 1000.0,
-        )
-        y1d = np.arange(
-            -EXTENT_KM * 1000.0,
-            EXTENT_KM * 1000.0 + RESOLUTION_KM * 500.0,
-            RESOLUTION_KM * 1000.0,
-        )
-    else:
-        nx_val = NX if NX is not None else 401
-        ny_val = NY if NY is not None else 125
-        x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, nx_val)
-        y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, ny_val)
+    nx_val = NX if NX is not None else 401
+    ny_val = NY if NY is not None else 125
+    x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, nx_val)
+    y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, ny_val)
 
     x, y = np.meshgrid(x1d, y1d)
     radius_earth = 6371000.0
@@ -444,15 +423,8 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
         raise ValueError(f"Grid dimension NY must be positive, got {ny}")
 
     if gtype == "regular":
-        missing = []
-        for param in ("LON_START", "LON_END", "LAT_START", "LAT_END"):
-            val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
-            if val is None:
-                missing.append(f"--{param.lower().replace('_', '-')}")
-        if missing:
-            raise ValueError(
-                f"Missing mandatory parameter(s) for regular grid: {', '.join(missing)}"
-            )
+        # LON_START, LON_END, LAT_START, LAT_END have defaults (140-240, 44-75)
+        return
 
     elif gtype == "stereographic":
         missing = []

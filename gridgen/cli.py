@@ -92,30 +92,30 @@ def main() -> None:
     reg_group.add_argument(
         "--lon-start",
         type=float,
-        default=None,
+        default=140.0,
         metavar="LON_START",
-        help="[Mandatory] Lower-left corner longitude in degrees",
+        help="[Optional] Lower-left corner longitude in degrees (default: 140.0)",
     )
     reg_group.add_argument(
         "--lat-start",
         type=float,
-        default=None,
+        default=44.0,
         metavar="LAT_START",
-        help="[Mandatory] Lower-left corner latitude in degrees",
+        help="[Optional] Lower-left corner latitude in degrees (default: 44.0)",
     )
     reg_group.add_argument(
         "--lon-end",
         type=float,
-        default=None,
+        default=240.0,
         metavar="LON_END",
-        help="[Mandatory] Upper-right corner longitude in degrees",
+        help="[Optional] Upper-right corner longitude in degrees (default: 240.0)",
     )
     reg_group.add_argument(
         "--lat-end",
         type=float,
-        default=None,
+        default=75.0,
         metavar="LAT_END",
-        help="[Mandatory] Upper-right corner latitude in degrees",
+        help="[Optional] Upper-right corner latitude in degrees (default: 75.0)",
     )
     reg_group.add_argument(
         "--pole-lon",
@@ -156,25 +156,11 @@ def main() -> None:
         help="[Mandatory if --extent-deg omitted] Half-width domain extent in kilometers",
     )
     ste_group.add_argument(
-        "--resolution-km",
-        type=float,
-        default=None,
-        metavar="RESOLUTION_KM",
-        help="[Optional] Grid resolution in kilometers",
-    )
-    ste_group.add_argument(
         "--extent-deg",
         type=float,
         default=None,
         metavar="EXTENT_DEG",
         help="[Mandatory if --extent-km omitted] Half-width domain extent in arc degrees",
-    )
-    ste_group.add_argument(
-        "--resolution-deg",
-        type=float,
-        default=None,
-        metavar="RESOLUTION_DEG",
-        help="[Optional] Grid resolution in arc degrees",
     )
 
     # Group 4: Custom Grid File Parameters

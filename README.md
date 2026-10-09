@@ -113,18 +113,16 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--ny NY` | Discrete grid dimension NY (default: `125`). Common to all grid options. `[Optional]` |
 | `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). `[Optional]` |
 | `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
-| `--lon-start LON` | Lower-left corner longitude in degrees. `[Mandatory for regular grid]` |
-| `--lat-start LAT` | Lower-left corner latitude in degrees. `[Mandatory for regular grid]` |
-| `--lon-end LON` | Upper-right corner longitude in degrees. `[Mandatory for regular grid]` |
-| `--lat-end LAT` | Upper-right corner latitude in degrees. `[Mandatory for regular grid]` |
+| `--lon-start LON` | Lower-left corner longitude in degrees (default: `140.0`). `[Optional for regular grid]` |
+| `--lat-start LAT` | Lower-left corner latitude in degrees (default: `44.0`). `[Optional for regular grid]` |
+| `--lon-end LON` | Upper-right corner longitude in degrees (default: `240.0`). `[Optional for regular grid]` |
+| `--lat-end LAT` | Upper-right corner latitude in degrees (default: `75.0`). `[Optional for regular grid]` |
 | `--pole-lon LON` | Rotated north pole longitude in degrees. `[Optional for regular grid]` |
 | `--pole-lat LAT` | Rotated north pole latitude in degrees (reverts to regular grid when lat is 90.0). `[Optional for regular grid]` |
 | `--center-lon LON` | Center longitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
 | `--center-lat LAT` | Center latitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
 | `--extent-km KM` | Half-width domain extent in km for stereographic grid. `[Mandatory if --extent-deg omitted]` |
-| `--resolution-km KM` | Grid resolution in km for stereographic grid. `[Optional]` |
 | `--extent-deg DEG` | Half-width domain extent in arc degrees for stereographic grid. `[Mandatory if --extent-km omitted]` |
-| `--resolution-deg DEG` | Grid resolution in arc degrees for stereographic grid. `[Optional]` |
 | `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). `[Mandatory for custom grid]` |
 | `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). `[Optional]` |
 | `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). `[Optional]` |
