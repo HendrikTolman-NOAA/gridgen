@@ -25,8 +25,8 @@ The grid generation package converts high-resolution source bathymetry and shore
 ```mermaid
 flowchart TD
     subgraph Init Step 1: Software Acquisition & Environment Setup
-        A0["GitHub Repository<br/>NOAA-EMC/gridgen"] --> A1["git&nbsp;clone&nbsp;https://github.com/NOAA-EMC/gridgen.git"]
-        A1 --> A2["Verify Python Packages<br/>numpy, scipy, xarray, netCDF4, shapely, matplotlib"]
+        A0["GitHub&nbsp;Repository<br/>NOAA-EMC/gridgen"] --> A1["git&nbsp;clone&nbsp;https://github.com/NOAA-EMC/gridgen.git"]
+        A1 --> A2["Verify&nbsp;Python&nbsp;Packages<br/>numpy,&nbsp;scipy,&nbsp;xarray,&nbsp;netCDF4,&nbsp;shapely,&nbsp;matplotlib"]
     end
 
     subgraph Init Step 2: Reference Data Population
