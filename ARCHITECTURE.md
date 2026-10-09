@@ -25,7 +25,7 @@ The grid generation package converts high-resolution source bathymetry and shore
 ```mermaid
 flowchart TD
     subgraph Init Step 1: Software Acquisition & Environment Setup
-        A0["GitHub&nbsp;Repository<br/>NOAA-EMC/gridgen"] --> A1["git&nbsp;clone&nbsp;https://github.com/NOAA-EMC/gridgen.git"]
+        A0["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GitHub&nbsp;Repository&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOAA-EMC/gridgen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"] --> A1["&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;git&nbsp;clone&nbsp;https://github.com/NOAA-EMC/gridgen.git&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
         A1 --> A2["Verify&nbsp;Python&nbsp;Packages<br/>numpy,&nbsp;scipy,&nbsp;xarray,&nbsp;netCDF4,&nbsp;shapely,&nbsp;matplotlib"]
     end
 
@@ -33,8 +33,10 @@ flowchart TD
         B[populate_reference_data.sh]
         B --> C1[Download / Extract Legacy Datasets<br/>etopo1.nc, etopo2.nc, coastal_bound_*.mat]
         B --> C2[Download ETOPO 2022<br/>ETOPO_2022_v1_60s_N90W180_bed.tif]
+        C3[User Alternative / Custom Data Files<br/>Place custom bathymetry or shoreline directly]
         C1 --> D[(reference_data/ Directory)]
         C2 --> D
+        C3 --> D
     end
 
     A2 --> B
@@ -81,8 +83,8 @@ flowchart TD
 - **Init Step 1: Software Acquisition & Environment Verification (`git clone` & Package Check)**
   - Obtain the software package by cloning the repository from GitHub (`https://github.com/NOAA-EMC/gridgen.git`), setting up the Python environment and search path, and verifying required Python dependencies (`numpy`, `scipy`, `xarray`, `netCDF4`, `shapely`, `matplotlib`).
 
-- **Init Step 2: Reference Data Population (`populate_reference_data.sh`)**
-  - Populates bathymetry grids (`etopo1.nc`, `etopo2.nc`, or ETOPO 2022) and shoreline boundary MAT files (`coastal_bound_*.mat`) in `reference_data/`.
+- **Init Step 2: Reference Data Population (`populate_reference_data.sh` / Direct Placement)**
+  - Populates bathymetry grids (`etopo1.nc`, `etopo2.nc`, or ETOPO 2022) and shoreline boundary MAT files (`coastal_bound_*.mat`) in `reference_data/`. Alternatively, users can place their own custom or alternative bathymetry and shoreline datasets directly into the `reference_data/` directory.
 
 ### Tool Execution Stage
 
