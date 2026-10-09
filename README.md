@@ -123,6 +123,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--center-lat LAT` | Center latitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
 | `--extent-km KM` | Half-width domain extent in km for stereographic grid. `[Mandatory if --extent-deg omitted]` |
 | `--extent-deg DEG` | Half-width domain extent in arc degrees for stereographic grid. `[Mandatory if --extent-km omitted]` |
+| `--rotation ROTATION` | Grid rotation angle in degrees on stereographic projection plane (default: `0.0`). `[Optional for stereographic grid]` |
 | `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). `[Mandatory for custom grid]` |
 | `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). `[Optional]` |
 | `-r, --ref-dir DIR` | Reference data directory (default: `./reference_data`). `[Optional]` |

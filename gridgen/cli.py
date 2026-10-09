@@ -162,6 +162,13 @@ def main() -> None:
         metavar="EXTENT_DEG",
         help="[Mandatory if --extent-km omitted] Half-width domain extent in arc degrees",
     )
+    ste_group.add_argument(
+        "--rotation",
+        type=float,
+        default=0.0,
+        metavar="ROTATION",
+        help="[Optional] Grid rotation angle in degrees on projection plane (default: 0.0)",
+    )
 
     # Group 4: Custom Grid File Parameters
     cus_group = parser.add_argument_group("Custom Grid Parameters (--grid-type custom)")

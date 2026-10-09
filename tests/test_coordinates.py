@@ -143,6 +143,19 @@ def test_create_stereographic_grid() -> None:
     assert np.isclose(lat2[cy2, cx2], 40.0, atol=1e-3)
     assert np.isclose(lon2[cy2, cx2], 285.0, atol=1e-3)  # -75 mod 360 = 285
 
+    # 4. Rotated stereographic center
+    lon_rot, lat_rot = create_stereographic_grid(
+        CENTER_LON=0.0,
+        CENTER_LAT=90.0,
+        EXTENT_KM=500.0,
+        NX=11,
+        NY=11,
+        ROTATION=45.0,
+    )
+    assert lon_rot.shape == (11, 11)
+    assert lat_rot.shape == (11, 11)
+    assert np.isclose(lat_rot[cy, cx], 90.0, atol=1e-3)
+
 
 def test_create_rotated_pole_grid() -> None:
     """Test rotated pole spherical grid helper routine."""

@@ -93,12 +93,14 @@ def create_stereographic_grid(
     EXTENT_DEG: float | None = None,
     NX: int | None = 401,
     NY: int | None = 125,
+    ROTATION: float = 0.0,
     k0: float = 1.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a general stereographic grid.
 
     Supports domain size definition either in kilometers (EXTENT_KM)
-    or in arc degrees (EXTENT_DEG) over discrete dimensions (NX, NY).
+    or in arc degrees (EXTENT_DEG) over discrete dimensions (NX, NY) with optional
+    planar rotation angle ROTATION in degrees.
 
     Parameters
     ----------
@@ -114,6 +116,8 @@ def create_stereographic_grid(
         Number of grid points in x direction (default: 401).
     NY : int | None
         Number of grid points in y direction (default: 125).
+    ROTATION : float
+        Optional grid rotation angle in degrees on projection plane (default: 0.0).
     k0 : float
         Scale factor at projection origin (default: 1.0).
 
@@ -141,9 +145,18 @@ def create_stereographic_grid(
     y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, ny_val)
 
     x, y = np.meshgrid(x1d, y1d)
-    radius_earth = 6371000.0
 
-    rho = np.hypot(x, y)
+    if ROTATION != 0.0:
+        rot_rad = np.radians(ROTATION)
+        cos_r = np.cos(rot_rad)
+        sin_r = np.sin(rot_rad)
+        xr = x * cos_r - y * sin_r
+        yr = x * sin_r + y * cos_r
+    else:
+        xr = x
+        yr = y
+
+    rho = np.hypot(xr, yr)
     c = 2.0 * np.arctan2(rho, 2.0 * k0 * radius_earth)
 
     lat0_rad = np.radians(CENTER_LAT)
@@ -158,11 +171,11 @@ def create_stereographic_grid(
 
         rho_safe = np.where(rho == 0, 1.0, rho)
 
-        lat_rad = np.arcsin(cos_c * sin_lat0 + (y * sin_c * cos_lat0) / rho_safe)
+        lat_rad = np.arcsin(cos_c * sin_lat0 + (yr * sin_c * cos_lat0) / rho_safe)
 
         lon_rad = lon0_rad + np.arctan2(
-            x * sin_c,
-            rho_safe * cos_lat0 * cos_c - y * sin_lat0 * sin_c,
+            xr * sin_c,
+            rho_safe * cos_lat0 * cos_c - yr * sin_lat0 * sin_c,
         )
 
     lat_rad[rho == 0] = lat0_rad

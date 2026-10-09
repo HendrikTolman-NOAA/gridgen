@@ -32,6 +32,7 @@ CENTER_LON=""
 CENTER_LAT=""
 EXTENT_KM=""
 EXTENT_DEG=""
+ROTATION=""
 POLE_LON=""
 POLE_LAT=""
 NX="401"
@@ -75,6 +76,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   --center-lat LAT       [Mandatory] Projection center latitude in degrees
   --extent-km KM         [Mandatory if --extent-deg omitted] Half-width in km
   --extent-deg DEG       [Mandatory if --extent-km omitted] Half-width in deg
+  --rotation DEG         [Optional] Grid rotation angle in degrees
 
 4. Custom Grid Parameters (--grid-type custom):
   --custom-grid FILE     [Mandatory] Path to custom layout file
@@ -132,6 +134,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --extent-deg|--EXTENT-DEG)
       EXTENT_DEG="$2"
+      shift 2
+      ;;
+    --rotation|--ROTATION)
+      ROTATION="$2"
       shift 2
       ;;
     --pole-lon|--POLE-LON)
@@ -224,6 +230,7 @@ case "${GRID_TYPE}" in
     if [ -n "$CENTER_LAT" ]; then echo "  CENTER_LAT (Proj)    : ${CENTER_LAT} deg"; fi
     if [ -n "$EXTENT_KM" ]; then echo "  EXTENT_KM            : ${EXTENT_KM} km"; fi
     if [ -n "$EXTENT_DEG" ]; then echo "  EXTENT_DEG           : ${EXTENT_DEG} deg"; fi
+    if [ -n "$ROTATION" ]; then echo "  ROTATION             : ${ROTATION} deg"; fi
     ;;
   custom)
     if [ -n "$CUSTOM_GRID" ]; then echo "  Custom Grid File     : ${CUSTOM_GRID}"; fi
@@ -298,6 +305,7 @@ if [ -n "$CENTER_LON" ]; then CMD_ARGS+=(--center-lon "$CENTER_LON"); fi
 if [ -n "$CENTER_LAT" ]; then CMD_ARGS+=(--center-lat "$CENTER_LAT"); fi
 if [ -n "$EXTENT_KM" ]; then CMD_ARGS+=(--extent-km "$EXTENT_KM"); fi
 if [ -n "$EXTENT_DEG" ]; then CMD_ARGS+=(--extent-deg "$EXTENT_DEG"); fi
+if [ -n "$ROTATION" ]; then CMD_ARGS+=(--rotation "$ROTATION"); fi
 if [ -n "$POLE_LON" ]; then CMD_ARGS+=(--pole-lon "$POLE_LON"); fi
 if [ -n "$POLE_LAT" ]; then CMD_ARGS+=(--pole-lat "$POLE_LAT"); fi
 if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi
