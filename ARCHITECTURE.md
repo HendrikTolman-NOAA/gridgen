@@ -31,9 +31,9 @@ flowchart TD
 
     subgraph Init Step 2: Reference Data Population
         B[populate_reference_data.sh]
-        B --> C1[Download / Extract Legacy Datasets<br/>etopo1.nc, etopo2.nc, coastal_bound_*.mat]
-        B --> C2[Download ETOPO 2022<br/>ETOPO_2022_v1_60s_N90W180_bed.tif]
-        C3[User Alternative / Custom Data Files<br/>Place custom bathymetry or shoreline directly]
+        B --> C1["Download / Extract Legacy Datasets<br/>etopo1.nc, etopo2.nc, coastal_bound_*.mat"]
+        B --> C2["download newer reference data<br/>ETOPO_2022_v1_60s_N90W180_bed.nc<br/>GEBCO_2024.nc<br/>gshhg-bin-2.3.7.zip"]
+        C3["User supplied custom data (copied by user)"]
         C1 --> D[(reference_data/ Directory)]
         C2 --> D
         C3 --> D
@@ -144,7 +144,7 @@ gridgen/
    - Provides `compute_all_corners` to generate polygon vertex tensors and cell dimensions for the entire grid domain.
 
 4. **`gridgen.grid` (Bathymetry Extraction)**
-   - Core bathymetry processor (`generate_grid`) that maps target cell corners onto source global bathymetry grids (`etopo1.nc`, `etopo2.nc`, or `ETOPO_2022_v1_60s_N90W180_bed.tif`).
+   - Core bathymetry processor (`generate_grid`) that maps target cell corners onto source global bathymetry grids (`etopo1.nc`, `etopo2.nc`, or `ETOPO_2022_v1_60s_N90W180_bed.nc`).
    - Performs polygon overlap area-weighted averaging or bilinear interpolation to compute cell-average depths.
    - Assigns dry cell cutoff values (`999999.0`) for land areas and verifies reference data availability, raising `FileNotFoundError` if missing.
 
@@ -169,6 +169,6 @@ gridgen/
 ### Shell Script Interface Layer
 
 - **`run_gridgen.sh`**: Main utility script managing Python environment verification, reference data validation, argument parsing, CLI invocation, and cleanup (`--clean`).
-- **`populate_reference_data.sh`**: Data retrieval script populating required bathymetry and shoreline datasets in `reference_data/` with options for legacy NCEP archives, ETOPO 2022 GeoTIFFs, and guidance for GEBCO/GSHHG datasets.
+- **`populate_reference_data.sh`**: Data retrieval script populating required bathymetry and shoreline datasets in `reference_data/` with options for legacy NCEP archives, ETOPO 2022 NetCDF grids, GEBCO NetCDF datasets, and GSHHG shoreline vector archives.
 - **`plot_grid.sh`**: High-level driver invoking `gridgen.vis` to produce output figure graphics from generated grid files.
 - **`view_grid.sh`**: Graphical display diagnostic wrapper verifying display server configuration (X11/Wayland) and opening generated plot images.
