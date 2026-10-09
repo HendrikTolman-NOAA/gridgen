@@ -110,6 +110,54 @@ flowchart TD
 
 The `ww4gridgen` software package is organized into modular Python modules within the `gridgen` package directory, supported by a shell script interface layer in the repository root.
 
+```mermaid
+flowchart TD
+    subgraph Shell Scripts & Driver Interface Layer
+        S1[run_gridgen.sh<br/>Pipeline Driver]
+        S2[populate_reference_data.sh<br/>Data Retriever]
+        S3[plot_grid.sh<br/>Graphics Driver]
+        S4[view_grid.sh<br/>Graphics Viewer]
+    end
+
+    subgraph Python Package: gridgen
+        CLI["gridgen.cli<br/>(CLI & Pipeline Orchestration)"]
+
+        subgraph Core Processing Modules
+            COORD["gridgen.coordinates<br/>(2D Coordinate Generation & Loaders)"]
+            GEOM["gridgen.geometry<br/>(Cell Corners & Geometric Utilities)"]
+            GRID["gridgen.grid<br/>(Bathymetry Extraction & Interpolation)"]
+            MASK["gridgen.masking<br/>(Land/Sea Masking & Boundary Points)"]
+            OBSTR["gridgen.obstructions<br/>(Sub-Grid Obstruction Computation)"]
+            VIS["gridgen.vis<br/>(Visualization & Plot Engine)"]
+        end
+
+        subgraph IO Subpackage: gridgen.io
+            ASCII["gridgen.io.ascii<br/>(Legacy WW3 ASCII I/O)"]
+            COARDS["gridgen.io.coards<br/>(Legacy GMT COARDS NetCDF Exporter)"]
+            UGRID["gridgen.io.ugrid<br/>(WW4 NetCDF-UGRID 1.0 Builder)"]
+        end
+    end
+
+    S1 --> CLI
+    S3 --> VIS
+    S4 --> S3
+
+    CLI --> COORD
+    CLI --> GEOM
+    CLI --> GRID
+    CLI --> MASK
+    CLI --> OBSTR
+    CLI --> ASCII
+    CLI --> COARDS
+    CLI --> UGRID
+    VIS --> ASCII
+    VIS --> COARDS
+    VIS --> UGRID
+    GRID --> GEOM
+    MASK --> GEOM
+    OBSTR --> GEOM
+```
+
 ```
 gridgen/
 ├── __init__.py           # Package entry point and dynamic versioning (__version__)
