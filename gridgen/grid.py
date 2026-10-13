@@ -5,6 +5,8 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
+# @file grid.py
+# @brief Bathymetry extraction and grid generation routines for WW3 / WW4.
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22

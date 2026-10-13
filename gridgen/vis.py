@@ -5,6 +5,8 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
+# @file vis.py
+# @brief Visualization utility for WAVEWATCH III / WAVEWATCH IV grid and obstructions.
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05

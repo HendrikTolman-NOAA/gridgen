@@ -6,3 +6,11 @@ __pycache__/
 build/
 dist/
 .pytest_cache/
+
+# Doxygen documentation output directories
+/docs/html/
+/docs/latex/
+/docs/xml/
+/docs/man/
+/docs/build/
+*.doxytag

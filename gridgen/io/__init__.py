@@ -5,6 +5,8 @@
 # Whenever GenAI is used, NWS requires a full human review of code before it
 # is added to its repositories.
 #
+# @file io/__init__.py
+# @brief Subpackage initialization for WAVEWATCH III / IV I/O modules.
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22

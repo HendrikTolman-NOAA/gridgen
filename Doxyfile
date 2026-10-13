@@ -1,0 +1,29 @@
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+# Doxygen Configuration File
+
+# Project Identification
+PROJECT_NAME           = "WW4 Gridgen"
+PROJECT_NUMBER         = "3.0.0"
+PROJECT_BRIEF          = "WAVEWATCH III / WAVEWATCH IV Grid Generation Package"
+OUTPUT_DIRECTORY       = docs
+
+# Source Code Parsing Settings
+INPUT                  = gridgen README.md
+RECURSIVE              = YES
+FILE_PATTERNS          = *.py *.md
+EXTENSION_MAPPING      = py=Python
+
+# Extraction Settings
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+OPTIMIZE_OUTPUT_JAVA   = YES
+
+# Output Formats
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+
+# Markdown & Indexing Options
+USE_MDFILE_AS_MAINPAGE = README.md
