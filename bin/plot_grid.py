@@ -39,7 +39,7 @@ for idx, arg in enumerate(sys.argv):
 
 os.chdir(repo_root)
 
-from gridgen.vis import main
+from gridgen.vis import main  # noqa: E402
 
 if __name__ == "__main__":
     main()

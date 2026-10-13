@@ -191,7 +191,7 @@ echo "Documentation generated successfully at docs/html/index.html"
 
 ### 5. CI/CD Integration via GitHub Actions (GitHub Pages)
 
-To make generated documentation accessible online without storing built HTML in the main branch, use a GitHub Actions workflow (`.github/workflows/docs.yml`):
+To make generated documentation accessible online without storing built HTML in the main branch, use a GitHub Actions workflow (`.github/workflows/docs.yaml`):
 
 ```yaml
 name: Generate Documentation
