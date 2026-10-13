@@ -237,7 +237,7 @@ jobs:
 
   deploy-docs:
     needs: build-docs
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
