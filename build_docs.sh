@@ -68,4 +68,6 @@ fi
 echo "Generating Doxygen documentation..."
 doxygen Doxyfile
 
+touch docs/html/.nojekyll
+
 echo "Documentation generated successfully at docs/html/index.html"

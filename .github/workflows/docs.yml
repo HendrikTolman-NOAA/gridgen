@@ -14,13 +14,19 @@ name: Generate Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop, "WW4-Version-Without-Matlab", "feat/*" ]
+  pull_request:
+    branches: [ main, develop, "WW4-Version-Without-Matlab", "feat/*" ]
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-docs:
@@ -36,6 +42,9 @@ jobs:
 
       - name: Build Doxygen Documentation
         run: doxygen Doxyfile
+
+      - name: Disable Jekyll for GitHub Pages
+        run: touch docs/html/.nojekyll
 
       - name: Upload Artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
