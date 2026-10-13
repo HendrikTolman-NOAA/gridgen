@@ -14,9 +14,9 @@ name: Generate Documentation
 
 on:
   push:
-    branches: [ main, develop, "WW4-Version-Without-Matlab", "feat/*" ]
+    branches: [ main, develop, "feat/*" ]
   pull_request:
-    branches: [ main, develop, "WW4-Version-Without-Matlab", "feat/*" ]
+    branches: [ main, develop, "feat/*" ]
   workflow_dispatch:
 
 permissions:
