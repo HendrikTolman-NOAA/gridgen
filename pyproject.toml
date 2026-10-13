@@ -61,6 +61,9 @@ version = {attr = "gridgen.__version__"}
 line-length = 88
 target-version = "py39"
 
+[tool.ruff.lint]
+extend-select = ["E402"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
