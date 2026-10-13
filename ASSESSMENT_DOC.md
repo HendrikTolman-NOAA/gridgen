@@ -198,9 +198,9 @@ name: Generate Documentation
 
 on:
   push:
-    branches: [ main, develop, "WW4-Version-Without-Matlab", "feat/*" ]
+    branches: [ main, develop, "feat/*" ]
   pull_request:
-    branches: [ main, develop, "WW4-Version-Without-Matlab", "feat/*" ]
+    branches: [ main, develop, "feat/*" ]
   workflow_dispatch:
 
 permissions:
@@ -237,6 +237,7 @@ jobs:
 
   deploy-docs:
     needs: build-docs
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
