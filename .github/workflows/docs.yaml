@@ -51,9 +51,15 @@ jobs:
         with:
           path: 'docs/html'
 
+      - name: Upload Documentation Artifact for PR Review
+        uses: actions/upload-artifact@v4
+        with:
+          name: doxygen-docs-html
+          path: 'docs/html'
+
   deploy-docs:
     needs: build-docs
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/WW4-Version-Without-Matlab' || github.ref == 'refs/heads/FT-WW4-Version-Without-Matlab')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
