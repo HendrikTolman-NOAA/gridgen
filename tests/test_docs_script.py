@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-13
-# @date Latest Update: 2026-10-13
+# @date Latest Update: 2026-10-15
 
 """Unit tests for Doxygen documentation build script (docs/build_docs.sh)."""
 
