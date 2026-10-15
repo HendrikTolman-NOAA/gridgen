@@ -24,7 +24,7 @@ INPUT_FILE="ww4_grid_ugrid.nc"
 OUTPUT_FILE=""
 FORMAT="jpg"
 TITLE="WAVEWATCH IV Grid & Obstructions"
-DISPLAY_FLAG="--display"
+DISPLAY_FLAG="--no-display"
 
 INPUT_FILE_SPECIFIED=0
 OUTPUT_FILE_SPECIFIED=0
@@ -40,7 +40,7 @@ Options:
   -o, --output PATH      Output plot image file path (default: <GRIDNAME>.<format>)
   -f, --format FORMAT    Output graphic format: jpg, png, pdf, eps, or gif (default: jpg)
   --title TITLE          Custom figure title (default: WAVEWATCH IV Grid & Obstructions)
-  --display              Display figure window interactively (default: enabled)
+  --display              Display figure window interactively
   --no-display           Disable interactive figure window display
   -h, --help             Display this help message and exit
 

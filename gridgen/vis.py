@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-08
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -286,7 +286,24 @@ def plot_grid(
         print(f"Saved grid plot to '{output_path}'")
 
     if show:
-        plt.show()
+        import os
+
+        display_env = os.environ.get("DISPLAY")
+        wayland_env = os.environ.get("WAYLAND_DISPLAY")
+        backend = matplotlib.get_backend().lower()
+        canvas_type = type(fig.canvas).__name__
+        non_interactive_backends = {"agg", "pdf", "ps", "svg", "cairo", "template"}
+
+        if (
+            (display_env or wayland_env)
+            and backend not in non_interactive_backends
+            and canvas_type != "FigureCanvasAgg"
+        ):
+            plt.show()
+        else:
+            print(
+                "Skipping interactive figure display (no active display server or non-interactive Matplotlib backend)."
+            )
 
     return fig
 
