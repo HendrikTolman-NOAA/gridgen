@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-09
-# @date Latest Update: 2026-10-13
+# @date Latest Update: 2026-10-15
 -->
 
 # Doxygen Documentation Strategy & Assessment
@@ -164,7 +164,7 @@ def generate_grid(x, y, ref_dir="", bathy_source="etopo1", limit=0.5, cut_off=0.
 
 ### 4. Local Build Helper Script (Optional)
 
-An optional executable script (e.g., `build_docs.sh`) for developers wishing to preview documentation locally before committing:
+An optional executable script (e.g., `docs/build_docs.sh`) for developers wishing to preview documentation locally before committing:
 
 ```bash
 #!/usr/bin/env bash
