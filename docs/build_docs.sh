@@ -14,18 +14,19 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$ROOT_DIR"
 
 CLEANUP=0
 
 usage() {
   cat << 'EOF'
-Usage: ./build_docs.sh [OPTIONS]
+Usage: ./docs/build_docs.sh [OPTIONS]
 
 Generate or clean Doxygen documentation for the WAVEWATCH III / IV Gridgen package.
 
 Options:
-  -c, --clean, --cleanup  Remove generated documentation output directory (docs/)
+  -c, --clean, --cleanup  Remove generated documentation output directories (docs/html/)
   -h, --help              Display this usage message and exit
 EOF
 }
@@ -50,12 +51,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ "$CLEANUP" -eq 1 ]; then
-  echo "Cleaning up generated documentation directory (docs/)..."
-  if [ -d "docs" ]; then
-    rm -rf docs
-    echo "Removed docs/ directory."
-  else
-    echo "No docs/ directory found. Nothing to clean."
+  echo "Cleaning up generated documentation directory (docs/html/)..."
+  CLEANED=0
+  for dir in docs/html docs/latex docs/xml docs/man docs/build; do
+    if [ -d "$dir" ]; then
+      rm -rf "$dir"
+      echo "Removed $dir."
+      CLEANED=1
+    fi
+  done
+  if [ "$CLEANED" -eq 0 ]; then
+    echo "No generated documentation directories found. Nothing to clean."
   fi
   exit 0
 fi
