@@ -1,0 +1,50 @@
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+#
+# Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+# NWS often uses Generative AI (GenAI) for code development and refactoring.
+# Whenever GenAI is used, NWS requires a full human review of code before it
+# is added to its repositories.
+#
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
+# @date Initial: 2026-10-07
+# @date Latest Update: 2026-10-07
+
+name: CI Workflow
+
+on:
+  push:
+    branches: [ main, develop, "feat/*" ]
+  pull_request:
+    branches: [ main, develop, "feat/*" ]
+  workflow_dispatch:
+
+jobs:
+  build-lint-test:
+    name: Build, Lint, and Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies and editable package (Linking)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . pytest ruff
+
+      - name: Lint code with Ruff
+        run: |
+          ruff check .
+
+      - name: Run unit tests with Pytest
+        run: |
+          pytest
