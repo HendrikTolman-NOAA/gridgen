@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-15
 #
 # Utility script to display generated grid plot graphics in the present window.
 
@@ -120,7 +120,7 @@ try:
     backend = matplotlib.get_backend().lower()
     print(f"Matplotlib backend: {matplotlib.get_backend()}")
 
-    if backend in ["agg", "pdf", "ps", "svg", "cairo"] or not (display_env or wayland_env):
+    if backend in ["agg", "pdf", "ps", "svg", "cairo", "template"] or not (display_env or wayland_env):
         print("Skipping GUI figure window display because Matplotlib backend is non-interactive or no display server is connected.")
     else:
         # Display image in window
@@ -129,7 +129,10 @@ try:
         ax.set_title(f"WAVEWATCH Grid Graphics: {Path(img_path).name}", fontsize=12, fontweight="bold")
         ax.axis("off")
         plt.tight_layout()
-        plt.show()
+        if type(fig.canvas).__name__ != "FigureCanvasAgg":
+            plt.show()
+        else:
+            print("Skipping GUI figure window display because Matplotlib figure canvas is non-interactive.")
 except Exception as e:
     print(f"Error displaying window: {e}")
     print("Display window could not be opened. Please verify your X11/Wayland display configuration.")

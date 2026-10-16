@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-15
 
 from __future__ import annotations
 
@@ -276,6 +276,86 @@ def test_plot_grid_from_external_directory_custom_out(tmp_path: Path):
     assert result.returncode == 0
     # Output file should be created inside tmp_path (where user ran it)
     assert (tmp_path / out_jpg).exists()
+
+
+def test_plot_grid_show_in_headless_env(tmp_path: Path):
+    """Verify plot_grid with show=True in headless environment skips show without UserWarning."""
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": np.full((3, 3), 10.0),
+        "mask": np.ones((3, 3), dtype=int),
+    }
+
+    out_file = str(tmp_path / "test_show_headless.jpg")
+    fig = plot_grid(data, output_path=out_file, show=True)
+    assert fig is not None
+    assert os.path.exists(out_file)
+
+
+def test_plot_grid_script_no_canvas_warning(tmp_path: Path):
+    """Verify plot_grid.sh runs without UserWarning when called with --display in headless environment."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), 10.0)
+    mask = np.ones((3, 3), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Warning Test")
+
+    nc_file = tmp_path / "warning_test_ugrid.nc"
+    write_ugrid_nc(ds, str(nc_file))
+
+    out_jpg = tmp_path / "warning_test.jpg"
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "-i",
+            str(nc_file),
+            "-o",
+            str(out_jpg),
+            "-f",
+            "jpg",
+            "--display",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "FigureCanvasAgg is non-interactive" not in result.stderr
+    assert "UserWarning" not in result.stderr
+
+
+def test_view_grid_script_no_canvas_warning(tmp_path: Path):
+    """Verify view_grid.sh runs without UserWarning in headless environment with DISPLAY set."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "view_grid.sh"
+
+    dummy_img = tmp_path / "test_view_no_warning.jpg"
+    Image.new("RGB", (50, 50), color="blue").save(dummy_img)
+
+    env = os.environ.copy()
+    env["DISPLAY"] = ":99"
+
+    result = subprocess.run(
+        [str(script_path), str(dummy_img)],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "FigureCanvasAgg is non-interactive" not in result.stderr
+    assert "UserWarning" not in result.stderr
 
 
 def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
