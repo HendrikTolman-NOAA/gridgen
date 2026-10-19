@@ -46,16 +46,16 @@ def main() -> None:
     gen_group.add_argument(
         "--nx",
         type=int,
-        default=401,
+        default=101,
         metavar="NX",
-        help="[Optional] Discrete grid dimension NX (number of X points, default: 401)",
+        help="[Optional] Discrete grid dimension NX (number of X points, default: 101)",
     )
     gen_group.add_argument(
         "--ny",
         type=int,
-        default=125,
+        default=32,
         metavar="NY",
-        help="[Optional] Discrete grid dimension NY (number of Y points, default: 125)",
+        help="[Optional] Discrete grid dimension NY (number of Y points, default: 32)",
     )
     gen_group.add_argument(
         "--name", type=str, default="ww4_grid", help="Grid prefix identifier (default: ww4_grid)"

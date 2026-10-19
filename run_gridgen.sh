@@ -35,8 +35,8 @@ EXTENT_DEG=""
 ROTATION=""
 POLE_LON=""
 POLE_LAT=""
-NX="401"
-NY="125"
+NX="101"
+NY="32"
 CUSTOM_GRID=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
@@ -52,8 +52,8 @@ Usage: ./run_gridgen.sh [OPTIONS]
 Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
 
 1. General & Dimension Options (Common to all grid options):
-  --nx NX                Discrete grid dimension NX (default: 401) [Optional]
-  --ny NY                Discrete grid dimension NY (default: 125) [Optional]
+  --nx NX                Discrete grid dimension NX (default: 101) [Optional]
+  --ny NY                Discrete grid dimension NY (default: 32) [Optional]
   -n, --name NAME        Grid prefix identifier (default: ww4_grid) [Optional]
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
