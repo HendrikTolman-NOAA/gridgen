@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-09
+# @date Latest Update: 2026-10-19
 
 """Grid coordinate generation module for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4).
 

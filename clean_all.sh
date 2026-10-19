@@ -11,7 +11,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-15
-# @date Latest Update: 2026-10-15
+# @date Latest Update: 2026-10-19
 #
 # Utility script to perform a comprehensive cleanup across the repository.
 
