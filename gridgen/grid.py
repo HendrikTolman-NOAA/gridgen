@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import os
+import sys
 
 import numpy as np
 import xarray as xr
@@ -116,8 +117,21 @@ def generate_grid(
     lon_span_b = lon_max_b - lon_min_b
 
     # 2. Iterate cells and interpolate/average
+    total_cells = Nx * Ny
+    processed = 0
+    last_pct = -1.0
+
     for j in range(Nx):
         for k in range(Ny):
+            processed += 1
+            if total_cells > 0:
+                pct = (processed / total_cells) * 100.0
+                curr_pct = round(pct, 1)
+                if curr_pct != last_pct or processed == total_cells:
+                    last_pct = curr_pct
+                    sys.stdout.write(f"\r  Extracting bathymetry depths... {pct:5.1f}%")
+                    sys.stdout.flush()
+
             c1, c2, c3, c4, wdth, hgt = compute_cellcorner(x, y, j, k)
             cell_poly = np.array([c4, c1, c2, c3, c4], dtype=np.float64)
 
@@ -210,6 +224,10 @@ def generate_grid(
                     depth_sub[k, j] = float(np.mean(wet_depths))
                 else:
                     depth_sub[k, j] = dry
+
+    if total_cells > 0:
+        sys.stdout.write("\n")
+        sys.stdout.flush()
 
     if not isinstance(bathy_source, xr.Dataset) and "ds_base" in locals():
         ds_base.close()
