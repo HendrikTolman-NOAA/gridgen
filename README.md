@@ -124,6 +124,8 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). `[Optional]` |
 | `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
 | `--bathy-source SOURCE` | Bathymetry dataset identifier or NetCDF prefix (e.g. `etopo1`, `etopo2`, `ETOPO_2022_v1_60s_N90W180_bed`) (default: `etopo1`). `[Optional]` |
+| `--boundary-points` | Define input boundary cells (mask value 2) along regional grid boundaries. `[Optional]` |
+| `--user-polygons-flag FILE` | Path to flag file for optional user coastal polygons (`optional_coastal_polygons.mat`). `[Optional]` |
 | `--lon-start LON` | Lower-left corner longitude in degrees (default: `140.0`). `[Optional for regular grid]` |
 | `--lat-start LAT` | Lower-left corner latitude in degrees (default: `44.0`). `[Optional for regular grid]` |
 | `--lon-end LON` | Upper-right corner longitude in degrees (default: `240.0`). `[Optional for regular grid]` |

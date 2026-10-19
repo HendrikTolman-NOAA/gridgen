@@ -39,6 +39,8 @@ NX="101"
 NY="32"
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo1"
+BOUNDARY_POINTS=0
+USER_POLYGONS_FLAG=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
 CLEANUP=0
@@ -59,6 +61,9 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo1) [Optional]
+  --boundary-points      Define input boundary cells (mask value 2) [Optional]
+  --user-polygons-flag FILE
+                         Flag file for optional user coastal polygons [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
                          [Optional]
@@ -174,6 +179,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --bathy-source|--BATHY-SOURCE)
       BATHY_SOURCE="$2"
+      shift 2
+      ;;
+    --boundary-points)
+      BOUNDARY_POINTS=1
+      shift 1
+      ;;
+    --user-polygons-flag)
+      USER_POLYGONS_FLAG="$2"
       shift 2
       ;;
     -c|--clean|--cleanup)
@@ -324,6 +337,8 @@ if [ -n "$POLE_LAT" ]; then CMD_ARGS+=(--pole-lat "$POLE_LAT"); fi
 if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi
 if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
+if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
+if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"
 
