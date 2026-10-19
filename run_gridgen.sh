@@ -24,10 +24,10 @@ export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 # Default Configuration
 NAME="ww4_grid"
 GRID_TYPE="regular"
-LON_START="140.0"
-LON_END="240.0"
-LAT_START="44.0"
-LAT_END="75.0"
+LON_START="20.0"
+LON_END="380.0"
+LAT_START="-76.0"
+LAT_END="76.0"
 CENTER_LON=""
 CENTER_LAT=""
 EXTENT_KM=""
@@ -35,8 +35,8 @@ EXTENT_DEG=""
 ROTATION=""
 POLE_LON=""
 POLE_LAT=""
-NX="101"
-NY="32"
+NX="180"
+NY="77"
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
@@ -55,8 +55,8 @@ Usage: ./run_gridgen.sh [OPTIONS]
 Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
 
 1. General & Dimension Options (Common to all grid options):
-  --nx NX                Discrete grid dimension NX (default: 101) [Optional]
-  --ny NY                Discrete grid dimension NY (default: 32) [Optional]
+  --nx NX                Discrete grid dimension NX (default: 180) [Optional]
+  --ny NY                Discrete grid dimension NY (default: 77) [Optional]
   -n, --name NAME        Grid prefix identifier (default: ww4_grid) [Optional]
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
@@ -71,10 +71,10 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -h, --help             Display this help message and exit
 
 2. Regular Grid Parameters (--grid-type regular):
-  --lon-start LON        Lower-left longitude (default: 140.0) [Optional]
-  --lat-start LAT        Lower-left latitude (default: 44.0) [Optional]
-  --lon-end LON          Upper-right longitude (default: 240.0) [Optional]
-  --lat-end LAT          Upper-right latitude (default: 75.0) [Optional]
+  --lon-start LON        Lower-left longitude (default: 20.0) [Optional]
+  --lat-start LAT        Lower-left latitude (default: -76.0) [Optional]
+  --lon-end LON          Upper-right longitude (default: 380.0) [Optional]
+  --lat-end LAT          Upper-right latitude (default: 76.0) [Optional]
   --pole-lon LON         Rotated north pole longitude in deg [Optional]
   --pole-lat LAT         Rotated north pole latitude in deg [Optional]
 
