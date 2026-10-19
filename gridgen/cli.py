@@ -78,6 +78,12 @@ def main() -> None:
         "--ref-dir", type=str, default="reference_data", help="Reference data directory (default: reference_data)"
     )
     gen_group.add_argument(
+        "--bathy-source",
+        type=str,
+        default="etopo1",
+        help="Bathymetry reference dataset identifier or filename prefix (default: etopo1)",
+    )
+    gen_group.add_argument(
         "--boundary-points",
         action="store_true",
         help="Define input boundary points (mask value 2) along regional grid boundaries",
@@ -190,8 +196,10 @@ def main() -> None:
     print(f"  Grid matrix dimensions: NY={lon.shape[0]}, NX={lon.shape[1]}")
 
     # Step 2: Extract bathymetry
-    print("[Step 2/5] Extracting bathymetry depths from reference dataset...")
-    depth = generate_grid(lon, lat, ref_dir=args.ref_dir)
+    print(f"[Step 2/5] Extracting bathymetry depths from '{args.bathy_source}' dataset...")
+    depth = generate_grid(
+        lon, lat, ref_dir=args.ref_dir, bathy_source=args.bathy_source
+    )
     m = np.ones_like(depth, dtype=int)
     m[depth == 999999.0] = 0
 

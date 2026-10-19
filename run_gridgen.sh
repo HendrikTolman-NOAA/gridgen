@@ -38,6 +38,7 @@ POLE_LAT=""
 NX="101"
 NY="32"
 CUSTOM_GRID=""
+BATHY_SOURCE="etopo1"
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
 CLEANUP=0
@@ -57,6 +58,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -n, --name NAME        Grid prefix identifier (default: ww4_grid) [Optional]
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
+  --bathy-source SOURCE  Bathymetry reference source (default: etopo1) [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
                          [Optional]
@@ -170,6 +172,10 @@ while [[ $# -gt 0 ]]; do
       REF_DIR_SPECIFIED=1
       shift 2
       ;;
+    --bathy-source|--BATHY-SOURCE)
+      BATHY_SOURCE="$2"
+      shift 2
+      ;;
     -c|--clean|--cleanup)
       CLEANUP=1
       shift 1
@@ -241,6 +247,7 @@ echo "  Prefix Name          : ${NAME}"
 echo "  Grid Type            : ${GRID_TYPE}"
 echo "  Output Directory     : ${OUT_DIR}"
 echo "  Reference Directory  : ${REF_DIR}"
+echo "  Bathymetry Source    : ${BATHY_SOURCE}"
 if [ -n "$NX" ]; then echo "  NX (Lon/X Points)    : ${NX}"; fi
 if [ -n "$NY" ]; then echo "  NY (Lat/Y Points)    : ${NY}"; fi
 
@@ -300,6 +307,7 @@ CMD_ARGS=(
   --grid-type "$GRID_TYPE"
   --out-dir "$OUT_DIR"
   --ref-dir "$REF_DIR"
+  --bathy-source "$BATHY_SOURCE"
 )
 
 if [ -n "$LON_START" ]; then CMD_ARGS+=(--lon-start "$LON_START"); fi
