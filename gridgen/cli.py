@@ -185,11 +185,12 @@ def main() -> None:
     args = parser.parse_args()
 
     # Step 1: Create 2D grid coordinates array
+    print(f"[Step 1/5] Generating 2D '{args.grid_type}' grid coordinates for '{args.name}'...")
     lon, lat = create_grid_coordinates(**vars(args))
+    print(f"  Grid matrix dimensions: NY={lon.shape[0]}, NX={lon.shape[1]}")
 
-    print(f"Generating '{args.grid_type}' grid '{args.name}' with shape {lon.shape}...")
-
-    # Step 2: Extract bathymetry & generate mask and obstructions
+    # Step 2: Extract bathymetry
+    print("[Step 2/5] Extracting bathymetry depths from reference dataset...")
     depth = generate_grid(lon, lat, ref_dir=args.ref_dir)
     m = np.ones_like(depth, dtype=int)
     m[depth == 999999.0] = 0
@@ -203,12 +204,18 @@ def main() -> None:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
             m = clean_mask(lon, lat, m, user_bounds)
 
+    # Step 3: Land/Sea Masking & Lake Removal
+    print("[Step 3/5] Generating land/sea mask and applying lake removal...")
     m_mod, _ = remove_lake(m, lake_tol=-1, igl=0)
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
+    # Step 4: Calculate sub-grid obstructions
+    print("[Step 4/5] Computing directional sub-grid obstruction factors (sx, sy)...")
     sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
 
+    # Step 5: Multi-Format Export
+    print("[Step 5/5] Exporting grid files in legacy ASCII, COARDS NC, and WW4 UGRID NC formats...")
     # 1. Legacy WW3 ASCII
     depth_scale = 1000.0
     obstr_scale = 100.0
