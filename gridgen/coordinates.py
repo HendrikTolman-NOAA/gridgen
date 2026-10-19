@@ -28,7 +28,7 @@ import numpy as np
 
 def create_regular_grid(
     LON_START: float = 20.0,
-    LON_END: float = 380.0,
+    LON_END: float = 378.0,
     LAT_START: float = -76.0,
     LAT_END: float = 76.0,
     NX: int = 180,
@@ -38,7 +38,7 @@ def create_regular_grid(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D arrays of longitude and latitude for a regular grid.
 
-    Accepts corner bounding points (LON_START, LON_END, LAT_START, LAT_END, default: 20-380, -76-76)
+    Accepts corner bounding points (LON_START, LON_END, LAT_START, LAT_END, default: 20-378, -76-76)
     and discrete matrix dimensions (NX, NY). Optionally accepts rotated pole coordinates
     (POLE_LON, POLE_LAT). If POLE_LAT is None or 90.0, the grid reverts to standard
     unrotated regular geographic coordinates.
@@ -438,7 +438,7 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
         raise ValueError(f"Grid dimension NY must be positive, got {ny}")
 
     if gtype == "regular":
-        # LON_START, LON_END, LAT_START, LAT_END have defaults (20-380, -76-76)
+        # LON_START, LON_END, LAT_START, LAT_END have defaults (20-378, -76-76)
         return
 
     elif gtype == "stereographic":

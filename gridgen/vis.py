@@ -81,8 +81,17 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
     if path.suffix == ".nc":
         ds = xr.open_dataset(path)
 
-        # UGRID 1.0 format
-        if "face_lon" in ds and "face_lat" in ds:
+        # 2D Grid format (WW4 NetCDF-UGRID or COARDS with 2D grid variables)
+        if "grid_lon" in ds and "grid_lat" in ds:
+            lon = ds["grid_lon"].values
+            lat = ds["grid_lat"].values
+            depth = ds["grid_depth"].values if "grid_depth" in ds else (ds["depth"].values if "depth" in ds else np.zeros_like(lon))
+            mask = ds["grid_mask"].values if "grid_mask" in ds else (ds["mask"].values if "mask" in ds else np.ones_like(lon))
+            sx = ds["grid_sx"].values if "grid_sx" in ds else (ds["sx"].values if "sx" in ds else None)
+            sy = ds["grid_sy"].values if "grid_sy" in ds else (ds["sy"].values if "sy" in ds else None)
+
+        # UGRID 1.0 format fallback
+        elif "face_lon" in ds and "face_lat" in ds:
             face_lon = ds["face_lon"].values
             face_lat = ds["face_lat"].values
             depth_raw = ds["depth"].values if "depth" in ds else np.zeros_like(face_lon)

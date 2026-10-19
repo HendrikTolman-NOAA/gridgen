@@ -78,12 +78,12 @@ def test_create_regular_grid() -> None:
 
 def test_grid_parameter_defaults_and_validation_errors() -> None:
     """Test default values and parameter validation error messages for required grid inputs."""
-    # 1. Regular grid with default parameters (lon: 20-380, lat: -76-76, nx: 180, ny: 77)
+    # 1. Regular grid with default parameters (lon: 20-378, lat: -76-76, nx: 180, ny: 77)
     lon, lat = create_grid_coordinates("regular")
     assert lon.shape == (77, 180)
     assert lat.shape == (77, 180)
     assert np.isclose(lon[0, 0], 20.0)
-    assert np.isclose(lon[0, -1], 380.0)
+    assert np.isclose(lon[0, -1], 378.0)
     assert np.isclose(lat[0, 0], -76.0)
     assert np.isclose(lat[-1, 0], 76.0)
 

@@ -114,9 +114,9 @@ def main() -> None:
     reg_group.add_argument(
         "--lon-end",
         type=float,
-        default=380.0,
+        default=378.0,
         metavar="LON_END",
-        help="[Optional] Upper-right corner longitude in degrees (default: 380.0)",
+        help="[Optional] Upper-right corner longitude in degrees (default: 378.0)",
     )
     reg_group.add_argument(
         "--lat-end",

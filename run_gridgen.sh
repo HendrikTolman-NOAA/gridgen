@@ -25,7 +25,7 @@ export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 NAME="ww4_grid"
 GRID_TYPE="regular"
 LON_START="20.0"
-LON_END="380.0"
+LON_END="378.0"
 LAT_START="-76.0"
 LAT_END="76.0"
 CENTER_LON=""
@@ -73,7 +73,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
 2. Regular Grid Parameters (--grid-type regular):
   --lon-start LON        Lower-left longitude (default: 20.0) [Optional]
   --lat-start LAT        Lower-left latitude (default: -76.0) [Optional]
-  --lon-end LON          Upper-right longitude (default: 380.0) [Optional]
+  --lon-end LON          Upper-right longitude (default: 378.0) [Optional]
   --lat-end LAT          Upper-right latitude (default: 76.0) [Optional]
   --pole-lon LON         Rotated north pole longitude in deg [Optional]
   --pole-lat LAT         Rotated north pole latitude in deg [Optional]

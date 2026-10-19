@@ -128,7 +128,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--user-polygons-flag FILE` | Path to flag file for optional user coastal polygons (`optional_coastal_polygons.mat`). `[Optional]` |
 | `--lon-start LON` | Lower-left corner longitude in degrees (default: `20.0`). `[Optional for regular grid]` |
 | `--lat-start LAT` | Lower-left corner latitude in degrees (default: `-76.0`). `[Optional for regular grid]` |
-| `--lon-end LON` | Upper-right corner longitude in degrees (default: `380.0`). `[Optional for regular grid]` |
+| `--lon-end LON` | Upper-right corner longitude in degrees (default: `378.0`). `[Optional for regular grid]` |
 | `--lat-end LAT` | Upper-right corner latitude in degrees (default: `76.0`). `[Optional for regular grid]` |
 | `--pole-lon LON` | Rotated north pole longitude in degrees. `[Optional for regular grid]` |
 | `--pole-lat LAT` | Rotated north pole latitude in degrees (reverts to regular grid when lat is 90.0). `[Optional for regular grid]` |

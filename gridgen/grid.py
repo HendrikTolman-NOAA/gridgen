@@ -111,6 +111,10 @@ def generate_grid(
     dx_base = float(np.abs(np.diff(lon_base).mean())) if len(lon_base) > 1 else 1.0
     dy_base = float(np.abs(np.diff(lat_base).mean())) if len(lat_base) > 1 else 1.0
 
+    lon_min_b = float(lon_base.min()) if len(lon_base) > 0 else 0.0
+    lon_max_b = float(lon_base.max()) if len(lon_base) > 0 else 360.0
+    lon_span_b = lon_max_b - lon_min_b
+
     # 2. Iterate cells and interpolate/average
     for j in range(Nx):
         for k in range(Ny):
@@ -122,6 +126,12 @@ def generate_grid(
 
             target_x = float(x[k, j])
             target_y = float(y[k, j])
+
+            if lon_span_b >= 350.0:
+                if lon_min_b >= -1.0 and lon_max_b <= 360.1:
+                    target_x = (target_x - lon_min_b) % 360.0 + lon_min_b
+                elif lon_min_b >= -180.1 and lon_max_b <= 180.1:
+                    target_x = (target_x + 180.0) % 360.0 - 180.0
 
             if ndx <= 1 and ndy <= 1:
                 # Bilinear interpolation
@@ -158,10 +168,18 @@ def generate_grid(
                 depth_sub[k, j] = depth_val if depth_val <= cut_off else dry
             else:
                 # Cell averaging
-                px = cell_poly[:, 0]
-                py = cell_poly[:, 1]
+                cell_poly_q = cell_poly.copy()
+                if lon_span_b >= 350.0:
+                    if lon_min_b >= -1.0 and lon_max_b <= 360.1:
+                        cell_poly_q[:, 0] = (cell_poly_q[:, 0] - lon_min_b) % 360.0 + lon_min_b
+                    elif lon_min_b >= -180.1 and lon_max_b <= 180.1:
+                        cell_poly_q[:, 0] = (cell_poly_q[:, 0] + 180.0) % 360.0 - 180.0
+                px = cell_poly_q[:, 0]
+                py = cell_poly_q[:, 1]
                 min_x, max_x = px.min(), px.max()
                 min_y, max_y = py.min(), py.max()
+                if min_x > max_x:
+                    min_x, max_x = max_x, min_x
 
                 i_start = max(0, np.searchsorted(lon_base, min_x) - 1)
                 i_end = min(len(lon_base), np.searchsorted(lon_base, max_x) + 1)
