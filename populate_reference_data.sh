@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-09
+# @date Latest Update: 2026-10-19
 #
 # Utility tool to populate the reference_data directory with authoritative
 # bathymetry, shoreline, and regional polygon datasets required by WAVEWATCH.
@@ -201,7 +201,7 @@ fi
 # 1. Fetch Legacy Data
 if [ "$FETCH_LEGACY" = true ]; then
   echo ""
-  echo "--> Processing Present / Legacy Datasets (NOAA NCEP Distribution)..."
+  echo "[Step 1/4] Processing Present / Legacy Datasets (NOAA NCEP Distribution)..."
   TARBALL="${TARGET_DIR}/gridgen_addit.tar.gz"
 
   # Expected legacy files
@@ -267,7 +267,7 @@ fi
 # 2. Fetch ETOPO 2022
 if [ "$FETCH_ETOPO2022" = true ]; then
   echo ""
-  echo "--> Processing ETOPO 2022 Global Relief Model (NOAA NCEI)..."
+  echo "[Step 2/4] Processing ETOPO 2022 Global Relief Model (NOAA NCEI)..."
   ETOPO_DEST="${TARGET_DIR}/ETOPO_2022_v1_60s_N90W180_bed.nc"
   if [ ! -f "$ETOPO_DEST" ]; then
     download_file "$ETOPO2022_60S_NC_URL" "$ETOPO_DEST"
@@ -280,7 +280,7 @@ fi
 # 3. Fetch GEBCO Data Source
 if [ "$FETCH_GEBCO" = true ]; then
   echo ""
-  echo "--> Processing GEBCO Global Bathymetry Grid (IHO/IOC)..."
+  echo "[Step 3/4] Processing GEBCO Global Bathymetry Grid (IHO/IOC)..."
   GEBCO_DEST="${TARGET_DIR}/GEBCO_2024.nc"
   if [ ! -f "$GEBCO_DEST" ] && [ ! -f "${TARGET_DIR}/GEBCO_2024_CF.nc" ]; then
     download_file "$GEBCO2024_NC_URL" "$GEBCO_DEST"
@@ -293,7 +293,7 @@ fi
 # 4. Fetch GSHHG Shoreline Data Source
 if [ "$FETCH_GSHHG" = true ]; then
   echo ""
-  echo "--> Processing GSHHG Vector Shoreline Database (NOAA/SOEST)..."
+  echo "[Step 4/4] Processing GSHHG Vector Shoreline Database (NOAA/SOEST)..."
   GSHHG_DEST="${TARGET_DIR}/gshhg-bin-2.3.7.zip"
   if [ ! -f "$GSHHG_DEST" ] && [ ! -d "${TARGET_DIR}/gshhg-bin-2.3.7" ] && [ ! -f "${TARGET_DIR}/bshore-f.b" ]; then
     download_file "$GSHHG_ZIP_URL" "$GSHHG_DEST"

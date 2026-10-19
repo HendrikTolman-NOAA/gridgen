@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-07
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-19
 
 name: CI Workflow
 
@@ -28,23 +28,26 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
-      - name: Checkout repository
+      - name: "[Step 1/5] Checkout repository"
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: "[Step 2/5] Set up Python ${{ matrix.python-version }}"
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies and editable package (Linking)
+      - name: "[Step 3/5] Install dependencies and editable package (Linking)"
         run: |
+          echo "[Step 3/5] Installing dependencies and editable package..."
           python -m pip install --upgrade pip
           pip install -e . pytest ruff
 
-      - name: Lint code with Ruff
+      - name: "[Step 4/5] Lint code with Ruff"
         run: |
+          echo "[Step 4/5] Running Ruff linter..."
           ruff check .
 
-      - name: Run unit tests with Pytest
+      - name: "[Step 5/5] Run unit tests with Pytest"
         run: |
+          echo "[Step 5/5] Running Pytest unit tests..."
           pytest

@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-15
+# @date Latest Update: 2026-10-19
 #
 # Utility script to display generated grid plot graphics in the present window.
 
@@ -69,7 +69,8 @@ echo "========================================================================"
 echo " WAVEWATCH III / IV Grid Graphics Display Tool"
 echo "========================================================================"
 
-# If no image file provided, search for default generated image files
+# 1. Search for plot graphics image
+echo "[Step 1/2] Locating grid plot graphics image..."
 if [ -z "$IMAGE_FILE" ]; then
   for candidate in "ww4_grid.jpg" "ww4_grid.png" "ww4_grid.gif" "ww4_grid_display.jpg" "ww4_grid_display.gif" "ww4_grid_display.png"; do
     if [ -f "$candidate" ]; then
@@ -87,7 +88,8 @@ if [ -z "$IMAGE_FILE" ] || [ ! -f "$IMAGE_FILE" ]; then
   exit 1
 fi
 
-# Display using Python Matplotlib/PIL viewer in present window
+# 2. Open GUI viewer window
+echo "[Step 2/2] Opening GUI graphics window in present display context..."
 python3 - << EOF
 import os
 import sys

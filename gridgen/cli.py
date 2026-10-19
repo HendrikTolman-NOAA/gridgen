@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-09
+# @date Latest Update: 2026-10-19
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -46,16 +46,16 @@ def main() -> None:
     gen_group.add_argument(
         "--nx",
         type=int,
-        default=401,
+        default=101,
         metavar="NX",
-        help="[Optional] Discrete grid dimension NX (number of X points, default: 401)",
+        help="[Optional] Discrete grid dimension NX (number of X points, default: 101)",
     )
     gen_group.add_argument(
         "--ny",
         type=int,
-        default=125,
+        default=32,
         metavar="NY",
-        help="[Optional] Discrete grid dimension NY (number of Y points, default: 125)",
+        help="[Optional] Discrete grid dimension NY (number of Y points, default: 32)",
     )
     gen_group.add_argument(
         "--name", type=str, default="ww4_grid", help="Grid prefix identifier (default: ww4_grid)"
@@ -76,6 +76,12 @@ def main() -> None:
     )
     gen_group.add_argument(
         "--ref-dir", type=str, default="reference_data", help="Reference data directory (default: reference_data)"
+    )
+    gen_group.add_argument(
+        "--bathy-source",
+        type=str,
+        default="etopo2",
+        help="Bathymetry reference dataset identifier or filename prefix (default: etopo2)",
     )
     gen_group.add_argument(
         "--boundary-points",
@@ -185,12 +191,15 @@ def main() -> None:
     args = parser.parse_args()
 
     # Step 1: Create 2D grid coordinates array
+    print(f"[Step 1/5] Generating 2D '{args.grid_type}' grid coordinates for '{args.name}'...")
     lon, lat = create_grid_coordinates(**vars(args))
+    print(f"  Grid matrix dimensions: NY={lon.shape[0]}, NX={lon.shape[1]}")
 
-    print(f"Generating '{args.grid_type}' grid '{args.name}' with shape {lon.shape}...")
-
-    # Step 2: Extract bathymetry & generate mask and obstructions
-    depth = generate_grid(lon, lat, ref_dir=args.ref_dir)
+    # Step 2: Extract bathymetry
+    print(f"[Step 2/5] Extracting bathymetry depths from '{args.bathy_source}' dataset...")
+    depth = generate_grid(
+        lon, lat, ref_dir=args.ref_dir, bathy_source=args.bathy_source
+    )
     m = np.ones_like(depth, dtype=int)
     m[depth == 999999.0] = 0
 
@@ -203,12 +212,18 @@ def main() -> None:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
             m = clean_mask(lon, lat, m, user_bounds)
 
+    # Step 3: Land/Sea Masking & Lake Removal
+    print("[Step 3/5] Generating land/sea mask and applying lake removal...")
     m_mod, _ = remove_lake(m, lake_tol=-1, igl=0)
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
+    # Step 4: Calculate sub-grid obstructions
+    print("[Step 4/5] Computing directional sub-grid obstruction factors (sx, sy)...")
     sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
 
+    # Step 5: Multi-Format Export
+    print("[Step 5/5] Exporting grid files in legacy ASCII, COARDS NC, and WW4 UGRID NC formats...")
     # 1. Legacy WW3 ASCII
     depth_scale = 1000.0
     obstr_scale = 100.0

@@ -32,7 +32,7 @@ def generate_grid(
     x: np.ndarray,
     y: np.ndarray,
     ref_dir: str = "",
-    bathy_source: str | xr.Dataset = "etopo1",
+    bathy_source: str | xr.Dataset = "etopo2",
     limit: float = 0.5,
     cut_off: float = 0.1,
     dry: float = 999999.0,

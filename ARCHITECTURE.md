@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-09
+# @date Latest Update: 2026-10-19
 -->
 
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Architecture
@@ -117,6 +117,7 @@ flowchart TD
         S2[populate_reference_data.sh<br/>Data Retriever]
         S3[plot_grid.sh<br/>Graphics Driver]
         S4[view_grid.sh<br/>Graphics Viewer]
+        S5[clean_all.sh<br/>Master Cleanup]
     end
 
     subgraph Python Package: gridgen
@@ -220,3 +221,4 @@ gridgen/
 - **`populate_reference_data.sh`**: Data retrieval script populating required bathymetry and shoreline datasets in `reference_data/` with options for legacy NCEP archives, ETOPO 2022 NetCDF grids, GEBCO NetCDF datasets, and GSHHG shoreline vector archives.
 - **`plot_grid.sh`**: High-level driver invoking `gridgen.vis` to produce output figure graphics from generated grid files.
 - **`view_grid.sh`**: Graphical display diagnostic wrapper verifying display server configuration (X11/Wayland) and opening generated plot images.
+- **`clean_all.sh`**: Master cleanup script removing all generated output grid files, plot graphics, reference datasets, documentation build directories, and Python build/test cache artifacts.

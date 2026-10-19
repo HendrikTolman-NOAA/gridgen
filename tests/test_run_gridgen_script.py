@@ -83,10 +83,10 @@ def test_run_gridgen_different_grid_types(tmp_path: Path):
     lat = np.linspace(-90.0, 90.0, 20)
     z = np.full((20, 20), -50.0)
     ds = xr.Dataset(
-        data_vars={"z": (("lat", "lon"), z)},
-        coords={"lon": lon, "lat": lat},
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
     )
-    ds.to_netcdf(ref_dir / "etopo1.nc")
+    ds.to_netcdf(ref_dir / "etopo2.nc")
 
     # 1. Regular grid with rotated pole options
     res1 = subprocess.run(
@@ -196,10 +196,10 @@ def test_run_gridgen_execution(tmp_path: Path):
     lat = np.linspace(20.0, 22.0, 10)
     z = np.full((10, 10), -50.0)
     ds = xr.Dataset(
-        data_vars={"z": (("lat", "lon"), z)},
-        coords={"lon": lon, "lat": lat},
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
     )
-    ds.to_netcdf(ref_dir / "etopo1.nc")
+    ds.to_netcdf(ref_dir / "etopo2.nc")
 
     result = subprocess.run(
         [
@@ -246,7 +246,7 @@ def test_run_gridgen_with_ref_dir(tmp_path: Path):
     ref_dir = tmp_path / "ref_data"
     ref_dir.mkdir(parents=True, exist_ok=True)
 
-    # Create dummy etopo1.nc dataset
+    # Create dummy etopo2.nc dataset
     import numpy as np
     import xarray as xr
 
@@ -254,10 +254,10 @@ def test_run_gridgen_with_ref_dir(tmp_path: Path):
     lat = np.linspace(44.0, 54.0, 20)
     z = np.full((20, 20), -100.0)
     ds = xr.Dataset(
-        data_vars={"z": (("lat", "lon"), z)},
-        coords={"lon": lon, "lat": lat},
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
     )
-    ds.to_netcdf(ref_dir / "etopo1.nc")
+    ds.to_netcdf(ref_dir / "etopo2.nc")
 
     result = subprocess.run(
         [
@@ -300,7 +300,7 @@ def test_run_gridgen_missing_deps(tmp_path: Path):
 
     ref_dir = tmp_path / "ref_data"
     ref_dir.mkdir(parents=True, exist_ok=True)
-    (ref_dir / "etopo1.nc").touch()
+    (ref_dir / "etopo2.nc").touch()
 
     # Override PATH with a directory containing a dummy python3 script that lacks numpy
     bin_dir = tmp_path / "bin"
@@ -387,10 +387,10 @@ def test_run_gridgen_from_external_directory_default_out(tmp_path: Path):
     lat = np.linspace(44.0, 54.0, 5)
     z = np.full((5, 5), -50.0)
     ds = xr.Dataset(
-        data_vars={"z": (("lat", "lon"), z)},
-        coords={"lon": lon, "lat": lat},
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
     )
-    ref_file = ref_dir / "etopo1.nc"
+    ref_file = ref_dir / "etopo2.nc"
     ds.to_netcdf(ref_file)
 
     grid_prefix = "ext_dir_grid"
@@ -449,10 +449,10 @@ def test_run_gridgen_from_external_directory_custom_out(tmp_path: Path):
     lat = np.linspace(44.0, 54.0, 5)
     z = np.full((5, 5), -50.0)
     ds = xr.Dataset(
-        data_vars={"z": (("lat", "lon"), z)},
-        coords={"lon": lon, "lat": lat},
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
     )
-    ref_file = ref_dir / "etopo1.nc"
+    ref_file = ref_dir / "etopo2.nc"
     ds.to_netcdf(ref_file)
 
     custom_out = "my_custom_out"

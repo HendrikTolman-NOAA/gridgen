@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-09
+# @date Latest Update: 2026-10-19
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -35,9 +35,12 @@ EXTENT_DEG=""
 ROTATION=""
 POLE_LON=""
 POLE_LAT=""
-NX="401"
-NY="125"
+NX="101"
+NY="32"
 CUSTOM_GRID=""
+BATHY_SOURCE="etopo2"
+BOUNDARY_POINTS=0
+USER_POLYGONS_FLAG=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
 CLEANUP=0
@@ -52,11 +55,15 @@ Usage: ./run_gridgen.sh [OPTIONS]
 Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
 
 1. General & Dimension Options (Common to all grid options):
-  --nx NX                Discrete grid dimension NX (default: 401) [Optional]
-  --ny NY                Discrete grid dimension NY (default: 125) [Optional]
+  --nx NX                Discrete grid dimension NX (default: 101) [Optional]
+  --ny NY                Discrete grid dimension NY (default: 32) [Optional]
   -n, --name NAME        Grid prefix identifier (default: ww4_grid) [Optional]
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
+  --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
+  --boundary-points      Define input boundary cells (mask value 2) [Optional]
+  --user-polygons-flag FILE
+                         Flag file for optional user coastal polygons [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
                          [Optional]
@@ -170,6 +177,18 @@ while [[ $# -gt 0 ]]; do
       REF_DIR_SPECIFIED=1
       shift 2
       ;;
+    --bathy-source|--BATHY-SOURCE)
+      BATHY_SOURCE="$2"
+      shift 2
+      ;;
+    --boundary-points)
+      BOUNDARY_POINTS=1
+      shift 1
+      ;;
+    --user-polygons-flag)
+      USER_POLYGONS_FLAG="$2"
+      shift 2
+      ;;
     -c|--clean|--cleanup)
       CLEANUP=1
       shift 1
@@ -241,6 +260,7 @@ echo "  Prefix Name          : ${NAME}"
 echo "  Grid Type            : ${GRID_TYPE}"
 echo "  Output Directory     : ${OUT_DIR}"
 echo "  Reference Directory  : ${REF_DIR}"
+echo "  Bathymetry Source    : ${BATHY_SOURCE}"
 if [ -n "$NX" ]; then echo "  NX (Lon/X Points)    : ${NX}"; fi
 if [ -n "$NY" ]; then echo "  NY (Lat/Y Points)    : ${NY}"; fi
 
@@ -267,6 +287,7 @@ esac
 echo "========================================================================"
 
 # 1. Check Reference Data Directory
+echo "[Step 1/3] Checking reference data directory..."
 if [ ! -d "$REF_DIR" ] || [ -z "$(ls -A "$REF_DIR"/*.nc "$REF_DIR"/*.tif 2>/dev/null)" ]; then
   echo "Error: Reference bathymetry dataset files were not found in '${REF_DIR}'." >&2
   echo "Please populate reference data first by running:" >&2
@@ -278,6 +299,7 @@ fi
 mkdir -p "$OUT_DIR"
 
 # 2. Check Python Environment
+echo "[Step 2/3] Validating Python environment and dependencies..."
 if ! command -v python3 &> /dev/null; then
   echo "Error: 'python3' interpreter was not found in PATH." >&2
   exit 1
@@ -292,12 +314,13 @@ if ! python3 -c "import numpy, scipy, xarray, netCDF4, shapely" &> /dev/null; th
 fi
 
 # 3. Execute Python Gridgen CLI
-echo "Launching Python grid generation pipeline for '${NAME}'..."
+echo "[Step 3/3] Launching Python grid generation pipeline for '${NAME}'..."
 CMD_ARGS=(
   --name "$NAME"
   --grid-type "$GRID_TYPE"
   --out-dir "$OUT_DIR"
   --ref-dir "$REF_DIR"
+  --bathy-source "$BATHY_SOURCE"
 )
 
 if [ -n "$LON_START" ]; then CMD_ARGS+=(--lon-start "$LON_START"); fi
@@ -314,6 +337,8 @@ if [ -n "$POLE_LAT" ]; then CMD_ARGS+=(--pole-lat "$POLE_LAT"); fi
 if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi
 if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
+if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
+if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"
 

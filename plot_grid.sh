@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-15
+# @date Latest Update: 2026-10-19
 #
 # Shell driver script to generate graphical grid and obstruction plots in GIF format.
 
@@ -106,6 +106,7 @@ echo " WAVEWATCH III / IV Grid & Obstruction Plotting Tool"
 echo "========================================================================"
 
 # 1. Check Input Dataset Availability
+echo "[Step 1/3] Checking input dataset availability..."
 if [ ! -f "$INPUT_FILE" ] && \
    [ ! -f "${INPUT_FILE}.nc" ] && \
    [ ! -f "${INPUT_FILE}_ugrid.nc" ] && \
@@ -119,6 +120,7 @@ if [ ! -f "$INPUT_FILE" ] && \
 fi
 
 # 2. Check Python Environment
+echo "[Step 2/3] Validating Python environment and dependencies..."
 if ! command -v python3 &> /dev/null; then
   echo "Error: 'python3' interpreter was not found in PATH." >&2
   exit 1
@@ -138,7 +140,7 @@ if [ -n "$OUTPUT_FILE" ]; then
 fi
 
 # 3. Execute Visualization Module
-echo "Generating plot graphics for '${INPUT_FILE}' in format '${FORMAT}'..."
+echo "[Step 3/3] Executing grid visualization module for '${INPUT_FILE}' in format '${FORMAT}'..."
 python3 -m gridgen.vis "${CMD_ARGS[@]}"
 
 echo "Plot generation finished successfully."

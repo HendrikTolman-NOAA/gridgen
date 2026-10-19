@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-13
-# @date Latest Update: 2026-10-13
+# @date Latest Update: 2026-10-19
 
 name: Generate Documentation
 
@@ -32,21 +32,26 @@ jobs:
   build-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: "[Step 1/5] Checkout repository"
         uses: actions/checkout@v4
 
-      - name: Install Doxygen
+      - name: "[Step 2/5] Install Doxygen and Graphviz"
         run: |
+          echo "[Step 2/5] Installing Doxygen..."
           sudo apt-get update
           sudo apt-get install -y doxygen graphviz
 
-      - name: Build Doxygen Documentation
-        run: doxygen Doxyfile
+      - name: "[Step 3/5] Build Doxygen Documentation"
+        run: |
+          echo "[Step 3/5] Generating Doxygen docs..."
+          doxygen Doxyfile
 
-      - name: Disable Jekyll for GitHub Pages
-        run: touch docs/html/.nojekyll
+      - name: "[Step 4/5] Disable Jekyll for GitHub Pages"
+        run: |
+          echo "[Step 4/5] Preparing .nojekyll flag..."
+          touch docs/html/.nojekyll
 
-      - name: Upload Artifact for GitHub Pages
+      - name: "[Step 5/5] Upload Artifact for GitHub Pages"
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'docs/html'
@@ -59,6 +64,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
+      - name: "[Step 1/1] Deploy to GitHub Pages"
         id: deployment
         uses: actions/deploy-pages@v4
