@@ -80,8 +80,8 @@ def main() -> None:
     gen_group.add_argument(
         "--bathy-source",
         type=str,
-        default="etopo1",
-        help="Bathymetry reference dataset identifier or filename prefix (default: etopo1)",
+        default="etopo2",
+        help="Bathymetry reference dataset identifier or filename prefix (default: etopo2)",
     )
     gen_group.add_argument(
         "--boundary-points",

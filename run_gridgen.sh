@@ -38,7 +38,7 @@ POLE_LAT=""
 NX="101"
 NY="32"
 CUSTOM_GRID=""
-BATHY_SOURCE="etopo1"
+BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
 USER_POLYGONS_FLAG=""
 OUT_DIR="."
@@ -60,7 +60,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -n, --name NAME        Grid prefix identifier (default: ww4_grid) [Optional]
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
-  --bathy-source SOURCE  Bathymetry reference source (default: etopo1) [Optional]
+  --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
   --user-polygons-flag FILE
                          Flag file for optional user coastal polygons [Optional]
