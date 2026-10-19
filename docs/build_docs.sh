@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-13
-# @date Latest Update: 2026-10-15
+# @date Latest Update: 2026-10-19
 
 set -euo pipefail
 
@@ -66,12 +66,13 @@ if [ "$CLEANUP" -eq 1 ]; then
   exit 0
 fi
 
+echo "[Step 1/2] Checking Doxygen installation..."
 if ! command -v doxygen &> /dev/null; then
     echo "Error: doxygen command not found. Please install Doxygen." >&2
     exit 1
 fi
 
-echo "Generating Doxygen documentation..."
+echo "[Step 2/2] Generating Doxygen documentation..."
 doxygen Doxyfile
 
 touch docs/html/.nojekyll

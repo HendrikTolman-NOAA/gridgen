@@ -60,7 +60,7 @@ echo " WAVEWATCH III / IV Gridgen Master Cleanup Utility"
 echo "========================================================================"
 
 # 1. Clean generated grid outputs and plot graphics in both current working directory and script root
-echo "--> Cleaning generated grid output files and plot graphics..."
+echo "[Step 1/4] Cleaning generated grid output files and plot graphics..."
 for target in "$ORIG_DIR" "$SCRIPT_DIR"; do
   if [ -d "$target" ]; then
     rm -f "${target}"/*.depth_ascii "${target}"/*.maskorig_ascii \
@@ -73,18 +73,18 @@ done
 
 # 2. Clean reference data directory
 if [ -f "${SCRIPT_DIR}/populate_reference_data.sh" ]; then
-  echo "--> Cleaning reference data directory..."
+  echo "[Step 2/4] Cleaning reference data directory..."
   "${SCRIPT_DIR}/populate_reference_data.sh" --clean || true
 fi
 
 # 3. Clean documentation build outputs
 if [ -f "${SCRIPT_DIR}/docs/build_docs.sh" ]; then
-  echo "--> Cleaning documentation build outputs..."
+  echo "[Step 3/4] Cleaning documentation build outputs..."
   "${SCRIPT_DIR}/docs/build_docs.sh" --clean || true
 fi
 
 # 4. Clean Python build, test, and bytecode cache artifacts
-echo "--> Cleaning Python build, test, and bytecode cache artifacts..."
+echo "[Step 4/4] Cleaning Python build, test, and bytecode cache artifacts..."
 for target in "$ORIG_DIR" "$SCRIPT_DIR"; do
   if [ -d "$target" ]; then
     rm -rf "${target}/build" "${target}/dist" "${target}"/*.egg-info \

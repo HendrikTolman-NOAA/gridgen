@@ -267,6 +267,7 @@ esac
 echo "========================================================================"
 
 # 1. Check Reference Data Directory
+echo "[Step 1/3] Checking reference data directory..."
 if [ ! -d "$REF_DIR" ] || [ -z "$(ls -A "$REF_DIR"/*.nc "$REF_DIR"/*.tif 2>/dev/null)" ]; then
   echo "Error: Reference bathymetry dataset files were not found in '${REF_DIR}'." >&2
   echo "Please populate reference data first by running:" >&2
@@ -278,6 +279,7 @@ fi
 mkdir -p "$OUT_DIR"
 
 # 2. Check Python Environment
+echo "[Step 2/3] Validating Python environment and dependencies..."
 if ! command -v python3 &> /dev/null; then
   echo "Error: 'python3' interpreter was not found in PATH." >&2
   exit 1
@@ -292,7 +294,7 @@ if ! python3 -c "import numpy, scipy, xarray, netCDF4, shapely" &> /dev/null; th
 fi
 
 # 3. Execute Python Gridgen CLI
-echo "Launching Python grid generation pipeline for '${NAME}'..."
+echo "[Step 3/3] Launching Python grid generation pipeline for '${NAME}'..."
 CMD_ARGS=(
   --name "$NAME"
   --grid-type "$GRID_TYPE"
