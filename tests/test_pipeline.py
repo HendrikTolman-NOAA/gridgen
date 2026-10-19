@@ -64,3 +64,38 @@ def test_full_grid_pipeline(tmp_path):
     assert ds_nc.attrs["Conventions"] == "CF-1.8 UGRID-1.0"
 
     ds_nc.close()
+
+
+def test_generate_grid_wraparound_performance_and_correctness():
+    """Test bathymetry extraction across 180° / 360° longitude wraparound boundaries."""
+    from gridgen.coordinates import create_regular_grid
+
+    # Synthetic fine bathymetry dataset spanning [-180, 180]
+    lon_b = np.linspace(-180.0, 180.0, 3600)
+    lat_b = np.linspace(-90.0, 90.0, 1800)
+    z_b = np.full((len(lat_b), len(lon_b)), -100.0)
+
+    ds_mock = xr.Dataset(
+        data_vars={"z": (("y", "x"), z_b)},
+        coords={"x": lon_b, "y": lat_b},
+    )
+
+    # Grid spanning [20, 378] longitude, which includes the 180° wraparound point
+    lon, lat = create_regular_grid(
+        LON_START=20.0,
+        LON_END=378.0,
+        LAT_START=-76.0,
+        LAT_END=76.0,
+        NX=180,
+        NY=77,
+    )
+
+    import time
+
+    t0 = time.time()
+    depth = generate_grid(lon, lat, bathy_source=ds_mock)
+    elapsed = time.time() - t0
+
+    assert depth.shape == (77, 180)
+    assert np.all(depth <= 0.1)  # wet cells should be -100.0
+    assert elapsed < 15.0  # extraction must complete quickly without slowdown
