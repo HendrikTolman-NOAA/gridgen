@@ -46,16 +46,16 @@ def main() -> None:
     gen_group.add_argument(
         "--nx",
         type=int,
-        default=101,
+        default=180,
         metavar="NX",
-        help="[Optional] Discrete grid dimension NX (number of X points, default: 101)",
+        help="[Optional] Discrete grid dimension NX (number of X points, default: 180)",
     )
     gen_group.add_argument(
         "--ny",
         type=int,
-        default=32,
+        default=77,
         metavar="NY",
-        help="[Optional] Discrete grid dimension NY (number of Y points, default: 32)",
+        help="[Optional] Discrete grid dimension NY (number of Y points, default: 77)",
     )
     gen_group.add_argument(
         "--name", type=str, default="ww4_grid", help="Grid prefix identifier (default: ww4_grid)"
@@ -100,30 +100,30 @@ def main() -> None:
     reg_group.add_argument(
         "--lon-start",
         type=float,
-        default=140.0,
+        default=20.0,
         metavar="LON_START",
-        help="[Optional] Lower-left corner longitude in degrees (default: 140.0)",
+        help="[Optional] Lower-left corner longitude in degrees (default: 20.0)",
     )
     reg_group.add_argument(
         "--lat-start",
         type=float,
-        default=44.0,
+        default=-76.0,
         metavar="LAT_START",
-        help="[Optional] Lower-left corner latitude in degrees (default: 44.0)",
+        help="[Optional] Lower-left corner latitude in degrees (default: -76.0)",
     )
     reg_group.add_argument(
         "--lon-end",
         type=float,
-        default=240.0,
+        default=378.0,
         metavar="LON_END",
-        help="[Optional] Upper-right corner longitude in degrees (default: 240.0)",
+        help="[Optional] Upper-right corner longitude in degrees (default: 378.0)",
     )
     reg_group.add_argument(
         "--lat-end",
         type=float,
-        default=75.0,
+        default=76.0,
         metavar="LAT_END",
-        help="[Optional] Upper-right corner latitude in degrees (default: 75.0)",
+        help="[Optional] Upper-right corner latitude in degrees (default: 76.0)",
     )
     reg_group.add_argument(
         "--pole-lon",
