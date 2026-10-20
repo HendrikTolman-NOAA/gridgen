@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-15
+# @date Latest Update: 2026-10-20
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -189,11 +189,13 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
 
 def plot_grid(
     data: dict[str, Any],
-    title: str = "WAVEWATCH IV Grid & Obstructions",
+    title: str = "WAVEWATCH IV Grid",
     output_path: str | Path | None = None,
     show: bool = False,
+    show_mask: bool = True,
+    max_depth: float | None = -2500.0,
 ) -> matplotlib.figure.Figure:
-    """Graphically display resulting grid bathymetry, land-sea mask, and obstruction factors.
+    """Graphically display resulting grid bathymetry plot.
 
     Parameters
     ----------
@@ -205,6 +207,10 @@ def plot_grid(
         File path where the resulting plot figure should be saved.
     show : bool
         If True, call matplotlib plt.show() to display interactively.
+    show_mask : bool
+        If True, mask out dry land cells (mask == 0) and use tan background. Default is True.
+    max_depth : float, optional
+        Maximum depth (minimum numerical bathymetry limit, e.g., -2500.0) for color scale range limit. Default is -2500.0.
 
     Returns
     -------
@@ -215,65 +221,34 @@ def plot_grid(
     lat = data["lat"]
     depth = data["depth"].copy()
     mask = data["mask"]
-    sx = data.get("sx")
-    sy = data.get("sy")
 
-    has_obstr = sx is not None and sy is not None
+    fig, ax1 = plt.subplots(figsize=(8, 5))
 
-    num_subplots = 3 if has_obstr else 1
-    fig, axes = plt.subplots(
-        1, num_subplots, figsize=(6 * num_subplots, 5), squeeze=False
-    )
-    axes_flat = axes.ravel()
+    if show_mask:
+        # Mask dry depth values for clear bathymetry display
+        depth_display = np.where(mask == 0, np.nan, depth)
+        ax1.set_facecolor("#d2b48c")  # Tan background for land cells
+    else:
+        depth_display = depth
 
-    # Mask dry depth values for clear bathymetry display
-    depth_display = np.where(mask == 0, np.nan, depth)
+    # Calculate color scale range
+    # In depth representation, depths are negative (e.g. -2500m is deeper than -10m).
+    # If max_depth is set (e.g. -2500), vmin is max_depth (-2500) and vmax is 0.
+    vmin = max_depth if max_depth is not None else None
+    vmax = 0.0 if max_depth is not None else None
 
-    # 1. Bathymetry Depth & Land/Sea Mask
-    ax1 = axes_flat[0]
-    ax1.set_facecolor("#d2b48c")  # Tan background for land cells
     if lon.ndim == 2:
         pcm1 = ax1.pcolormesh(
-            lon, lat, depth_display, cmap="Blues_r", shading="nearest"
+            lon, lat, depth_display, cmap="Blues_r", vmin=vmin, vmax=vmax, shading="nearest"
         )
     else:
-        pcm1 = ax1.scatter(lon, lat, c=depth_display, cmap="Blues_r")
+        pcm1 = ax1.scatter(lon, lat, c=depth_display, cmap="Blues_r", vmin=vmin, vmax=vmax)
+
     fig.colorbar(pcm1, ax=ax1, label="Depth (m)")
-    ax1.set_title("Bathymetry Depth & Land/Sea Mask")
+    ax1.set_title("Bathymetry Depth")
     ax1.set_xlabel("Longitude (°E)")
     ax1.set_ylabel("Latitude (°N)")
     ax1.grid(True, linestyle="--", alpha=0.5)
-
-    # 2. X-Obstruction sx
-    if has_obstr:
-        ax2 = axes_flat[1]
-        ax2.set_facecolor("#f0f0f0")
-        if lon.ndim == 2:
-            pcm2 = ax2.pcolormesh(
-                lon, lat, sx, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
-            )
-        else:
-            pcm2 = ax2.scatter(lon, lat, c=sx, cmap="YlOrRd", vmin=0.0, vmax=1.0)
-        fig.colorbar(pcm2, ax=ax2, label="x-Obstruction Factor (sx)")
-        ax2.set_title("Sub-grid x-Obstruction (sx)")
-        ax2.set_xlabel("Longitude (°E)")
-        ax2.set_ylabel("Latitude (°N)")
-        ax2.grid(True, linestyle="--", alpha=0.5)
-
-        # 3. Y-Obstruction sy
-        ax3 = axes_flat[2]
-        ax3.set_facecolor("#f0f0f0")
-        if lon.ndim == 2:
-            pcm3 = ax3.pcolormesh(
-                lon, lat, sy, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
-            )
-        else:
-            pcm3 = ax3.scatter(lon, lat, c=sy, cmap="YlOrRd", vmin=0.0, vmax=1.0)
-        fig.colorbar(pcm3, ax=ax3, label="y-Obstruction Factor (sy)")
-        ax3.set_title("Sub-grid y-Obstruction (sy)")
-        ax3.set_xlabel("Longitude (°E)")
-        ax3.set_ylabel("Latitude (°N)")
-        ax3.grid(True, linestyle="--", alpha=0.5)
 
     fig.suptitle(title, fontsize=14, fontweight="bold")
     fig.tight_layout()
@@ -318,9 +293,9 @@ def plot_grid(
 
 
 def main() -> None:
-    """CLI driver for displaying resulting grid bathymetry and obstructions."""
+    """CLI driver for displaying resulting grid bathymetry."""
     parser = argparse.ArgumentParser(
-        description="Graphically display WAVEWATCH III / IV resulting grid and obstructions."
+        description="Graphically display WAVEWATCH III / IV resulting grid."
     )
     parser.add_argument(
         "-i",
@@ -347,8 +322,27 @@ def main() -> None:
     parser.add_argument(
         "--title",
         type=str,
-        default="WAVEWATCH IV Grid & Obstructions",
+        default="WAVEWATCH IV Grid",
         help="Figure title",
+    )
+    parser.add_argument(
+        "--mask",
+        dest="mask",
+        action="store_true",
+        default=True,
+        help="Apply land-sea mask to dry cells (default: enabled)",
+    )
+    parser.add_argument(
+        "--no-mask",
+        dest="mask",
+        action="store_false",
+        help="Disable land-sea mask display",
+    )
+    parser.add_argument(
+        "--max-depth",
+        type=float,
+        default=-2500.0,
+        help="Maximum depth limit for color scale (default: -2500.0)",
     )
     parser.add_argument(
         "--display",
@@ -386,7 +380,14 @@ def main() -> None:
         out_path = args.output
 
     data = load_grid_data(args.input)
-    plot_grid(data, title=args.title, output_path=out_path, show=args.display)
+    plot_grid(
+        data,
+        title=args.title,
+        output_path=out_path,
+        show=args.display,
+        show_mask=args.mask,
+        max_depth=args.max_depth,
+    )
 
 
 if __name__ == "__main__":

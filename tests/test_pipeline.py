@@ -80,12 +80,12 @@ def test_generate_grid_wraparound_performance_and_correctness():
         coords={"x": lon_b, "y": lat_b},
     )
 
-    # Grid spanning [20, 378] longitude, which includes the 180° wraparound point
+    # Grid spanning [20, 379.75] longitude, which includes the 180° wraparound point
     lon, lat = create_regular_grid(
         LON_START=20.0,
-        LON_END=378.0,
-        LAT_START=-76.0,
-        LAT_END=76.0,
+        LON_END=379.75,
+        LAT_START=-75.0,
+        LAT_END=75.0,
         NX=180,
         NY=77,
     )
