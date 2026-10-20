@@ -69,29 +69,64 @@ def generate_grid(
     Ny, Nx = x.shape
     depth_sub = np.full((Ny, Nx), dry, dtype=np.float64)
 
+    def _detect_var_names(ds: xr.Dataset) -> tuple[str, str, str]:
+        var_x = None
+        for cand in ["lon", "longitude", "x", "X", "lon_b", "lon_base"]:
+            if cand in ds or cand in ds.coords or cand in ds.dims:
+                var_x = cand
+                break
+
+        var_y = None
+        for cand in ["lat", "latitude", "y", "Y", "lat_b", "lat_base"]:
+            if cand in ds or cand in ds.coords or cand in ds.dims:
+                var_y = cand
+                break
+
+        var_z = None
+        for cand in ["elevation", "z", "height", "altitude", "bed_elevation", "z_base"]:
+            if cand in ds.data_vars or cand in ds:
+                var_z = cand
+                break
+
+        if var_z is None and len(ds.data_vars) == 1:
+            var_z = list(ds.data_vars.keys())[0]
+
+        if var_x is None or var_y is None or var_z is None:
+            raise KeyError(
+                f"Could not automatically detect longitude/latitude/elevation variables in dataset. "
+                f"Variables found: {list(ds.keys())}. Coords found: {list(ds.coords.keys())}."
+            )
+        return var_x, var_y, var_z
+
     # 1. Load source bathymetry dataset
     if isinstance(bathy_source, xr.Dataset):
         ds_base = bathy_source
         if var_names is None:
-            var_x = "lon" if "lon" in ds_base else "x"
-            var_y = "lat" if "lat" in ds_base else "y"
-            var_z = "z" if "z" in ds_base else "elevation"
+            var_x, var_y, var_z = _detect_var_names(ds_base)
         else:
             var_x, var_y, var_z = var_names
     else:
-        if var_names is None:
-            if bathy_source == "etopo2":
-                fname_base = os.path.join(ref_dir, "etopo2.nc")
-                var_x, var_y, var_z = "x", "y", "z"
-            elif bathy_source == "etopo1":
-                fname_base = os.path.join(ref_dir, "etopo1.nc")
-                var_x, var_y, var_z = "lon", "lat", "z"
-            else:
-                fname_base = os.path.join(ref_dir, f"{bathy_source}.nc")
-                var_x, var_y, var_z = "lon", "lat", "z"
+        if os.path.isabs(bathy_source) or os.path.exists(bathy_source):
+            fname_base = bathy_source
         else:
-            fname_base = os.path.join(ref_dir, f"{bathy_source}.nc")
-            var_x, var_y, var_z = var_names
+            # Check for candidate filenames in ref_dir
+            candidates = [f"{bathy_source}.nc"]
+            if bathy_source in ("gebco", "gebco_2024", "GEBCO"):
+                candidates.extend(["gebco_2024.nc", "gebco.nc", "GEBCO_2024.nc", "GEBCO_2024_CF.nc"])
+            elif bathy_source == "etopo2":
+                candidates.insert(0, "etopo2.nc")
+            elif bathy_source in ("etopo1", "etopo_2022"):
+                candidates.extend(["etopo1.nc", "etopo_2022.nc", "ETOPO_2022_v1_60s_N90W180_bed.nc"])
+
+            fname_base = None
+            for cand in candidates:
+                cand_path = os.path.join(ref_dir, cand)
+                if os.path.exists(cand_path):
+                    fname_base = cand_path
+                    break
+
+            if fname_base is None:
+                fname_base = os.path.join(ref_dir, f"{bathy_source}.nc")
 
         if not os.path.exists(fname_base):
             raise FileNotFoundError(
@@ -101,9 +136,29 @@ def generate_grid(
 
         ds_base = xr.open_dataset(fname_base)
 
+        if var_names is None:
+            if bathy_source == "etopo2" and "x" in ds_base and "y" in ds_base and "z" in ds_base:
+                var_x, var_y, var_z = "x", "y", "z"
+            elif bathy_source == "etopo1" and "lon" in ds_base and "lat" in ds_base and "z" in ds_base:
+                var_x, var_y, var_z = "lon", "lat", "z"
+            else:
+                var_x, var_y, var_z = _detect_var_names(ds_base)
+        else:
+            var_x, var_y, var_z = var_names
+
     lon_base = np.asarray(ds_base[var_x].values, dtype=np.float64)
     lat_base = np.asarray(ds_base[var_y].values, dtype=np.float64)
     z_base = np.asarray(ds_base[var_z].values, dtype=np.float64)
+
+    if len(lon_base) > 1 and lon_base[1] < lon_base[0]:
+        lon_order = np.argsort(lon_base)
+        lon_base = lon_base[lon_order]
+        z_base = z_base[:, lon_order] if z_base.ndim == 2 else z_base[lon_order]
+
+    if len(lat_base) > 1 and lat_base[1] < lat_base[0]:
+        lat_order = np.argsort(lat_base)
+        lat_base = lat_base[lat_order]
+        z_base = z_base[lat_order, :] if z_base.ndim == 2 else z_base[lat_order]
 
     if lon_base.ndim > 1 or lat_base.ndim > 1:
         # Flatten if 2D

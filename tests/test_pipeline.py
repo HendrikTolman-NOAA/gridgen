@@ -99,3 +99,42 @@ def test_generate_grid_wraparound_performance_and_correctness():
     assert depth.shape == (77, 180)
     assert np.all(depth <= 0.1)  # wet cells should be -100.0
     assert elapsed < 15.0  # extraction must complete quickly without slowdown
+
+
+def test_gebco_bathymetry_source_loading(tmp_path):
+    """Test loading GEBCO NetCDF dataset files with descending coordinates and auto variable detection."""
+    lon1d = np.linspace(-180.0, 180.0, 360)
+    lat1d = np.linspace(90.0, -90.0, 180)  # Descending latitude as in GEBCO NetCDF
+    elevation = np.full((len(lat1d), len(lon1d)), -200.0)
+
+    ds_gebco = xr.Dataset(
+        data_vars={"elevation": (("lat", "lon"), elevation)},
+        coords={"lon": lon1d, "lat": lat1d},
+    )
+
+    # Save mock GEBCO file gebco_2024.nc
+    gebco_path = tmp_path / "gebco_2024.nc"
+    ds_gebco.to_netcdf(gebco_path)
+
+    lon_grid, lat_grid = np.meshgrid(
+        np.linspace(-10.0, 10.0, 5), np.linspace(-10.0, 10.0, 5)
+    )
+
+    # Test loading using bathy_source="gebco_2024"
+    depth_2024 = generate_grid(
+        lon_grid, lat_grid, ref_dir=str(tmp_path), bathy_source="gebco_2024"
+    )
+    assert depth_2024.shape == (5, 5)
+    assert np.allclose(depth_2024, -200.0)
+
+    # Test loading using bathy_source="gebco" alias
+    depth_alias = generate_grid(
+        lon_grid, lat_grid, ref_dir=str(tmp_path), bathy_source="gebco"
+    )
+    assert depth_alias.shape == (5, 5)
+    assert np.allclose(depth_alias, -200.0)
+
+    # Test direct Dataset loading with auto-detection
+    depth_ds = generate_grid(lon_grid, lat_grid, bathy_source=ds_gebco)
+    assert depth_ds.shape == (5, 5)
+    assert np.allclose(depth_ds, -200.0)
