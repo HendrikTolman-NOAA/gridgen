@@ -61,8 +61,8 @@ def test_reference_data_gitignore():
         "coastal_bound_low.mat",
         "optional_coastal_polygons.mat",
         "gridgen_addit.tar.gz",
-        "ETOPO_2022_v1_60s_N90W180_bed.nc",
-        "ETOPO_2022_v1_30s_N90W180_bed.nc",
+        "etopo_2022.nc",
+        "gebco_2024.nc",
     ]
 
     for entry in expected_entries:
@@ -77,7 +77,7 @@ def test_populate_script_target_dir(tmp_path: Path):
     script_path = repo_root / "populate_reference_data.sh"
     target_dir = tmp_path / "custom_ref_data"
     target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "GEBCO_2024.nc").write_text("dummy gebco")
+    (target_dir / "gebco_2024.nc").write_text("dummy gebco")
     (target_dir / "gshhg-bin-2.3.7.zip").write_text("dummy gshhg")
 
     result = subprocess.run(
@@ -203,7 +203,7 @@ def test_populate_script_clean_option(tmp_path: Path):
     dataset_files = [
         "etopo1.nc",
         "coastal_bound_high.mat",
-        "ETOPO_2022_v1_60s_N90W180_bed.nc",
+        "etopo_2022.nc",
     ]
     preserved_files = [
         "README.md",
@@ -256,7 +256,7 @@ def test_populate_script_from_external_directory(tmp_path: Path):
     script_path = repo_root / "populate_reference_data.sh"
     target_dir = tmp_path / "ext_ref_data"
     target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "GEBCO_2024.nc").write_text("dummy gebco")
+    (target_dir / "gebco_2024.nc").write_text("dummy gebco")
 
     result = subprocess.run(
         [str(script_path), "-d", str(target_dir), "--gebco"],

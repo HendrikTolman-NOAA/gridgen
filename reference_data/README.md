@@ -103,7 +103,7 @@ For high-resolution modeling, newer authoritative external datasets are recommen
 ### 2. GEBCO Global Grid (GEBCO 2023 / 2024)
 * **Authoritative Source**: General Bathymetric Chart of the Oceans (GEBCO) / IHO-IOC / BODC
 * **Resolution**: 15 arc-second global grid
-* **Format**: NetCDF-4 (`GEBCO_2024.nc`)
+* **Format**: NetCDF-4 (`gebco_2024.nc`)
 * **Description**: Premier international high-resolution global bathymetric dataset incorporating multibeam survey data and satellite altimetry.
 * **Retrieval**:
   ```bash

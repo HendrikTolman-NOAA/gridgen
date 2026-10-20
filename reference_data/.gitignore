@@ -20,6 +20,7 @@ gridgen_addit.tar.gz
 *.tar.gz
 
 # NOAA NCEI ETOPO 2022 global relief datasets
+etopo_2022.nc
 ETOPO_2022_v1_60s_N90W180_bed.nc
 ETOPO_2022_v1_30s_N90W180_bed.nc
 ETOPO_2022_v1_60s_N90W180_bed.tif
@@ -27,6 +28,7 @@ ETOPO_2022_v1_30s_N90W180_bed.tif
 *.tif
 
 # GEBCO global bathymetry datasets
+gebco_2024.nc
 GEBCO_*.nc
 GEBCO_*.zip
 
