@@ -28,6 +28,8 @@ LON_START="20.0"
 LON_END="379.75"
 LAT_START="-75.0"
 LAT_END="75.0"
+SX=""
+SY=""
 CENTER_LON=""
 CENTER_LAT=""
 EXTENT_KM=""
@@ -71,10 +73,12 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -h, --help             Display this help message and exit
 
 2. Regular Grid Parameters (--grid-type regular):
-  --lon-start LON        Lower-left longitude (default: 20.0) [Optional]
-  --lat-start LAT        Lower-left latitude (default: -75.0) [Optional]
-  --lon-end LON          Upper-right longitude (default: 379.75) [Optional]
-  --lat-end LAT          Upper-right latitude (default: 75.0) [Optional]
+  --lon-start LON        Lower-left longitude [Mandatory]
+  --lat-start LAT        Lower-left latitude [Mandatory]
+  --lon-end LON          Upper-right longitude [Mandatory if --sx omitted]
+  --lat-end LAT          Upper-right latitude [Mandatory if --sy omitted]
+  --sx SX                Longitude increment in deg [Mandatory if --lon-end omitted]
+  --sy SY                Latitude increment in deg [Mandatory if --lat-end omitted]
   --pole-lon LON         Rotated north pole longitude in deg [Optional]
   --pole-lat LAT         Rotated north pole latitude in deg [Optional]
 
@@ -125,6 +129,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --lat-end|--LAT-END)
       LAT_END="$2"
+      shift 2
+      ;;
+    --sx|--SX)
+      SX="$2"
+      shift 2
+      ;;
+    --sy|--SY)
+      SY="$2"
       shift 2
       ;;
     --center-lon|--CENTER-LON)
@@ -273,14 +285,18 @@ case "${GRID_TYPE}" in
     if [ -n "$POLE_LON" ]; then echo "  POLE_LON             : ${POLE_LON} deg"; fi
     if [ -n "$POLE_LAT" ]; then echo "  POLE_LAT             : ${POLE_LAT} deg"; fi
 
-    if [ -n "$LON_START" ] && [ -n "$LON_END" ] && [ -n "$NX" ] && [ -n "$LAT_START" ] && [ -n "$LAT_END" ] && [ -n "$NY" ]; then
-      GRID_CALCS=$(awk -v lon_s="$LON_START" -v lon_e="$LON_END" -v lat_s="$LAT_START" -v lat_e="$LAT_END" -v nx="$NX" -v ny="$NY" 'BEGIN {
-        sx = (nx > 1) ? (lon_e - lon_s) / (nx - 1) : 0.0;
-        sy = (ny > 1) ? (lat_e - lat_s) / (ny - 1) : 0.0;
-        span = nx * sx;
+    if [ -n "$LON_START" ] && [ -n "$LAT_START" ] && [ -n "$NX" ] && [ -n "$NY" ]; then
+      GRID_CALCS=$(awk -v lon_s="$LON_START" -v lon_e="$LON_END" -v lat_s="$LAT_START" -v lat_e="$LAT_END" -v sx_in="$SX" -v sy_in="$SY" -v nx="$NX" -v ny="$NY" 'BEGIN {
+        sx = sx_in;
+        sy = sy_in;
+        if (sx == "" && lon_e != "") { sx = (nx > 1) ? (lon_e - lon_s) / (nx - 1) : 0.0; }
+        if (sy == "" && lat_e != "") { sy = (ny > 1) ? (lat_e - lat_s) / (ny - 1) : 0.0; }
+        sx_val = (sx != "") ? sx : 0.0;
+        sy_val = (sy != "") ? sy : 0.0;
+        span = nx * sx_val;
         diff = span - 360.0; if (diff < 0) diff = -diff;
         closure = (diff < 0.0001) ? "Yes" : "No";
-        printf "SX=%.6f SY=%.6f CLOSURE=%s", sx, sy, closure
+        printf "SX=%.6f SY=%.6f CLOSURE=%s", sx_val, sy_val, closure
       }')
       eval "$GRID_CALCS"
       echo "  SX (Lon Increment)   : ${SX} deg"
@@ -342,6 +358,8 @@ if [ -n "$LON_START" ]; then CMD_ARGS+=(--lon-start "$LON_START"); fi
 if [ -n "$LON_END" ]; then CMD_ARGS+=(--lon-end "$LON_END"); fi
 if [ -n "$LAT_START" ]; then CMD_ARGS+=(--lat-start "$LAT_START"); fi
 if [ -n "$LAT_END" ]; then CMD_ARGS+=(--lat-end "$LAT_END"); fi
+if [ -n "$SX" ]; then CMD_ARGS+=(--sx "$SX"); fi
+if [ -n "$SY" ]; then CMD_ARGS+=(--sy "$SY"); fi
 if [ -n "$CENTER_LON" ]; then CMD_ARGS+=(--center-lon "$CENTER_LON"); fi
 if [ -n "$CENTER_LAT" ]; then CMD_ARGS+=(--center-lat "$CENTER_LAT"); fi
 if [ -n "$EXTENT_KM" ]; then CMD_ARGS+=(--extent-km "$EXTENT_KM"); fi

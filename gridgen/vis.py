@@ -25,10 +25,35 @@ from typing import Any
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import numpy as np
 import xarray as xr
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from .io.ascii import read_ww3file, read_ww3meta, read_ww3obstr
+
+
+def fmt_lon(x: float, pos: Any = None) -> str:
+    """Format longitude ticks into traditional [-180, 180] East/West degrees."""
+    lon_deg = (x + 180.0) % 360.0 - 180.0
+    lon_deg = round(lon_deg, 4)
+    if abs(lon_deg) < 1e-4 or abs(abs(lon_deg) - 180.0) < 1e-4:
+        return f"{round(abs(lon_deg))}°"
+    elif lon_deg < 0:
+        return f"{abs(lon_deg):g}°W"
+    else:
+        return f"{lon_deg:g}°E"
+
+
+def fmt_lat(y: float, pos: Any = None) -> str:
+    """Format latitude ticks into North/South degrees."""
+    lat_deg = round(y, 4)
+    if abs(lat_deg) < 1e-4:
+        return "0°"
+    elif lat_deg < 0:
+        return f"{abs(lat_deg):g}°S"
+    else:
+        return f"{lat_deg:g}°N"
 
 
 def extract_grid_name(filepath: str | Path) -> str:
@@ -193,7 +218,7 @@ def plot_grid(
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
-    max_depth: float | None = -1000.0,
+    max_depth: float | None = -500.0,
     max_orography: float | None = 10.0,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry and orography plot.
@@ -211,7 +236,7 @@ def plot_grid(
     show_mask : bool
         If True, mask out dry land cells (mask == 0) and use dark green background. Default is True.
     max_depth : float, optional
-        Maximum depth (minimum numerical bathymetry limit, e.g., -1000.0) for color scale range limit. Default is -1000.0.
+        Maximum depth (minimum numerical bathymetry limit, e.g., -500.0) for color scale range limit. Default is -500.0.
     max_orography : float, optional
         Maximum orography elevation limit in meters (default: 10.0) for land color scale.
 
@@ -231,15 +256,18 @@ def plot_grid(
     if show_mask:
         ax1.set_facecolor(dark_green)
 
+    depth_limit = -abs(max_depth) if max_depth is not None else -500.0
+    vmax_orog = max_orography if max_orography is not None else 10.0
+
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
     bathymetry_mask = (depth <= 0) & (mask != 0) if show_mask else (depth <= 0)
     orography_mask = (depth > 0) & (depth < 999999.0) & (mask != 0) if show_mask else ((depth > 0) & (depth < 999999.0))
 
     depth_bathy = np.where(bathymetry_mask, depth, np.nan)
-    depth_orog = np.where(orography_mask, np.clip(depth, 0.0, max_orography if max_orography is not None else 10.0), np.nan)
+    depth_orog = np.where(orography_mask, np.clip(depth, 0.0, vmax_orog), np.nan)
 
-    vmin_bathy = max_depth if max_depth is not None else None
-    vmax_bathy = 0.0 if max_depth is not None else None
+    vmin_bathy = depth_limit
+    vmax_bathy = 0.0
 
     vmax_orog = max_orography if max_orography is not None else 10.0
 
@@ -247,25 +275,67 @@ def plot_grid(
         pcm1 = ax1.pcolormesh(
             lon, lat, depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
         )
-        if np.any(~np.isnan(depth_orog)):
-            pcm2 = ax1.pcolormesh(
-                lon, lat, depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
-            )
-            fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
+        pcm2 = ax1.pcolormesh(
+            lon, lat, depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
+        )
     else:
         pcm1 = ax1.scatter(lon, lat, c=depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
-        if np.any(~np.isnan(depth_orog)):
-            pcm2 = ax1.scatter(lon, lat, c=depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
-            fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
+        pcm2 = ax1.scatter(lon, lat, c=depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
 
-    fig.colorbar(pcm1, ax=ax1, label="Bathymetry Depth (m)")
+    ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
+    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
+
     ax1.set_title("Bathymetry & Orography")
-    ax1.set_xlabel("Longitude (°E)")
-    ax1.set_ylabel("Latitude (°N)")
+    ax1.set_xlabel("Longitude")
+    ax1.set_ylabel("Latitude")
     ax1.grid(True, linestyle="--", alpha=0.5)
 
     fig.suptitle(title, fontsize=14, fontweight="bold")
     fig.tight_layout()
+
+    # Orography colorbar (top-right, placed above Bathymetry colorbar)
+    cax_orog = inset_axes(
+        ax1,
+        width="3.5%",
+        height="45%",
+        loc="upper left",
+        bbox_to_anchor=(1.03, 0.05, 1, 0.95),
+        bbox_transform=ax1.transAxes,
+        borderpad=0,
+    )
+    # Bathymetry colorbar (bottom-right, placed below Orography colorbar)
+    cax_bathy = inset_axes(
+        ax1,
+        width="3.5%",
+        height="45%",
+        loc="lower left",
+        bbox_to_anchor=(1.03, 0.0, 1, 0.95),
+        bbox_transform=ax1.transAxes,
+        borderpad=0,
+    )
+
+    has_orography = bool(np.any(~np.isnan(depth_orog)))
+
+    if has_orography:
+        cb_orog = fig.colorbar(pcm2, cax=cax_orog, label="Orography (m)")
+        cb_orog.ax.tick_params(labelsize=5)
+        cb_orog.ax.yaxis.label.set_fontsize(6)
+    else:
+        cax_orog.axis("off")
+        cax_orog.text(
+            0.5,
+            0.5,
+            "Grid contains no orography",
+            ha="center",
+            va="center",
+            rotation=90,
+            fontsize=6,
+            color="black",
+        )
+
+    cb_bathy = fig.colorbar(pcm1, cax=cax_bathy, label="Bathymetry Depth (m)")
+    cb_bathy.ax.tick_params(labelsize=5)
+    cb_bathy.ax.yaxis.label.set_fontsize(6)
 
     if output_path is not None:
         out_p = Path(output_path)
@@ -355,8 +425,8 @@ def main() -> None:
     parser.add_argument(
         "--max-depth",
         type=float,
-        default=-1000.0,
-        help="Maximum depth limit for color scale (default: -1000.0)",
+        default=-500.0,
+        help="Maximum depth limit for color scale (default: -500.0)",
     )
     parser.add_argument(
         "--max-orography",
