@@ -328,7 +328,7 @@ def plot_grid(
             "Grid contains no orography",
             ha="center",
             va="center",
-            rotation=270,
+            rotation=90,
             fontsize=6,
             color="black",
         )
