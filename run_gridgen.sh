@@ -272,6 +272,21 @@ case "${GRID_TYPE}" in
     if [ -n "$LAT_END" ]; then echo "  LAT_END (Upper-Right)  : ${LAT_END} deg"; fi
     if [ -n "$POLE_LON" ]; then echo "  POLE_LON             : ${POLE_LON} deg"; fi
     if [ -n "$POLE_LAT" ]; then echo "  POLE_LAT             : ${POLE_LAT} deg"; fi
+
+    if [ -n "$LON_START" ] && [ -n "$LON_END" ] && [ -n "$NX" ] && [ -n "$LAT_START" ] && [ -n "$LAT_END" ] && [ -n "$NY" ]; then
+      GRID_CALCS=$(awk -v lon_s="$LON_START" -v lon_e="$LON_END" -v lat_s="$LAT_START" -v lat_e="$LAT_END" -v nx="$NX" -v ny="$NY" 'BEGIN {
+        sx = (nx > 1) ? (lon_e - lon_s) / (nx - 1) : 0.0;
+        sy = (ny > 1) ? (lat_e - lat_s) / (ny - 1) : 0.0;
+        span = nx * sx;
+        diff = span - 360.0; if (diff < 0) diff = -diff;
+        closure = (diff < 0.0001) ? "Yes" : "No";
+        printf "SX=%.6f SY=%.6f CLOSURE=%s", sx, sy, closure
+      }')
+      eval "$GRID_CALCS"
+      echo "  SX (Lon Increment)   : ${SX} deg"
+      echo "  SY (Lat Increment)   : ${SY} deg"
+      echo "  Global Closure       : ${CLOSURE}"
+    fi
     ;;
   stereographic)
     if [ -n "$CENTER_LON" ]; then echo "  CENTER_LON (Proj)    : ${CENTER_LON} deg"; fi
