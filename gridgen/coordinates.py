@@ -27,40 +27,51 @@ import numpy as np
 
 
 def create_regular_grid(
-    LON_START: float = 20.0,
-    LON_END: float = 379.75,
-    LAT_START: float = -75.0,
-    LAT_END: float = 75.0,
+    LON_START: float | None = None,
+    LAT_START: float | None = None,
+    LON_END: float | None = None,
+    LAT_END: float | None = None,
     NX: int = 1440,
     NY: int = 601,
     POLE_LON: float | None = None,
     POLE_LAT: float | None = None,
+    SX: float | None = None,
+    SY: float | None = None,
+    DX: float | None = None,
+    DY: float | None = None,
+    DLON: float | None = None,
+    DLAT: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D arrays of longitude and latitude for a regular grid.
 
-    Accepts corner bounding points (LON_START, LON_END, LAT_START, LAT_END, default: 20-379.75, -75-75)
-    and discrete matrix dimensions (NX, NY). Optionally accepts rotated pole coordinates
-    (POLE_LON, POLE_LAT). If POLE_LAT is None or 90.0, the grid reverts to standard
-    unrotated regular geographic coordinates.
+    Requires lower-left corner bounding points (LON_START, LAT_START) as mandatory parameters.
+    Requires either upper-right corner coordinates (LON_END, LAT_END) OR grid increments
+    (SX/DX/DLON, SY/DY/DLAT). Accepts discrete matrix dimensions (NX, NY). Optionally accepts
+    rotated pole coordinates (POLE_LON, POLE_LAT). If POLE_LAT is None or 90.0, the grid
+    reverts to standard unrotated regular geographic coordinates.
 
     Parameters
     ----------
-    LON_START : float
-        Lower-left corner longitude in degrees.
-    LON_END : float
-        Upper-right corner longitude in degrees.
-    LAT_START : float
-        Lower-left corner latitude in degrees.
-    LAT_END : float
-        Upper-right corner latitude in degrees.
+    LON_START : float | None
+        [Mandatory] Lower-left corner longitude in degrees.
+    LAT_START : float | None
+        [Mandatory] Lower-left corner latitude in degrees.
+    LON_END : float | None
+        [Mandatory if SX/DX/DLON omitted] Upper-right corner longitude in degrees.
+    LAT_END : float | None
+        [Mandatory if SY/DY/DLAT omitted] Upper-right corner latitude in degrees.
     NX : int
-        Number of grid points in longitude / X direction.
+        Number of grid points in longitude / X direction (default: 1440).
     NY : int
-        Number of grid points in latitude / Y direction.
+        Number of grid points in latitude / Y direction (default: 601).
     POLE_LON : float | None
         Longitude of rotated north pole in geographic coordinates (optional).
     POLE_LAT : float | None
         Latitude of rotated north pole in geographic coordinates (optional, default: 90.0).
+    SX / DX / DLON : float | None
+        [Mandatory if LON_END omitted] Longitude grid increment in degrees.
+    SY / DY / DLAT : float | None
+        [Mandatory if LAT_END omitted] Latitude grid increment in degrees.
 
     Returns
     -------
@@ -69,9 +80,37 @@ def create_regular_grid(
     lat : np.ndarray
         2D latitude grid array of shape (NY, NX).
     """
+    if LON_START is None or LAT_START is None:
+        missing = []
+        if LON_START is None:
+            missing.append("LON_START (lower longitude)")
+        if LAT_START is None:
+            missing.append("LAT_START (lower latitude)")
+        raise ValueError(
+            f"Mandatory parameter missing for regular grid: {', '.join(missing)}"
+        )
+
+    sx_val = SX if SX is not None else (DX if DX is not None else DLON)
+    sy_val = SY if SY is not None else (DY if DY is not None else DLAT)
+
+    if LON_END is None and sx_val is None:
+        raise ValueError(
+            "Mandatory parameter missing for regular grid: must provide either "
+            "last longitude (LON_END) or longitude grid increment (SX)."
+        )
+
+    if LAT_END is None and sy_val is None:
+        raise ValueError(
+            "Mandatory parameter missing for regular grid: must provide either "
+            "last latitude (LAT_END) or latitude grid increment (SY)."
+        )
+
+    lon_end_val = LON_END if LON_END is not None else LON_START + (NX - 1) * sx_val
+    lat_end_val = LAT_END if LAT_END is not None else LAT_START + (NY - 1) * sy_val
+
     if POLE_LAT is None or POLE_LAT == 90.0:
-        lon1d = np.linspace(LON_START, LON_END, NX)
-        lat1d = np.linspace(LAT_START, LAT_END, NY)
+        lon1d = np.linspace(LON_START, lon_end_val, NX)
+        lat1d = np.linspace(LAT_START, lat_end_val, NY)
         lon, lat = np.meshgrid(lon1d, lat1d)
         return lon, lat
 
@@ -80,9 +119,9 @@ def create_regular_grid(
         POLE_LON=pole_lon,
         POLE_LAT=POLE_LAT,
         LON_START=LON_START,
-        LON_END=LON_END,
+        LON_END=lon_end_val,
         LAT_START=LAT_START,
-        LAT_END=LAT_END,
+        LAT_END=lat_end_val,
         NX=NX,
         NY=NY,
     )
@@ -438,7 +477,46 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
         raise ValueError(f"Grid dimension NY must be positive, got {ny}")
 
     if gtype == "regular":
-        # LON_START, LON_END, LAT_START, LAT_END have defaults (20-379.75, -75-75)
+        lon_start = kwargs.get("LON_START") if kwargs.get("LON_START") is not None else kwargs.get("lon_start")
+        lat_start = kwargs.get("LAT_START") if kwargs.get("LAT_START") is not None else kwargs.get("lat_start")
+
+        missing = []
+        if lon_start is None:
+            missing.append("LON_START / --lon-start")
+        if lat_start is None:
+            missing.append("LAT_START / --lat-start")
+
+        if missing:
+            raise ValueError(
+                f"Missing mandatory parameter(s) for regular grid: {', '.join(missing)}"
+            )
+
+        lon_end = kwargs.get("LON_END") if kwargs.get("LON_END") is not None else kwargs.get("lon_end")
+        lat_end = kwargs.get("LAT_END") if kwargs.get("LAT_END") is not None else kwargs.get("lat_end")
+
+        sx = kwargs.get("SX") if kwargs.get("SX") is not None else kwargs.get("sx")
+        if sx is None:
+            sx = kwargs.get("DX") if kwargs.get("DX") is not None else kwargs.get("dx")
+        if sx is None:
+            sx = kwargs.get("DLON") if kwargs.get("DLON") is not None else kwargs.get("dlon")
+
+        sy = kwargs.get("SY") if kwargs.get("SY") is not None else kwargs.get("sy")
+        if sy is None:
+            sy = kwargs.get("DY") if kwargs.get("DY") is not None else kwargs.get("dy")
+        if sy is None:
+            sy = kwargs.get("DLAT") if kwargs.get("DLAT") is not None else kwargs.get("dlat")
+
+        if lon_end is None and sx is None:
+            raise ValueError(
+                "Missing mandatory parameter for regular grid: must provide either "
+                "last longitude (LON_END / --lon-end) or longitude grid increment (SX / --sx)."
+            )
+
+        if lat_end is None and sy is None:
+            raise ValueError(
+                "Missing mandatory parameter for regular grid: must provide either "
+                "last latitude (LAT_END / --lat-end) or latitude grid increment (SY / --sy)."
+            )
         return
 
     elif gtype == "stereographic":
