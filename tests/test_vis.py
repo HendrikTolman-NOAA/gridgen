@@ -34,6 +34,20 @@ def test_extract_grid_name():
     assert extract_grid_name("test.depth_ascii") == "test"
 
 
+def test_fmt_lon_and_lat():
+    from gridgen.vis import fmt_lat, fmt_lon
+
+    assert fmt_lon(0) == "0°"
+    assert fmt_lon(90) == "90°E"
+    assert fmt_lon(180) == "180°"
+    assert fmt_lon(270) == "90°W"
+    assert fmt_lon(360) == "0°"
+
+    assert fmt_lat(0) == "0°"
+    assert fmt_lat(45) == "45°N"
+    assert fmt_lat(-45) == "45°S"
+
+
 def test_vis_orography_and_mask(tmp_path):
     """Verify plot_grid handles bathymetry (depth <= 0), orography (depth > 0) with 10m cap, and dark green mask."""
     lon1d = np.array([10.0, 11.0, 12.0])

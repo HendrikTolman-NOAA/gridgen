@@ -25,10 +25,35 @@ from typing import Any
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import numpy as np
 import xarray as xr
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from .io.ascii import read_ww3file, read_ww3meta, read_ww3obstr
+
+
+def fmt_lon(x: float, pos: Any = None) -> str:
+    """Format longitude ticks into traditional [-180, 180] East/West degrees."""
+    lon_deg = (x + 180.0) % 360.0 - 180.0
+    lon_deg = round(lon_deg, 4)
+    if abs(lon_deg) < 1e-4 or abs(abs(lon_deg) - 180.0) < 1e-4:
+        return f"{round(abs(lon_deg))}°"
+    elif lon_deg < 0:
+        return f"{abs(lon_deg):g}°W"
+    else:
+        return f"{lon_deg:g}°E"
+
+
+def fmt_lat(y: float, pos: Any = None) -> str:
+    """Format latitude ticks into North/South degrees."""
+    lat_deg = round(y, 4)
+    if abs(lat_deg) < 1e-4:
+        return "0°"
+    elif lat_deg < 0:
+        return f"{abs(lat_deg):g}°S"
+    else:
+        return f"{lat_deg:g}°N"
 
 
 def extract_grid_name(filepath: str | Path) -> str:
@@ -253,20 +278,44 @@ def plot_grid(
         pcm2 = ax1.pcolormesh(
             lon, lat, depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
         )
-        fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
     else:
         pcm1 = ax1.scatter(lon, lat, c=depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
         pcm2 = ax1.scatter(lon, lat, c=depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
-        fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
 
-    fig.colorbar(pcm1, ax=ax1, label="Bathymetry Depth (m)")
+    ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
+    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
+
     ax1.set_title("Bathymetry & Orography")
-    ax1.set_xlabel("Longitude (°E)")
-    ax1.set_ylabel("Latitude (°N)")
+    ax1.set_xlabel("Longitude")
+    ax1.set_ylabel("Latitude")
     ax1.grid(True, linestyle="--", alpha=0.5)
 
     fig.suptitle(title, fontsize=14, fontweight="bold")
     fig.tight_layout()
+
+    # Orography colorbar (top-right, placed above Bathymetry colorbar)
+    cax_orog = inset_axes(
+        ax1,
+        width="3.5%",
+        height="45%",
+        loc="upper left",
+        bbox_to_anchor=(1.03, 0.05, 1, 0.95),
+        bbox_transform=ax1.transAxes,
+        borderpad=0,
+    )
+    # Bathymetry colorbar (bottom-right, placed below Orography colorbar)
+    cax_bathy = inset_axes(
+        ax1,
+        width="3.5%",
+        height="45%",
+        loc="lower left",
+        bbox_to_anchor=(1.03, 0.0, 1, 0.95),
+        bbox_transform=ax1.transAxes,
+        borderpad=0,
+    )
+
+    fig.colorbar(pcm2, cax=cax_orog, label="Orography (m)")
+    fig.colorbar(pcm1, cax=cax_bathy, label="Bathymetry Depth (m)")
 
     if output_path is not None:
         out_p = Path(output_path)
