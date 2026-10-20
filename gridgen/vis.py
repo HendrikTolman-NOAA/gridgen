@@ -314,8 +314,28 @@ def plot_grid(
         borderpad=0,
     )
 
-    fig.colorbar(pcm2, cax=cax_orog, label="Orography (m)")
-    fig.colorbar(pcm1, cax=cax_bathy, label="Bathymetry Depth (m)")
+    has_orography = bool(np.any(~np.isnan(depth_orog)))
+
+    if has_orography:
+        cb_orog = fig.colorbar(pcm2, cax=cax_orog, label="Orography (m)")
+        cb_orog.ax.tick_params(labelsize=5)
+        cb_orog.ax.yaxis.label.set_fontsize(6)
+    else:
+        cax_orog.axis("off")
+        cax_orog.text(
+            0.5,
+            0.5,
+            "Grid contains no orography",
+            ha="center",
+            va="center",
+            rotation=270,
+            fontsize=6,
+            color="black",
+        )
+
+    cb_bathy = fig.colorbar(pcm1, cax=cax_bathy, label="Bathymetry Depth (m)")
+    cb_bathy.ax.tick_params(labelsize=5)
+    cb_bathy.ax.yaxis.label.set_fontsize(6)
 
     if output_path is not None:
         out_p = Path(output_path)

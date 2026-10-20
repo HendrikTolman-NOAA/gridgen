@@ -69,7 +69,7 @@ def test_vis_orography_and_mask(tmp_path):
 
 
 def test_vis_orography_scale_when_no_orography(tmp_path):
-    """Verify plot_grid creates Orography colorbar spanning 0 to max_orography even on purely underwater grids."""
+    """Verify plot_grid displays 'Grid contains no orography' statement when no land points exist."""
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -81,10 +81,8 @@ def test_vis_orography_scale_when_no_orography(tmp_path):
 
     fig = plot_grid(data, title="Purely Underwater Grid", output_path=out_file, max_orography=10.0)
     assert fig is not None
-    assert len(fig.axes) >= 3
-    labels = [ax.get_ylabel() for ax in fig.axes if ax.get_ylabel()]
-    assert "Orography (m)" in labels
-    assert "Bathymetry Depth (m)" in labels
+    texts = [t.get_text() for ax in fig.axes for t in ax.texts]
+    assert "Grid contains no orography" in texts
 
 
 def test_vis_ugrid(tmp_path):
