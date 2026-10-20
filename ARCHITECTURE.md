@@ -72,7 +72,6 @@ flowchart TD
         Q --> R2[gridgen.io.coards<br/>Legacy GMT COARDS NetCDF<br/>_coards.nc]
         Q --> R3[gridgen.io.ugrid<br/>WW4 NetCDF-UGRID 1.0<br/>_ugrid.nc]
         Q --> R4[plot_grid.sh / gridgen.vis<br/>Graphical Plots<br/>.jpg, .png, .pdf, .eps, .gif]
-        R4 --> R5[view_grid.sh<br/>Display Graphics]
     end
 ```
 
@@ -103,8 +102,8 @@ flowchart TD
   - **Legacy GMT/NetCDF COARDS:** `_coards.nc`
   - **WW4 NetCDF-UGRID 1.0:** `_ugrid.nc`
 
-- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis` / `view_grid.sh`)**
-  - Generates multi-panel plot graphics displaying bathymetry depth, land-sea masks, and sub-grid directional obstruction factors (`sx`, `sy`) in `jpg`, `png`, `pdf`, `eps`, or `gif` formats, and displays generated graphics (`view_grid.sh Display Graphics`).
+- **Run Step 4: Graphical Display & Visualization (`plot_grid.sh` / `gridgen.vis`)**
+  - Generates plot graphics displaying bathymetry depth and land-sea masks in `jpg`, `png`, `pdf`, `eps`, or `gif` formats.
 
 ## Code Architecture
 
@@ -116,7 +115,6 @@ flowchart TD
         S1[run_gridgen.sh<br/>Pipeline Driver]
         S2[populate_reference_data.sh<br/>Data Retriever]
         S3[plot_grid.sh<br/>Graphics Driver]
-        S4[view_grid.sh<br/>Graphics Viewer]
         S5[clean_all.sh<br/>Master Cleanup]
     end
 
@@ -220,5 +218,4 @@ gridgen/
 - **`run_gridgen.sh`**: Main utility script managing Python environment verification, reference data validation, argument parsing, CLI invocation, and cleanup (`--clean`).
 - **`populate_reference_data.sh`**: Data retrieval script populating required bathymetry and shoreline datasets in `reference_data/` with options for legacy NCEP archives, ETOPO 2022 NetCDF grids, GEBCO NetCDF datasets, and GSHHG shoreline vector archives.
 - **`plot_grid.sh`**: High-level driver invoking `gridgen.vis` to produce output figure graphics from generated grid files.
-- **`view_grid.sh`**: Graphical display diagnostic wrapper verifying display server configuration (X11/Wayland) and opening generated plot images.
 - **`clean_all.sh`**: Master cleanup script removing all generated output grid files, plot graphics, reference datasets, documentation build directories, and Python build/test cache artifacts.

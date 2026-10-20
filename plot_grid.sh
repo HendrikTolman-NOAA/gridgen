@@ -9,9 +9,9 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-19
+# @date Latest Update: 2026-10-20
 #
-# Shell driver script to generate graphical grid and obstruction plots in GIF format.
+# Shell driver script to generate graphical grid bathymetry plots.
 
 set -euo pipefail
 
@@ -23,7 +23,9 @@ export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH:-}"
 INPUT_FILE="ww4_grid_ugrid.nc"
 OUTPUT_FILE=""
 FORMAT="jpg"
-TITLE="WAVEWATCH IV Grid & Obstructions"
+TITLE="WAVEWATCH IV Grid"
+MASK_FLAG="--mask"
+MAX_DEPTH="-2500"
 DISPLAY_FLAG="--no-display"
 
 INPUT_FILE_SPECIFIED=0
@@ -33,21 +35,23 @@ usage() {
   cat << 'EOF'
 Usage: ./plot_grid.sh [OPTIONS]
 
-Utility script to graphically display resulting WAVEWATCH III / IV grids and obstructions.
+Utility script to graphically display resulting WAVEWATCH III / IV grids.
 
 Options:
   -i, --input PATH       Input dataset file path (_ugrid.nc, _coards.nc, or ASCII prefix) (default: ww4_grid_ugrid.nc)
   -o, --output PATH      Output plot image file path (default: <GRIDNAME>.<format>)
   -f, --format FORMAT    Output graphic format: jpg, png, pdf, eps, or gif (default: jpg)
-  --title TITLE          Custom figure title (default: WAVEWATCH IV Grid & Obstructions)
+  --title TITLE          Custom figure title (default: WAVEWATCH IV Grid)
+  --mask                 Apply land-sea mask to dry cells (default: enabled)
+  --no-mask              Disable land-sea mask
+  --max-depth DEPTH      Maximum depth limit for color scale (default: -2500)
   --display              Display figure window interactively
   --no-display           Disable interactive figure window display
   -h, --help             Display this help message and exit
 
 Description:
   This script executes the Python grid visualization module (`gridgen.vis`)
-  to produce multi-panel plots of bathymetry depth, land-sea mask, and
-  sub-grid directional obstruction factors (sx, sy) in JPG, PNG, PDF, EPS, or GIF formats.
+  to produce bathymetry depth plots in JPG, PNG, PDF, EPS, or GIF formats.
 EOF
 }
 
@@ -70,6 +74,18 @@ while [[ $# -gt 0 ]]; do
       ;;
     --title)
       TITLE="$2"
+      shift 2
+      ;;
+    --mask)
+      MASK_FLAG="--mask"
+      shift 1
+      ;;
+    --no-mask)
+      MASK_FLAG="--no-mask"
+      shift 1
+      ;;
+    --max-depth)
+      MAX_DEPTH="$2"
       shift 2
       ;;
     --display|--show)
@@ -102,7 +118,7 @@ if [ "$OUTPUT_FILE_SPECIFIED" -eq 1 ] && [[ "$OUTPUT_FILE" != /* ]]; then
 fi
 
 echo "========================================================================"
-echo " WAVEWATCH III / IV Grid & Obstruction Plotting Tool"
+echo " WAVEWATCH III / IV Grid Plotting Tool"
 echo "========================================================================"
 
 # 1. Check Input Dataset Availability
@@ -134,7 +150,10 @@ if ! python3 -c "import numpy, matplotlib, xarray" &> /dev/null; then
 fi
 
 # Build argument list
-CMD_ARGS=(--input "$INPUT_FILE" --format "$FORMAT" --title "$TITLE" "$DISPLAY_FLAG")
+CMD_ARGS=(--input "$INPUT_FILE" --format "$FORMAT" --title "$TITLE" "$MASK_FLAG" "$DISPLAY_FLAG")
+if [ -n "$MAX_DEPTH" ]; then
+  CMD_ARGS+=(--max-depth "$MAX_DEPTH")
+fi
 if [ -n "$OUTPUT_FILE" ]; then
   CMD_ARGS+=(--output "$OUTPUT_FILE")
 fi

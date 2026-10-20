@@ -28,17 +28,17 @@ import numpy as np
 
 def create_regular_grid(
     LON_START: float = 20.0,
-    LON_END: float = 378.0,
-    LAT_START: float = -76.0,
-    LAT_END: float = 76.0,
-    NX: int = 180,
-    NY: int = 77,
+    LON_END: float = 379.75,
+    LAT_START: float = -75.0,
+    LAT_END: float = 75.0,
+    NX: int = 1440,
+    NY: int = 601,
     POLE_LON: float | None = None,
     POLE_LAT: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D arrays of longitude and latitude for a regular grid.
 
-    Accepts corner bounding points (LON_START, LON_END, LAT_START, LAT_END, default: 20-378, -76-76)
+    Accepts corner bounding points (LON_START, LON_END, LAT_START, LAT_END, default: 20-379.75, -75-75)
     and discrete matrix dimensions (NX, NY). Optionally accepts rotated pole coordinates
     (POLE_LON, POLE_LAT). If POLE_LAT is None or 90.0, the grid reverts to standard
     unrotated regular geographic coordinates.
@@ -93,8 +93,8 @@ def create_stereographic_grid(
     CENTER_LAT: float,
     EXTENT_KM: float | None = None,
     EXTENT_DEG: float | None = None,
-    NX: int | None = 180,
-    NY: int | None = 77,
+    NX: int | None = 1440,
+    NY: int | None = 601,
     ROTATION: float = 0.0,
     k0: float = 1.0,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -115,9 +115,9 @@ def create_stereographic_grid(
     EXTENT_DEG : float | None
         Half-width extent of domain in arc degrees.
     NX : int | None
-        Number of grid points in x direction (default: 180).
+        Number of grid points in x direction (default: 1440).
     NY : int | None
-        Number of grid points in y direction (default: 77).
+        Number of grid points in y direction (default: 601).
     ROTATION : float
         Optional grid rotation angle in degrees on projection plane (default: 0.0).
     k0 : float
@@ -141,8 +141,8 @@ def create_stereographic_grid(
                 "Either EXTENT_KM or EXTENT_DEG must be provided for stereographic grid."
             )
 
-    nx_val = NX if NX is not None else 180
-    ny_val = NY if NY is not None else 77
+    nx_val = NX if NX is not None else 1440
+    ny_val = NY if NY is not None else 601
     x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, nx_val)
     y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, ny_val)
 
@@ -438,7 +438,7 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
         raise ValueError(f"Grid dimension NY must be positive, got {ny}")
 
     if gtype == "regular":
-        # LON_START, LON_END, LAT_START, LAT_END have defaults (20-378, -76-76)
+        # LON_START, LON_END, LAT_START, LAT_END have defaults (20-379.75, -75-75)
         return
 
     elif gtype == "stereographic":

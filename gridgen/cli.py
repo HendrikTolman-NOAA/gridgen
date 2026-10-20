@@ -46,16 +46,16 @@ def main() -> None:
     gen_group.add_argument(
         "--nx",
         type=int,
-        default=180,
+        default=1440,
         metavar="NX",
-        help="[Optional] Discrete grid dimension NX (number of X points, default: 180)",
+        help="[Optional] Discrete grid dimension NX (number of X points, default: 1440)",
     )
     gen_group.add_argument(
         "--ny",
         type=int,
-        default=77,
+        default=601,
         metavar="NY",
-        help="[Optional] Discrete grid dimension NY (number of Y points, default: 77)",
+        help="[Optional] Discrete grid dimension NY (number of Y points, default: 601)",
     )
     gen_group.add_argument(
         "--name", type=str, default="ww4_grid", help="Grid prefix identifier (default: ww4_grid)"
@@ -107,23 +107,23 @@ def main() -> None:
     reg_group.add_argument(
         "--lat-start",
         type=float,
-        default=-76.0,
+        default=-75.0,
         metavar="LAT_START",
-        help="[Optional] Lower-left corner latitude in degrees (default: -76.0)",
+        help="[Optional] Lower-left corner latitude in degrees (default: -75.0)",
     )
     reg_group.add_argument(
         "--lon-end",
         type=float,
-        default=378.0,
+        default=379.75,
         metavar="LON_END",
-        help="[Optional] Upper-right corner longitude in degrees (default: 378.0)",
+        help="[Optional] Upper-right corner longitude in degrees (default: 379.75)",
     )
     reg_group.add_argument(
         "--lat-end",
         type=float,
-        default=76.0,
+        default=75.0,
         metavar="LAT_END",
-        help="[Optional] Upper-right corner latitude in degrees (default: 76.0)",
+        help="[Optional] Upper-right corner latitude in degrees (default: 75.0)",
     )
     reg_group.add_argument(
         "--pole-lon",
