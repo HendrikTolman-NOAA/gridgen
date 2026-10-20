@@ -78,8 +78,16 @@ def test_create_regular_grid() -> None:
 
 def test_grid_parameter_defaults_and_validation_errors() -> None:
     """Test default values and parameter validation error messages for required grid inputs."""
-    # 1. Regular grid with default parameters (lon: 20-379.75, lat: -75-75, nx: 1440, ny: 601)
-    lon, lat = create_grid_coordinates("regular")
+    # 1. Missing mandatory LON_START / LAT_START for regular grid
+    with pytest.raises(
+        ValueError, match=r"Missing mandatory parameter\(s\) for regular grid"
+    ):
+        create_grid_coordinates("regular")
+
+    # 1b. Regular grid with mandatory parameters
+    lon, lat = create_grid_coordinates(
+        "regular", LON_START=20.0, LAT_START=-75.0, LON_END=379.75, LAT_END=75.0
+    )
     assert lon.shape == (601, 1440)
     assert lat.shape == (601, 1440)
     assert np.isclose(lon[0, 0], 20.0)
@@ -296,3 +304,77 @@ def test_create_grid_coordinates_custom(tmp_path) -> None:
     assert lon_out.shape == (3, 3)
     assert lat_out.shape == (3, 3)
     assert np.allclose(lon_out, lon_in)
+
+
+def test_create_regular_grid_with_increments() -> None:
+    """Test creating a regular grid using mandatory lower corner coordinates and grid increments (SX, SY)."""
+    lon, lat = create_regular_grid(
+        LON_START=20.0,
+        LAT_START=-75.0,
+        SX=0.25,
+        SY=0.25,
+        NX=1440,
+        NY=601,
+    )
+    assert lon.shape == (601, 1440)
+    assert lat.shape == (601, 1440)
+    assert np.isclose(lon[0, 0], 20.0)
+    assert np.isclose(lon[0, -1], 379.75)
+    assert np.isclose(lat[0, 0], -75.0)
+    assert np.isclose(lat[-1, 0], 75.0)
+
+
+def test_create_regular_grid_validation_errors() -> None:
+    """Test that create_regular_grid raises ValueError when mandatory parameters are missing."""
+    # 1. Missing lower longitude / latitude
+    with pytest.raises(ValueError, match="Mandatory parameter missing for regular grid"):
+        create_regular_grid(LON_START=20.0)
+
+    with pytest.raises(ValueError, match="Mandatory parameter missing for regular grid"):
+        create_regular_grid(LAT_START=-75.0)
+
+    # 2. Lower coordinates provided, but missing both upper coordinates and increments
+    with pytest.raises(
+        ValueError, match="must provide either last longitude.*or longitude grid increment"
+    ):
+        create_regular_grid(LON_START=20.0, LAT_START=-75.0, LAT_END=75.0)
+
+    with pytest.raises(
+        ValueError, match="must provide either last latitude.*or latitude grid increment"
+    ):
+        create_regular_grid(LON_START=20.0, LAT_START=-75.0, LON_END=379.75)
+
+
+def test_gridgen_grid_reexports() -> None:
+    """Verify coordinate routines are re-exported and accessible from gridgen.grid."""
+    from gridgen.grid import (
+        create_grid_coordinates as cgc,
+    )
+    from gridgen.grid import (
+        create_regular_grid as crg,
+    )
+
+    lon, lat = crg(
+        LON_START=0.0,
+        LAT_START=0.0,
+        SX=1.0,
+        SY=1.0,
+        NX=11,
+        NY=11,
+    )
+    assert lon.shape == (11, 11)
+    assert lat.shape == (11, 11)
+    assert np.isclose(lon[0, -1], 10.0)
+    assert np.isclose(lat[-1, 0], 10.0)
+
+    lon2, lat2 = cgc(
+        "regular",
+        LON_START=0.0,
+        LAT_START=0.0,
+        LON_END=10.0,
+        LAT_END=10.0,
+        NX=11,
+        NY=11,
+    )
+    assert np.allclose(lon, lon2)
+    assert np.allclose(lat, lat2)

@@ -100,30 +100,44 @@ def main() -> None:
     reg_group.add_argument(
         "--lon-start",
         type=float,
-        default=20.0,
+        default=None,
         metavar="LON_START",
-        help="[Optional] Lower-left corner longitude in degrees (default: 20.0)",
+        help="[Mandatory] Lower-left corner longitude in degrees",
     )
     reg_group.add_argument(
         "--lat-start",
         type=float,
-        default=-75.0,
+        default=None,
         metavar="LAT_START",
-        help="[Optional] Lower-left corner latitude in degrees (default: -75.0)",
+        help="[Mandatory] Lower-left corner latitude in degrees",
     )
     reg_group.add_argument(
         "--lon-end",
         type=float,
-        default=379.75,
+        default=None,
         metavar="LON_END",
-        help="[Optional] Upper-right corner longitude in degrees (default: 379.75)",
+        help="[Mandatory if --sx omitted] Upper-right corner longitude in degrees",
     )
     reg_group.add_argument(
         "--lat-end",
         type=float,
-        default=75.0,
+        default=None,
         metavar="LAT_END",
-        help="[Optional] Upper-right corner latitude in degrees (default: 75.0)",
+        help="[Mandatory if --sy omitted] Upper-right corner latitude in degrees",
+    )
+    reg_group.add_argument(
+        "--sx",
+        type=float,
+        default=None,
+        metavar="SX",
+        help="[Mandatory if --lon-end omitted] Longitude grid increment in degrees",
+    )
+    reg_group.add_argument(
+        "--sy",
+        type=float,
+        default=None,
+        metavar="SY",
+        help="[Mandatory if --lat-end omitted] Latitude grid increment in degrees",
     )
     reg_group.add_argument(
         "--pole-lon",

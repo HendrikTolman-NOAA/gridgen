@@ -126,10 +126,12 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--bathy-source SOURCE` | Bathymetry dataset identifier or NetCDF prefix (e.g. `etopo1`, `etopo2`, `ETOPO_2022_v1_60s_N90W180_bed`) (default: `etopo2`). `[Optional]` |
 | `--boundary-points` | Define input boundary cells (mask value 2) along regional grid boundaries. `[Optional]` |
 | `--user-polygons-flag FILE` | Path to flag file for optional user coastal polygons (`optional_coastal_polygons.mat`). `[Optional]` |
-| `--lon-start LON` | Lower-left corner longitude in degrees (default: `20.0`). `[Optional for regular grid]` |
-| `--lat-start LAT` | Lower-left corner latitude in degrees (default: `-75.0`). `[Optional for regular grid]` |
-| `--lon-end LON` | Upper-right corner longitude in degrees (default: `379.75`). `[Optional for regular grid]` |
-| `--lat-end LAT` | Upper-right corner latitude in degrees (default: `75.0`). `[Optional for regular grid]` |
+| `--lon-start LON` | Lower-left corner longitude in degrees. `[Mandatory for regular grid]` |
+| `--lat-start LAT` | Lower-left corner latitude in degrees. `[Mandatory for regular grid]` |
+| `--lon-end LON` | Upper-right corner longitude in degrees. `[Mandatory if --sx omitted]` |
+| `--lat-end LAT` | Upper-right corner latitude in degrees. `[Mandatory if --sy omitted]` |
+| `--sx SX` | Longitude grid increment in degrees. `[Mandatory if --lon-end omitted]` |
+| `--sy SY` | Latitude grid increment in degrees. `[Mandatory if --lat-end omitted]` |
 | `--pole-lon LON` | Rotated north pole longitude in degrees. `[Optional for regular grid]` |
 | `--pole-lat LAT` | Rotated north pole latitude in degrees (reverts to regular grid when lat is 90.0). `[Optional for regular grid]` |
 | `--center-lon LON` | Center longitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
