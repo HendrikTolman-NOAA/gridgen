@@ -194,8 +194,9 @@ def plot_grid(
     show: bool = False,
     show_mask: bool = True,
     max_depth: float | None = -2500.0,
+    max_orography: float | None = 10.0,
 ) -> matplotlib.figure.Figure:
-    """Graphically display resulting grid bathymetry plot.
+    """Graphically display resulting grid bathymetry and orography plot.
 
     Parameters
     ----------
@@ -208,9 +209,11 @@ def plot_grid(
     show : bool
         If True, call matplotlib plt.show() to display interactively.
     show_mask : bool
-        If True, mask out dry land cells (mask == 0) and use tan background. Default is True.
+        If True, mask out dry land cells (mask == 0) and use dark green background. Default is True.
     max_depth : float, optional
         Maximum depth (minimum numerical bathymetry limit, e.g., -2500.0) for color scale range limit. Default is -2500.0.
+    max_orography : float, optional
+        Maximum orography elevation limit in meters (default: 10.0) for land color scale.
 
     Returns
     -------
@@ -224,28 +227,39 @@ def plot_grid(
 
     fig, ax1 = plt.subplots(figsize=(8, 5))
 
+    dark_green = "#1b4332"  # Dark green background for land/sea mask
     if show_mask:
-        # Mask dry depth values for clear bathymetry display
-        depth_display = np.where(mask == 0, np.nan, depth)
-        ax1.set_facecolor("#d2b48c")  # Tan background for land cells
-    else:
-        depth_display = depth
+        ax1.set_facecolor(dark_green)
 
-    # Calculate color scale range
-    # In depth representation, depths are negative (e.g. -2500m is deeper than -10m).
-    # If max_depth is set (e.g. -2500), vmin is max_depth (-2500) and vmax is 0.
-    vmin = max_depth if max_depth is not None else None
-    vmax = 0.0 if max_depth is not None else None
+    # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
+    bathymetry_mask = (depth <= 0) & (mask != 0) if show_mask else (depth <= 0)
+    orography_mask = (depth > 0) & (depth < 999999.0) & (mask != 0) if show_mask else ((depth > 0) & (depth < 999999.0))
+
+    depth_bathy = np.where(bathymetry_mask, depth, np.nan)
+    depth_orog = np.where(orography_mask, np.clip(depth, 0.0, max_orography if max_orography is not None else 10.0), np.nan)
+
+    vmin_bathy = max_depth if max_depth is not None else None
+    vmax_bathy = 0.0 if max_depth is not None else None
+
+    vmax_orog = max_orography if max_orography is not None else 10.0
 
     if lon.ndim == 2:
         pcm1 = ax1.pcolormesh(
-            lon, lat, depth_display, cmap="Blues_r", vmin=vmin, vmax=vmax, shading="nearest"
+            lon, lat, depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
         )
+        if np.any(~np.isnan(depth_orog)):
+            pcm2 = ax1.pcolormesh(
+                lon, lat, depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
+            )
+            fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
     else:
-        pcm1 = ax1.scatter(lon, lat, c=depth_display, cmap="Blues_r", vmin=vmin, vmax=vmax)
+        pcm1 = ax1.scatter(lon, lat, c=depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
+        if np.any(~np.isnan(depth_orog)):
+            pcm2 = ax1.scatter(lon, lat, c=depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
+            fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
 
-    fig.colorbar(pcm1, ax=ax1, label="Depth (m)")
-    ax1.set_title("Bathymetry Depth")
+    fig.colorbar(pcm1, ax=ax1, label="Bathymetry Depth (m)")
+    ax1.set_title("Bathymetry & Orography")
     ax1.set_xlabel("Longitude (°E)")
     ax1.set_ylabel("Latitude (°N)")
     ax1.grid(True, linestyle="--", alpha=0.5)
@@ -345,6 +359,12 @@ def main() -> None:
         help="Maximum depth limit for color scale (default: -2500.0)",
     )
     parser.add_argument(
+        "--max-orography",
+        type=float,
+        default=10.0,
+        help="Maximum orography limit for land color scale in meters (default: 10.0)",
+    )
+    parser.add_argument(
         "--display",
         dest="display",
         action="store_true",
@@ -387,6 +407,7 @@ def main() -> None:
         show=args.display,
         show_mask=args.mask,
         max_depth=args.max_depth,
+        max_orography=args.max_orography,
     )
 
 
