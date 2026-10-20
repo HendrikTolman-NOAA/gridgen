@@ -268,8 +268,8 @@ fi
 if [ "$FETCH_ETOPO2022" = true ]; then
   echo ""
   echo "[Step 2/4] Processing ETOPO 2022 Global Relief Model (NOAA NCEI)..."
-  ETOPO_DEST="${TARGET_DIR}/ETOPO_2022_v1_60s_N90W180_bed.nc"
-  if [ ! -f "$ETOPO_DEST" ]; then
+  ETOPO_DEST="${TARGET_DIR}/etopo_2022.nc"
+  if [ ! -f "$ETOPO_DEST" ] && [ ! -f "${TARGET_DIR}/ETOPO_2022_v1_60s_N90W180_bed.nc" ]; then
     download_file "$ETOPO2022_60S_NC_URL" "$ETOPO_DEST"
     echo "Downloaded ETOPO 2022 (60s bed elevation NetCDF)."
   else
@@ -281,8 +281,8 @@ fi
 if [ "$FETCH_GEBCO" = true ]; then
   echo ""
   echo "[Step 3/4] Processing GEBCO Global Bathymetry Grid (IHO/IOC)..."
-  GEBCO_DEST="${TARGET_DIR}/GEBCO_2024.nc"
-  if [ ! -f "$GEBCO_DEST" ] && [ ! -f "${TARGET_DIR}/GEBCO_2024_CF.nc" ]; then
+  GEBCO_DEST="${TARGET_DIR}/gebco_2024.nc"
+  if [ ! -f "$GEBCO_DEST" ] && [ ! -f "${TARGET_DIR}/GEBCO_2024.nc" ] && [ ! -f "${TARGET_DIR}/GEBCO_2024_CF.nc" ]; then
     download_file "$GEBCO2024_NC_URL" "$GEBCO_DEST"
     echo "Downloaded GEBCO 2024 NetCDF dataset."
   else

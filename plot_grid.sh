@@ -25,7 +25,8 @@ OUTPUT_FILE=""
 FORMAT="jpg"
 TITLE="WAVEWATCH IV Grid"
 MASK_FLAG="--mask"
-MAX_DEPTH="-2500"
+MAX_DEPTH="-1000"
+MAX_OROGRAPHY="10"
 DISPLAY_FLAG="--no-display"
 
 INPUT_FILE_SPECIFIED=0
@@ -44,7 +45,8 @@ Options:
   --title TITLE          Custom figure title (default: WAVEWATCH IV Grid)
   --mask                 Apply land-sea mask to dry cells (default: enabled)
   --no-mask              Disable land-sea mask
-  --max-depth DEPTH      Maximum depth limit for color scale (default: -2500)
+  --max-depth DEPTH      Maximum depth limit for color scale (default: -1000)
+  --max-orography OROG   Maximum orography limit for color scale in meters (default: 10)
   --display              Display figure window interactively
   --no-display           Disable interactive figure window display
   -h, --help             Display this help message and exit
@@ -86,6 +88,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --max-depth)
       MAX_DEPTH="$2"
+      shift 2
+      ;;
+    --max-orography)
+      MAX_OROGRAPHY="$2"
       shift 2
       ;;
     --display|--show)
@@ -153,6 +159,9 @@ fi
 CMD_ARGS=(--input "$INPUT_FILE" --format "$FORMAT" --title "$TITLE" "$MASK_FLAG" "$DISPLAY_FLAG")
 if [ -n "$MAX_DEPTH" ]; then
   CMD_ARGS+=(--max-depth "$MAX_DEPTH")
+fi
+if [ -n "$MAX_OROGRAPHY" ]; then
+  CMD_ARGS+=(--max-orography "$MAX_OROGRAPHY")
 fi
 if [ -n "$OUTPUT_FILE" ]; then
   CMD_ARGS+=(--output "$OUTPUT_FILE")

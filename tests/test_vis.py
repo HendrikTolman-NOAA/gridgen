@@ -34,11 +34,31 @@ def test_extract_grid_name():
     assert extract_grid_name("test.depth_ascii") == "test"
 
 
+def test_vis_orography_and_mask(tmp_path):
+    """Verify plot_grid handles bathymetry (depth <= 0), orography (depth > 0) with 10m cap, and dark green mask."""
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    # Include negative depth (bathymetry), positive depth (orography), and high dry land
+    depth = np.array([[-100.0, -50.0, -10.0], [5.0, 15.0, 25.0], [999999.0, 999999.0, 999999.0]])
+    mask = np.array([[1, 1, 1], [1, 1, 1], [0, 0, 0]])
+
+    data = {"lon": lon, "lat": lat, "depth": depth, "mask": mask}
+    out_file = str(tmp_path / "test_orog_mask.jpg")
+
+    fig = plot_grid(data, title="Orography Test", output_path=out_file, max_orography=10.0)
+    assert fig is not None
+    assert os.path.exists(out_file)
+
+    ax = fig.axes[0]
+    assert ax.get_facecolor() == (0.10588235294117647, 0.2627450980392157, 0.19607843137254902, 1.0)  # #1b4332 in RGBA
+
+
 def test_vis_ugrid(tmp_path):
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
-    depth = np.array([[10.0, 20.0, 30.0], [15.0, 25.0, 35.0], [10.0, 10.0, 10.0]])
+    depth = np.array([[-10.0, -20.0, -30.0], [-15.0, -25.0, -35.0], [-10.0, -10.0, -10.0]])
     mask = np.ones((3, 3), dtype=int)
     sx = np.full((3, 3), 0.1)
     sy = np.full((3, 3), 0.2)
