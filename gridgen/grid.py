@@ -23,8 +23,9 @@ import os
 import sys
 
 import numpy as np
+import shapely
 import xarray as xr
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Polygon
 
 from .geometry import compute_cellcorner
 
@@ -183,45 +184,78 @@ def generate_grid(
             else:
                 # Cell averaging
                 cell_poly_q = cell_poly.copy()
+                # Unwrap cell polygon vertex longitudes relative to target_x
+                # so the polygon spans a continuous range around target_x
                 if lon_span_b >= 350.0:
-                    if lon_min_b >= -1.0 and lon_max_b <= 360.1:
-                        cell_poly_q[:, 0] = (cell_poly_q[:, 0] - lon_min_b) % 360.0 + lon_min_b
-                    elif lon_min_b >= -180.1 and lon_max_b <= 180.1:
-                        cell_poly_q[:, 0] = (cell_poly_q[:, 0] + 180.0) % 360.0 - 180.0
+                    rel_lons = cell_poly_q[:, 0] - target_x
+                    rel_lons = (rel_lons + 180.0) % 360.0 - 180.0
+                    cell_poly_q[:, 0] = target_x + rel_lons
+
                 px = cell_poly_q[:, 0]
                 py = cell_poly_q[:, 1]
                 min_x, max_x = px.min(), px.max()
                 min_y, max_y = py.min(), py.max()
                 if min_x > max_x:
                     min_x, max_x = max_x, min_x
+                if min_y > max_y:
+                    min_y, max_y = max_y, min_y
 
-                i_start = max(0, np.searchsorted(lon_base, min_x) - 1)
-                i_end = min(len(lon_base), np.searchsorted(lon_base, max_x) + 1)
                 j_start = max(0, np.searchsorted(lat_base, min_y) - 1)
                 j_end = min(len(lat_base), np.searchsorted(lat_base, max_y) + 1)
+                sub_lats = lat_base[j_start:j_end]
 
-                sub_z = z_base[j_start:j_end, i_start:i_end]
-                if sub_z.size == 0:
+                if lon_span_b >= 350.0 and (min_x < lon_min_b or max_x > lon_max_b):
+                    # Bounding box straddles base dataset longitude limits
+                    sub_lons_list = []
+                    sub_z_list = []
+
+                    x_ranges = []
+                    if min_x < lon_min_b:
+                        x_ranges.append((min_x + 360.0, lon_max_b, -360.0))
+                        x_ranges.append((lon_min_b, max_x, 0.0))
+                    elif max_x > lon_max_b:
+                        x_ranges.append((min_x, lon_max_b, 0.0))
+                        x_ranges.append((lon_min_b, max_x - 360.0, 360.0))
+                    else:
+                        x_ranges.append((min_x, max_x, 0.0))
+
+                    for r_min, r_max, offset in x_ranges:
+                        if r_min <= r_max:
+                            i_s = max(0, np.searchsorted(lon_base, r_min) - 1)
+                            i_e = min(len(lon_base), np.searchsorted(lon_base, r_max) + 1)
+                            if i_e > i_s:
+                                sub_lons_list.append(lon_base[i_s:i_e] + offset)
+                                sub_z_list.append(z_base[j_start:j_end, i_s:i_e])
+
+                    if sub_lons_list and sub_z_list:
+                        sub_lons = np.concatenate(sub_lons_list)
+                        sub_z = np.hstack(sub_z_list)
+                    else:
+                        sub_lons = np.array([], dtype=np.float64)
+                        sub_z = np.empty((len(sub_lats), 0), dtype=np.float64)
+                else:
+                    i_start = max(0, np.searchsorted(lon_base, min_x) - 1)
+                    i_end = min(len(lon_base), np.searchsorted(lon_base, max_x) + 1)
+                    sub_lons = lon_base[i_start:i_end]
+                    sub_z = z_base[j_start:j_end, i_start:i_end]
+
+                if sub_z.size == 0 or len(sub_lats) == 0 or len(sub_lons) == 0:
                     depth_sub[k, j] = dry
                     continue
 
-                poly_shape = Polygon(cell_poly)
-                wet_depths = []
-                total_pts = 0
+                poly_shape = Polygon(cell_poly_q)
+                grid_x, grid_y = np.meshgrid(sub_lons, sub_lats)
+                inside = shapely.contains_xy(poly_shape, grid_x, grid_y)
 
-                sub_lons = lon_base[i_start:i_end]
-                sub_lats = lat_base[j_start:j_end]
-
-                for jj, bx in enumerate(sub_lons):
-                    for kk, by in enumerate(sub_lats):
-                        if poly_shape.contains(Point(bx, by)):
-                            total_pts += 1
-                            zv = float(sub_z[kk, jj])
-                            if zv <= cut_off:
-                                wet_depths.append(zv)
-
-                if total_pts > 0 and (len(wet_depths) / total_pts) >= limit:
-                    depth_sub[k, j] = float(np.mean(wet_depths))
+                total_pts = int(np.sum(inside))
+                if total_pts > 0:
+                    pts_z = sub_z[inside]
+                    wet_mask = pts_z <= cut_off
+                    wet_pts = pts_z[wet_mask]
+                    if (len(wet_pts) / total_pts) >= limit:
+                        depth_sub[k, j] = float(np.mean(wet_pts))
+                    else:
+                        depth_sub[k, j] = dry
                 else:
                     depth_sub[k, j] = dry
 
