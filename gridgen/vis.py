@@ -193,7 +193,7 @@ def plot_grid(
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
-    max_depth: float | None = -2500.0,
+    max_depth: float | None = -1000.0,
     max_orography: float | None = 10.0,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry and orography plot.
@@ -211,7 +211,7 @@ def plot_grid(
     show_mask : bool
         If True, mask out dry land cells (mask == 0) and use dark green background. Default is True.
     max_depth : float, optional
-        Maximum depth (minimum numerical bathymetry limit, e.g., -2500.0) for color scale range limit. Default is -2500.0.
+        Maximum depth (minimum numerical bathymetry limit, e.g., -1000.0) for color scale range limit. Default is -1000.0.
     max_orography : float, optional
         Maximum orography elevation limit in meters (default: 10.0) for land color scale.
 
@@ -355,8 +355,8 @@ def main() -> None:
     parser.add_argument(
         "--max-depth",
         type=float,
-        default=-2500.0,
-        help="Maximum depth limit for color scale (default: -2500.0)",
+        default=-1000.0,
+        help="Maximum depth limit for color scale (default: -1000.0)",
     )
     parser.add_argument(
         "--max-orography",

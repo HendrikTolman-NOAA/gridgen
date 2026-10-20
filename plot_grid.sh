@@ -25,7 +25,7 @@ OUTPUT_FILE=""
 FORMAT="jpg"
 TITLE="WAVEWATCH IV Grid"
 MASK_FLAG="--mask"
-MAX_DEPTH="-2500"
+MAX_DEPTH="-1000"
 MAX_OROGRAPHY="10"
 DISPLAY_FLAG="--no-display"
 
@@ -45,7 +45,7 @@ Options:
   --title TITLE          Custom figure title (default: WAVEWATCH IV Grid)
   --mask                 Apply land-sea mask to dry cells (default: enabled)
   --no-mask              Disable land-sea mask
-  --max-depth DEPTH      Maximum depth limit for color scale (default: -2500)
+  --max-depth DEPTH      Maximum depth limit for color scale (default: -1000)
   --max-orography OROG   Maximum orography limit for color scale in meters (default: 10)
   --display              Display figure window interactively
   --no-display           Disable interactive figure window display
