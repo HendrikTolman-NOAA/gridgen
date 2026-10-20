@@ -115,7 +115,6 @@ flowchart TD
         S1[run_gridgen.sh<br/>Pipeline Driver]
         S2[populate_reference_data.sh<br/>Data Retriever]
         S3[plot_grid.sh<br/>Graphics Driver]
-        S5[clean_all.sh<br/>Master Cleanup]
     end
 
     subgraph Python Package: gridgen
@@ -139,7 +138,6 @@ flowchart TD
 
     S1 --> CLI
     S3 --> VIS
-    S4 --> S3
 
     CLI --> COORD
     CLI --> GEOM
@@ -218,4 +216,3 @@ gridgen/
 - **`run_gridgen.sh`**: Main utility script managing Python environment verification, reference data validation, argument parsing, CLI invocation, and cleanup (`--clean`).
 - **`populate_reference_data.sh`**: Data retrieval script populating required bathymetry and shoreline datasets in `reference_data/` with options for legacy NCEP archives, ETOPO 2022 NetCDF grids, GEBCO NetCDF datasets, and GSHHG shoreline vector archives.
 - **`plot_grid.sh`**: High-level driver invoking `gridgen.vis` to produce output figure graphics from generated grid files.
-- **`clean_all.sh`**: Master cleanup script removing all generated output grid files, plot graphics, reference datasets, documentation build directories, and Python build/test cache artifacts.

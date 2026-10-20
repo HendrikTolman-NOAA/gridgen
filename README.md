@@ -176,21 +176,6 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `--display` | Interactively display figure window (default: enabled). |
 | `--no-display` | Disable interactive figure window display. |
 
-
-### Repository Cleanup (`clean_all.sh`)
-
-A master cleanup utility script is provided in the repository root directory to perform a full cleanup of generated output grid files, plot graphics, reference datasets, documentation build outputs, and Python build/test cache artifacts:
-
-```bash
-./clean_all.sh [OPTIONS]
-```
-
-#### Script Options
-
-| Option | Description |
-| :--- | :--- |
-| `-h, --help` | Display usage help message and exit. |
-
 ---
 
 **Last updated:** October 15, 2026
