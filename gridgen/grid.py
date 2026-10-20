@@ -89,7 +89,7 @@ def generate_grid(
                 break
 
         if var_z is None and len(ds.data_vars) == 1:
-            var_z = list(ds.data_vars.keys())[0]
+            var_z = next(iter(ds.data_vars.keys()))
 
         if var_x is None or var_y is None or var_z is None:
             raise KeyError(
