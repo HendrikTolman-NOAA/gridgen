@@ -250,16 +250,14 @@ def plot_grid(
         pcm1 = ax1.pcolormesh(
             lon, lat, depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
         )
-        if np.any(~np.isnan(depth_orog)):
-            pcm2 = ax1.pcolormesh(
-                lon, lat, depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
-            )
-            fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
+        pcm2 = ax1.pcolormesh(
+            lon, lat, depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
+        )
+        fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
     else:
         pcm1 = ax1.scatter(lon, lat, c=depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
-        if np.any(~np.isnan(depth_orog)):
-            pcm2 = ax1.scatter(lon, lat, c=depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
-            fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
+        pcm2 = ax1.scatter(lon, lat, c=depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
+        fig.colorbar(pcm2, ax=ax1, label="Orography (m)")
 
     fig.colorbar(pcm1, ax=ax1, label="Bathymetry Depth (m)")
     ax1.set_title("Bathymetry & Orography")
