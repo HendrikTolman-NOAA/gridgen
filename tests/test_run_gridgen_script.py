@@ -229,8 +229,8 @@ def test_run_gridgen_execution(tmp_path: Path):
     )
 
     assert result.returncode == 0
-    assert "SX (Lon Increment)   :" in result.stdout
-    assert "SY (Lat Increment)   :" in result.stdout
+    assert result.stdout.count("SX (Lon Increment)   :") == 1
+    assert result.stdout.count("SY (Lat Increment)   :") == 1
     assert "Global Closure       :" in result.stdout
     assert out_dir.exists()
     assert (out_dir / "test_grid.depth_ascii").exists()

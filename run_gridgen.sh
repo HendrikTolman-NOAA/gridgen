@@ -282,8 +282,6 @@ case "${GRID_TYPE}" in
     if [ -n "$LAT_START" ]; then echo "  LAT_START (Lower-Left): ${LAT_START} deg"; fi
     if [ -n "$LON_END" ]; then echo "  LON_END (Upper-Right)  : ${LON_END} deg"; fi
     if [ -n "$LAT_END" ]; then echo "  LAT_END (Upper-Right)  : ${LAT_END} deg"; fi
-    if [ -n "$SX" ]; then echo "  SX (Lon Increment)   : ${SX} deg"; fi
-    if [ -n "$SY" ]; then echo "  SY (Lat Increment)   : ${SY} deg"; fi
     if [ -n "$POLE_LON" ]; then echo "  POLE_LON             : ${POLE_LON} deg"; fi
     if [ -n "$POLE_LAT" ]; then echo "  POLE_LAT             : ${POLE_LAT} deg"; fi
 

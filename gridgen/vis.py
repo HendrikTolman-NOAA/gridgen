@@ -193,7 +193,7 @@ def plot_grid(
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
-    max_depth: float | None = -1000.0,
+    max_depth: float | None = -500.0,
     max_orography: float | None = 10.0,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry and orography plot.
@@ -211,7 +211,7 @@ def plot_grid(
     show_mask : bool
         If True, mask out dry land cells (mask == 0) and use dark green background. Default is True.
     max_depth : float, optional
-        Maximum depth (minimum numerical bathymetry limit, e.g., -1000.0) for color scale range limit. Default is -1000.0.
+        Maximum depth (minimum numerical bathymetry limit, e.g., -500.0) for color scale range limit. Default is -500.0.
     max_orography : float, optional
         Maximum orography elevation limit in meters (default: 10.0) for land color scale.
 
@@ -231,15 +231,18 @@ def plot_grid(
     if show_mask:
         ax1.set_facecolor(dark_green)
 
+    depth_limit = -abs(max_depth) if max_depth is not None else -500.0
+    vmax_orog = max_orography if max_orography is not None else 10.0
+
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
     bathymetry_mask = (depth <= 0) & (mask != 0) if show_mask else (depth <= 0)
     orography_mask = (depth > 0) & (depth < 999999.0) & (mask != 0) if show_mask else ((depth > 0) & (depth < 999999.0))
 
     depth_bathy = np.where(bathymetry_mask, depth, np.nan)
-    depth_orog = np.where(orography_mask, np.clip(depth, 0.0, max_orography if max_orography is not None else 10.0), np.nan)
+    depth_orog = np.where(orography_mask, np.clip(depth, 0.0, vmax_orog), np.nan)
 
-    vmin_bathy = max_depth if max_depth is not None else None
-    vmax_bathy = 0.0 if max_depth is not None else None
+    vmin_bathy = depth_limit
+    vmax_bathy = 0.0
 
     vmax_orog = max_orography if max_orography is not None else 10.0
 
@@ -355,8 +358,8 @@ def main() -> None:
     parser.add_argument(
         "--max-depth",
         type=float,
-        default=-1000.0,
-        help="Maximum depth limit for color scale (default: -1000.0)",
+        default=-500.0,
+        help="Maximum depth limit for color scale (default: -500.0)",
     )
     parser.add_argument(
         "--max-orography",
