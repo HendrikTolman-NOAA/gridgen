@@ -18,7 +18,6 @@ from pathlib import Path
 
 import matplotlib
 import numpy as np
-from PIL import Image
 
 # Force non-interactive Agg backend for testing
 matplotlib.use("Agg")
