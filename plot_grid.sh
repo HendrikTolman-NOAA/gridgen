@@ -102,8 +102,13 @@ while [[ $# -gt 0 ]]; do
       shift 1
       ;;
     --zoom)
-      ZOOM_ARGS=("$2" "$3" "$4")
-      shift 4
+      if [[ $# -ge 4 ]] && [[ "$2" != -* || "$2" =~ ^-?[0-9] ]] && [[ "$3" =~ ^-?[0-9] ]] && [[ "$4" =~ ^-?[0-9] ]]; then
+        ZOOM_ARGS=("$2" "$3" "$4")
+        shift 4
+      elif [[ $# -ge 2 ]]; then
+        ZOOM_ARGS=($2)
+        shift 2
+      fi
       ;;
     --max-depth)
       MAX_DEPTH="$2"

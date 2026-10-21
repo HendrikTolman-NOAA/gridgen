@@ -363,17 +363,23 @@ def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
 
 
 def test_default_title_and_subtitle(tmp_path):
-    """Verify default title and subtitle are applied when not overridden."""
+    """Verify default title and subtitle with dataset filename in parentheses."""
     lon1d = np.array([10.0, 20.0])
     lat1d = np.array([10.0, 18.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
-    data = {"lon": lon, "lat": lat, "depth": np.full((2, 2), -10.0), "mask": np.ones((2, 2), dtype=int)}
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": np.full((2, 2), -10.0),
+        "mask": np.ones((2, 2), dtype=int),
+        "filename": "ww4_grid_ugrid.nc",
+    }
 
     fig = plot_grid(data)
     ax = fig.axes[0]
-    assert fig._suptitle is not None
-    assert fig._suptitle.get_text() == "WAVEWATCH IV Grid"
-    assert ax.get_title() == "Bathymetry and Orography"
+    assert ax.get_title() == "Bathymetry and Orography (ww4_grid_ugrid.nc)"
+    texts = [t.get_text() for t in ax.texts]
+    assert "WAVEWATCH IV Grid" in texts
 
 
 def test_custom_and_disabled_title_subtitle(tmp_path):
@@ -381,23 +387,29 @@ def test_custom_and_disabled_title_subtitle(tmp_path):
     lon1d = np.array([10.0, 20.0])
     lat1d = np.array([10.0, 18.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
-    data = {"lon": lon, "lat": lat, "depth": np.full((2, 2), -10.0), "mask": np.ones((2, 2), dtype=int)}
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": np.full((2, 2), -10.0),
+        "mask": np.ones((2, 2), dtype=int),
+        "filename": "ww4_grid_ugrid.nc",
+    }
 
     # Custom
     fig = plot_grid(data, title="Custom Main Title", subtitle="Custom Subtitle")
     ax = fig.axes[0]
-    assert fig._suptitle.get_text() == "Custom Main Title"
-    assert ax.get_title() == "Custom Subtitle"
+    assert ax.get_title() == "Custom Subtitle (ww4_grid_ugrid.nc)"
+    texts = [t.get_text() for t in ax.texts]
+    assert "Custom Main Title" in texts
 
     # Disabled
     fig_no_title = plot_grid(data, title=None, subtitle=None)
     ax_no_title = fig_no_title.axes[0]
-    assert fig_no_title._suptitle is None or fig_no_title._suptitle.get_text() == ""
     assert ax_no_title.get_title() == ""
 
 
 def test_zoom_functionality(tmp_path):
-    """Verify zoom shifts view box with factor 1 and narrows view box with factor 2."""
+    """Verify zoom shifts view box with factor 1 and narrows view box with factor 2 across multiple formats."""
     lon1d = np.array([10.0, 20.0])  # span_lon = 10
     lat1d = np.array([10.0, 18.0])  # span_lat = 8
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -416,10 +428,16 @@ def test_zoom_functionality(tmp_path):
     assert ax_shift.get_ylim() == (10.0, 18.0)
 
     # Zoom factor 2 centered at (15.0, 14.0) -> half span [12.5, 17.5], [12.0, 16.0]
-    fig2 = plot_grid(data, zoom=(15.0, 14.0, 2.0))
+    fig2 = plot_grid(data, zoom="15.0 14.0 2.0")
     ax2 = fig2.axes[0]
     assert ax2.get_xlim() == (12.5, 17.5)
     assert ax2.get_ylim() == (12.0, 16.0)
+
+    # Zoom string with commas "15.0, 14.0, 2.0"
+    fig3 = plot_grid(data, zoom="15.0, 14.0, 2.0")
+    ax3 = fig3.axes[0]
+    assert ax3.get_xlim() == (12.5, 17.5)
+    assert ax3.get_ylim() == (12.0, 16.0)
 
 
 def test_zoom_cli_options(tmp_path: Path):

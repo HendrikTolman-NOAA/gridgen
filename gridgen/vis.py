@@ -167,6 +167,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "mask": mask,
             "sx": sx,
             "sy": sy,
+            "filename": path.name,
         }
 
     # 2. Legacy WW3 ASCII files
@@ -205,11 +206,50 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "mask": mask,
             "sx": sx,
             "sy": sy,
+            "filename": path.name,
         }
 
     raise FileNotFoundError(
         f"Could not load grid data from path or prefix '{filepath}'"
     )
+
+
+def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
+    """Parse zoom parameter from tuple/list, string, or CLI sequence.
+
+    Parameters
+    ----------
+    zoom_input : Any
+        Zoom input specification (e.g., (-70, 40, 2), ["-70", "40", "2"], or "-70 40 2").
+
+    Returns
+    -------
+    tuple[float, float, float] or None
+        Parsed (central_lon, central_lat, zoom_factor) tuple, or None if zoom_input is None.
+    """
+    if zoom_input is None:
+        return None
+    if isinstance(zoom_input, (list, tuple)):
+        if len(zoom_input) == 0:
+            return None
+        parts = []
+        for item in zoom_input:
+            if isinstance(item, str):
+                clean_item = item.replace(",", " ")
+                parts.extend([float(p) for p in clean_item.split()])
+            else:
+                parts.append(float(item))
+    elif isinstance(zoom_input, str):
+        clean_item = zoom_input.replace(",", " ")
+        parts = [float(p) for p in clean_item.split()]
+    else:
+        raise ValueError("zoom parameter must be a tuple, list, or string of 3 numbers")
+
+    if len(parts) != 3:
+        raise ValueError(
+            f"Zoom expects 3 values (central_lon, central_lat, zoom_factor), got {len(parts)} values from '{zoom_input}'"
+        )
+    return (parts[0], parts[1], parts[2])
 
 
 def plot_grid(
@@ -221,7 +261,7 @@ def plot_grid(
     show_mask: bool = True,
     max_depth: float | None = -500.0,
     max_orography: float | None = 10.0,
-    zoom: tuple[float, float, float] | list[float] | None = None,
+    zoom: tuple[float, float, float] | list[float] | str | None = None,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry and orography plot.
 
@@ -291,20 +331,29 @@ def plot_grid(
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
 
+    sub_text = ""
     if subtitle:
-        ax1.set_title(subtitle)
+        fname = data.get("filename")
+        if fname and f"({fname})" not in subtitle:
+            sub_text = f"{subtitle} ({fname})"
+        else:
+            sub_text = subtitle
 
     ax1.set_xlabel("Longitude")
     ax1.set_ylabel("Latitude")
     ax1.grid(True, linestyle="--", alpha=0.5)
 
-    if title:
-        fig.suptitle(title, fontsize=14, fontweight="bold")
+    if title and sub_text:
+        ax1.set_title(sub_text, fontsize=10, fontweight="normal", pad=6)
+        ax1.text(0.5, 1.08, title, transform=ax1.transAxes, ha="center", va="bottom", fontsize=14, fontweight="bold")
+    elif title:
+        ax1.set_title(title, fontsize=14, fontweight="bold", pad=10)
+    elif sub_text:
+        ax1.set_title(sub_text, fontsize=10, fontweight="normal", pad=10)
 
-    if zoom is not None:
-        if len(zoom) != 3:
-            raise ValueError("zoom parameter must be a tuple/list of (central_lon, central_lat, zoom_factor)")
-        central_lon, central_lat, zoom_factor = float(zoom[0]), float(zoom[1]), float(zoom[2])
+    zoom_parsed = parse_zoom_args(zoom)
+    if zoom_parsed is not None:
+        central_lon, central_lat, zoom_factor = zoom_parsed
         if zoom_factor <= 0:
             raise ValueError("zoom_factor must be positive.")
 
@@ -323,8 +372,12 @@ def plot_grid(
         new_span_lon = span_lon / zoom_factor
         new_span_lat = span_lat / zoom_factor
 
-        ax1.set_xlim(c_lon - new_span_lon / 2.0, c_lon + new_span_lon / 2.0)
-        ax1.set_ylim(central_lat - new_span_lat / 2.0, central_lat + new_span_lat / 2.0)
+        xlim = (c_lon - new_span_lon / 2.0, c_lon + new_span_lon / 2.0)
+        ylim = (central_lat - new_span_lat / 2.0, central_lat + new_span_lat / 2.0)
+
+        ax1.set_xlim(xlim)
+        ax1.set_ylim(ylim)
+        print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
     fig.tight_layout()
 
     # Orography colorbar (top-right, placed above Bathymetry colorbar)
@@ -472,11 +525,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--zoom",
-        nargs=3,
-        type=float,
-        metavar=("LON", "LAT", "FACTOR"),
+        nargs="+",
         default=None,
-        help="Zoom view centered at central longitude, central latitude with zoom factor (e.g. --zoom -70 40 2)",
+        help="Zoom view centered at central longitude, central latitude with zoom factor (e.g. --zoom -70 40 2 or --zoom '-70,40,2')",
     )
     parser.add_argument(
         "--max-depth",
