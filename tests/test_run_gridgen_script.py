@@ -232,6 +232,7 @@ def test_run_gridgen_execution(tmp_path: Path):
     assert result.stdout.count("SX (Lon Increment)     :") == 1
     assert result.stdout.count("SY (Lat Increment)     :") == 1
     assert "Global Closure         :" in result.stdout
+    assert "Lake removal threshold settings: 15, 0.0005 (0.05%)" in result.stdout
     assert out_dir.exists()
     # Default output generates NetCDF-UGRID only
     assert (out_dir / "test_grid_ugrid.nc").exists()

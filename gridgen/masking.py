@@ -267,8 +267,8 @@ def clean_mask(
 
 def remove_lake(
     mask: np.ndarray,
-    min_lake_points: int = 25,
-    min_lake_fraction: float = 0.001,
+    min_lake_points: int = 15,
+    min_lake_fraction: float = 0.0005,
     lake_tol: float | None = None,
     igl: int = 0,
     lon: np.ndarray | None = None,
@@ -280,9 +280,9 @@ def remove_lake(
     mask : np.ndarray
         2D land/sea mask (1 = wet, 0 = dry).
     min_lake_points : int
-        Minimum number of grid cells required for a water body/lake to be retained (default: 25).
+        Minimum number of grid cells required for a water body/lake to be retained (default: 15).
     min_lake_fraction : float
-        Minimum fraction of total grid points required for a water body/lake to be retained (default: 0.001 [0.1%]).
+        Minimum fraction of total grid points required for a water body/lake to be retained (default: 0.0005 [0.05%]).
     lake_tol : Optional[float]
         Legacy tolerance override if explicitly specified.
     igl : int

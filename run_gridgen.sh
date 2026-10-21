@@ -43,8 +43,8 @@ GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
-LAKE_MIN_POINTS="25"
-LAKE_MIN_FRACTION="0.001"
+LAKE_MIN_POINTS="15"
+LAKE_MIN_FRACTION="0.0005"
 LEGACY=0
 USER_POLYGONS_FLAG=""
 OUT_DIR="."
@@ -68,10 +68,10 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
-  --lake-min-points PTS  Minimum points for a lake to be retained (default: 25) [Optional]
+  --lake-min-points PTS  Minimum points for a lake to be retained (default: 15) [Optional]
   --lake-min-fraction FRAC
                          Minimum grid fraction for a lake to be retained
-                         (default: 0.001 [0.1%]) [Optional]
+                         (default: 0.0005 [0.05%]) [Optional]
   --legacy               Export legacy ASCII and COARDS NetCDF files [Optional]
   --user-polygons-flag FILE
                          Flag file for optional user coastal polygons [Optional]

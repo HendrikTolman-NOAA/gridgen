@@ -97,16 +97,16 @@ def main() -> None:
     gen_group.add_argument(
         "--lake-min-points",
         type=int,
-        default=25,
+        default=15,
         metavar="POINTS",
-        help="Minimum number of grid points for a water body/lake to be retained (default: 25)",
+        help="Minimum number of grid points for a water body/lake to be retained (default: 15)",
     )
     gen_group.add_argument(
         "--lake-min-fraction",
         type=float,
-        default=0.001,
+        default=0.0005,
         metavar="FRACTION",
-        help="Minimum fraction of total grid points for a water body/lake to be retained (default: 0.001 [0.1%])",
+        help="Minimum fraction of total grid points for a water body/lake to be retained (default: 0.0005 [0.05%%])",
     )
     gen_group.add_argument(
         "--legacy",
@@ -255,8 +255,8 @@ def main() -> None:
     # Step 3: Land/Sea Masking & Lake Removal
     print("[Step 3/5] Generating land/sea mask and applying lake removal...")
     print(
-        f"  Lake removal threshold settings: min_lake_points={args.lake_min_points}, "
-        f"min_lake_fraction={args.lake_min_fraction} ({args.lake_min_fraction * 100.0:.1f}%)"
+        f"  Lake removal threshold settings: {args.lake_min_points}, "
+        f"{args.lake_min_fraction} ({args.lake_min_fraction * 100.0:.2f}%)"
     )
     m_mod, _ = remove_lake(
         m,
