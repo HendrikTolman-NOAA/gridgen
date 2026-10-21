@@ -44,6 +44,7 @@ CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
 KEEP_LAKES=0
+LEGACY=0
 USER_POLYGONS_FLAG=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
@@ -67,6 +68,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
   --keep-lakes           Do not mask out disconnected lakes / water bodies [Optional]
+  --legacy               Export legacy ASCII and COARDS NetCDF files [Optional]
   --user-polygons-flag FILE
                          Flag file for optional user coastal polygons [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
@@ -76,26 +78,30 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -h, --help             Display this help message and exit
 
 2. Regular Grid Parameters (--grid-type regular):
-  --lon-start LON        Lower-left longitude [Mandatory]
-  --lat-start LAT        Lower-left latitude [Mandatory]
-  --lon-end LON          Upper-right longitude [Mandatory if --sx omitted]
-  --lat-end LAT          Upper-right latitude [Mandatory if --sy omitted]
-  --sx SX                Longitude increment in deg [Mandatory if --lon-end omitted]
-  --sy SY                Latitude increment in deg [Mandatory if --lat-end omitted]
+  --lon-start LON        Lower-left longitude in deg (default: 20.0) [Optional]
+  --lat-start LAT        Lower-left latitude in deg (default: -75.0) [Optional]
+  --lon-end LON          Upper-right longitude in deg (default: 379.75) [Optional]
+  --lat-end LAT          Upper-right latitude in deg (default: 75.0) [Optional]
+  --sx SX                Longitude increment in deg [Optional]
+  --sy SY                Latitude increment in deg [Optional]
   --global-closure       Create traditional regular grid with global closure
                          (sx = 360/NX, lon-end calculated) [Optional]
-  --pole-lon LON         Rotated north pole longitude in deg [Optional]
-  --pole-lat LAT         Rotated north pole latitude in deg [Optional]
+  --pole-lon LON         Rotated north pole longitude in deg (default: 0.0)
+                         [Optional]
+  --pole-lat LAT         Rotated north pole latitude in deg (default: 90.0)
+                         [Optional]
 
 3. Stereographic Grid Parameters (--grid-type stereographic):
-  --center-lon LON       [Mandatory] Projection center longitude in degrees
-  --center-lat LAT       [Mandatory] Projection center latitude in degrees
-  --extent-km KM         [Mandatory if --extent-deg omitted] Half-width in km
-  --extent-deg DEG       [Mandatory if --extent-km omitted] Half-width in deg
-  --rotation DEG         [Optional] Grid rotation angle in degrees
+  --center-lon LON       Projection center longitude in deg (default: 0.0)
+                         [Optional]
+  --center-lat LAT       Projection center latitude in deg (default: 90.0)
+                         [Optional]
+  --extent-km KM         Half-width extent in km (default: 1000.0) [Optional]
+  --extent-deg DEG       Half-width extent in deg [Optional]
+  --rotation DEG         Grid rotation angle in deg (default: 0.0) [Optional]
 
 4. Custom Grid Parameters (--grid-type custom):
-  --custom-grid FILE     [Mandatory] Path to custom layout file
+  --custom-grid FILE     Path to custom layout file [Mandatory for custom]
                          (.nc, .npz, .npy, .mat, .dat, .txt, .csv)
 
 Description:
@@ -208,6 +214,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --keep-lakes)
       KEEP_LAKES=1
+      shift 1
+      ;;
+    --legacy)
+      LEGACY=1
       shift 1
       ;;
     --user-polygons-flag)
@@ -399,6 +409,7 @@ if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
 if [ "$KEEP_LAKES" -eq 1 ]; then CMD_ARGS+=(--keep-lakes); fi
+if [ "$LEGACY" -eq 1 ]; then CMD_ARGS+=(--legacy); fi
 if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"

@@ -233,12 +233,47 @@ def test_run_gridgen_execution(tmp_path: Path):
     assert result.stdout.count("SY (Lat Increment)     :") == 1
     assert "Global Closure         :" in result.stdout
     assert out_dir.exists()
-    assert (out_dir / "test_grid.depth_ascii").exists()
-    assert (out_dir / "test_grid.maskorig_ascii").exists()
-    assert (out_dir / "test_grid.obstr_lev1").exists()
-    assert (out_dir / "test_grid.meta").exists()
-    assert (out_dir / "test_grid_coards.nc").exists()
+    # Default output generates NetCDF-UGRID and plot image only
     assert (out_dir / "test_grid_ugrid.nc").exists()
+    assert (out_dir / "test_grid.jpg").exists()
+    assert not (out_dir / "test_grid.depth_ascii").exists()
+    assert not (out_dir / "test_grid_coards.nc").exists()
+
+    # Test with --legacy flag
+    result_legacy = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_grid_legacy",
+            "--LON-START",
+            "10.0",
+            "--LON-END",
+            "12.0",
+            "--LAT-START",
+            "20.0",
+            "--LAT-END",
+            "22.0",
+            "--NX",
+            "10",
+            "--NY",
+            "10",
+            "--legacy",
+            "-r",
+            str(ref_dir),
+            "--out-dir",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result_legacy.returncode == 0
+    assert (out_dir / "test_grid_legacy.depth_ascii").exists()
+    assert (out_dir / "test_grid_legacy.maskorig_ascii").exists()
+    assert (out_dir / "test_grid_legacy.obstr_lev1").exists()
+    assert (out_dir / "test_grid_legacy.meta").exists()
+    assert (out_dir / "test_grid_legacy_coards.nc").exists()
+    assert (out_dir / "test_grid_legacy_ugrid.nc").exists()
 
 
 def test_run_gridgen_global_closure_and_increments(tmp_path: Path):
@@ -332,6 +367,7 @@ def test_run_gridgen_with_ref_dir(tmp_path: Path):
             "20",
             "--NY",
             "20",
+                "--legacy",
             "-r",
             str(ref_dir),
             "-o",

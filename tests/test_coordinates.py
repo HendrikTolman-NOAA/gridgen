@@ -77,14 +77,17 @@ def test_create_regular_grid() -> None:
 
 
 def test_grid_parameter_defaults_and_validation_errors() -> None:
-    """Test default values and parameter validation error messages for required grid inputs."""
-    # 1. Missing mandatory LON_START / LAT_START for regular grid
-    with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for regular grid"
-    ):
-        create_grid_coordinates("regular")
+    """Test default values and parameter validation for grid inputs."""
+    # 1. Regular grid works with default parameters when arguments are omitted
+    lon_def, lat_def = create_grid_coordinates("regular")
+    assert lon_def.shape == (601, 1440)
+    assert lat_def.shape == (601, 1440)
+    assert np.isclose(lon_def[0, 0], 0.0)
+    assert np.isclose(lon_def[0, -1], 359.75)
+    assert np.isclose(lat_def[0, 0], -90.0)
+    assert np.isclose(lat_def[-1, 0], 90.0)
 
-    # 1b. Regular grid with mandatory parameters
+    # 1b. Regular grid with custom parameters
     lon, lat = create_grid_coordinates(
         "regular", LON_START=20.0, LAT_START=-75.0, LON_END=379.75, LAT_END=75.0
     )
@@ -99,17 +102,10 @@ def test_grid_parameter_defaults_and_validation_errors() -> None:
     with pytest.raises(ValueError, match="Missing mandatory parameter '--custom-grid'"):
         create_grid_coordinates("custom")
 
-    # 3. Missing CENTER_LON/CENTER_LAT for stereographic grid
-    with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --center-lon, --center-lat"
-    ):
-        create_grid_coordinates("stereographic")
-
-    # 4. Missing stereographic extent parameter
-    with pytest.raises(
-        ValueError, match=r"Missing mandatory parameter\(s\) for stereographic grid: --extent-km or --extent-deg"
-    ):
-        create_grid_coordinates("stereographic", CENTER_LON=0.0, CENTER_LAT=90.0)
+    # 3. Stereographic grid works with defaults when center and extent are omitted
+    lon_ste, lat_ste = create_grid_coordinates("stereographic")
+    assert lon_ste.shape == (601, 1440)
+    assert lat_ste.shape == (601, 1440)
 
 
 def test_create_stereographic_grid() -> None:
@@ -342,25 +338,13 @@ def test_create_regular_grid_with_increments() -> None:
     assert np.isclose(lat[-1, 0], 75.0)
 
 
-def test_create_regular_grid_validation_errors() -> None:
-    """Test that create_regular_grid raises ValueError when mandatory parameters are missing."""
-    # 1. Missing lower longitude / latitude
-    with pytest.raises(ValueError, match="Mandatory parameter missing for regular grid"):
-        create_regular_grid(LON_START=20.0)
-
-    with pytest.raises(ValueError, match="Mandatory parameter missing for regular grid"):
-        create_regular_grid(LAT_START=-75.0)
-
-    # 2. Lower coordinates provided, but missing both upper coordinates and increments
-    with pytest.raises(
-        ValueError, match="must provide either last longitude.*or longitude grid increment"
-    ):
-        create_regular_grid(LON_START=20.0, LAT_START=-75.0, LAT_END=75.0)
-
-    with pytest.raises(
-        ValueError, match="must provide either last latitude.*or latitude grid increment"
-    ):
-        create_regular_grid(LON_START=20.0, LAT_START=-75.0, LON_END=379.75)
+def test_create_regular_grid_optional_defaults() -> None:
+    """Test that create_regular_grid uses default starting points when omitted."""
+    lon, lat = create_regular_grid(NX=10, NY=10)
+    assert lon.shape == (10, 10)
+    assert lat.shape == (10, 10)
+    assert np.isclose(lon[0, 0], 0.0)
+    assert np.isclose(lat[0, 0], -90.0)
 
 
 def test_gridgen_grid_reexports() -> None:

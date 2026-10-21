@@ -27,14 +27,14 @@ import numpy as np
 
 
 def create_regular_grid(
-    LON_START: float | None = None,
-    LAT_START: float | None = None,
+    LON_START: float | None = 0.0,
+    LAT_START: float | None = -90.0,
     LON_END: float | None = None,
     LAT_END: float | None = None,
     NX: int = 1440,
     NY: int = 601,
-    POLE_LON: float | None = None,
-    POLE_LAT: float | None = None,
+    POLE_LON: float | None = 0.0,
+    POLE_LAT: float | None = 90.0,
     SX: float | None = None,
     SY: float | None = None,
     DX: float | None = None,
@@ -82,43 +82,35 @@ def create_regular_grid(
     lat : np.ndarray
         2D latitude grid array of shape (NY, NX).
     """
-    if LON_START is None or LAT_START is None:
-        missing = []
-        if LON_START is None:
-            missing.append("LON_START (lower longitude)")
-        if LAT_START is None:
-            missing.append("LAT_START (lower latitude)")
-        raise ValueError(
-            f"Mandatory parameter missing for regular grid: {', '.join(missing)}"
-        )
+    lon_start_val = 0.0 if LON_START is None else float(LON_START)
+    lat_start_val = -90.0 if LAT_START is None else float(LAT_START)
 
     is_global = GLOBAL_CLOSURE or global_closure
 
     if is_global:
         sx_val = 360.0 / float(NX)
-        lon_end_val = LON_START + (NX - 1) * sx_val
+        lon_end_val = lon_start_val + (NX - 1) * sx_val
     else:
         sx_val = SX if SX is not None else (DX if DX is not None else DLON)
         if LON_END is None and sx_val is None:
-            raise ValueError(
-                "Mandatory parameter missing for regular grid: must provide either "
-                "last longitude (LON_END) or longitude grid increment (SX) or enable global_closure."
-            )
-        lon_end_val = LON_END if LON_END is not None else LON_START + (NX - 1) * sx_val
+            lon_end_val = 359.75 if (lon_start_val == 0.0 and NX == 1440) else lon_start_val + (NX - 1) * 0.25
+        elif LON_END is not None:
+            lon_end_val = float(LON_END)
+        else:
+            lon_end_val = lon_start_val + (NX - 1) * sx_val
 
     sy_val = SY if SY is not None else (DY if DY is not None else DLAT)
 
     if LAT_END is None and sy_val is None:
-        raise ValueError(
-            "Mandatory parameter missing for regular grid: must provide either "
-            "last latitude (LAT_END) or latitude grid increment (SY)."
-        )
-
-    lat_end_val = LAT_END if LAT_END is not None else LAT_START + (NY - 1) * sy_val
+        lat_end_val = 90.0 if (lat_start_val == -90.0 and NY == 601) else lat_start_val + (NY - 1) * 0.3
+    elif LAT_END is not None:
+        lat_end_val = float(LAT_END)
+    else:
+        lat_end_val = lat_start_val + (NY - 1) * sy_val
 
     if POLE_LAT is None or POLE_LAT == 90.0:
-        lon1d = np.linspace(LON_START, lon_end_val, NX)
-        lat1d = np.linspace(LAT_START, lat_end_val, NY)
+        lon1d = np.linspace(lon_start_val, lon_end_val, NX)
+        lat1d = np.linspace(lat_start_val, lat_end_val, NY)
         lon, lat = np.meshgrid(lon1d, lat1d)
         return lon, lat
 
@@ -126,9 +118,9 @@ def create_regular_grid(
     return create_rotated_pole_grid(
         POLE_LON=pole_lon,
         POLE_LAT=POLE_LAT,
-        LON_START=LON_START,
+        LON_START=lon_start_val,
         LON_END=lon_end_val,
-        LAT_START=LAT_START,
+        LAT_START=lat_start_val,
         LAT_END=lat_end_val,
         NX=NX,
         NY=NY,
@@ -136,9 +128,9 @@ def create_regular_grid(
 
 
 def create_stereographic_grid(
-    CENTER_LON: float,
-    CENTER_LAT: float,
-    EXTENT_KM: float | None = None,
+    CENTER_LON: float = 0.0,
+    CENTER_LAT: float = 90.0,
+    EXTENT_KM: float | None = 1000.0,
     EXTENT_DEG: float | None = None,
     NX: int | None = 1440,
     NY: int | None = 601,
@@ -484,67 +476,8 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
     if ny is not None and int(ny) <= 0:
         raise ValueError(f"Grid dimension NY must be positive, got {ny}")
 
-    if gtype == "regular":
-        lon_start = kwargs.get("LON_START") if kwargs.get("LON_START") is not None else kwargs.get("lon_start")
-        lat_start = kwargs.get("LAT_START") if kwargs.get("LAT_START") is not None else kwargs.get("lat_start")
-
-        missing = []
-        if lon_start is None:
-            missing.append("LON_START / --lon-start")
-        if lat_start is None:
-            missing.append("LAT_START / --lat-start")
-
-        if missing:
-            raise ValueError(
-                f"Missing mandatory parameter(s) for regular grid: {', '.join(missing)}"
-            )
-
-        is_global = bool(kwargs.get("GLOBAL_CLOSURE") or kwargs.get("global_closure"))
-
-        lon_end = kwargs.get("LON_END") if kwargs.get("LON_END") is not None else kwargs.get("lon_end")
-        lat_end = kwargs.get("LAT_END") if kwargs.get("LAT_END") is not None else kwargs.get("lat_end")
-
-        sx = kwargs.get("SX") if kwargs.get("SX") is not None else kwargs.get("sx")
-        if sx is None:
-            sx = kwargs.get("DX") if kwargs.get("DX") is not None else kwargs.get("dx")
-        if sx is None:
-            sx = kwargs.get("DLON") if kwargs.get("DLON") is not None else kwargs.get("dlon")
-
-        sy = kwargs.get("SY") if kwargs.get("SY") is not None else kwargs.get("sy")
-        if sy is None:
-            sy = kwargs.get("DY") if kwargs.get("DY") is not None else kwargs.get("dy")
-        if sy is None:
-            sy = kwargs.get("DLAT") if kwargs.get("DLAT") is not None else kwargs.get("dlat")
-
-        if not is_global and lon_end is None and sx is None:
-            raise ValueError(
-                "Missing mandatory parameter for regular grid: must provide either "
-                "last longitude (LON_END / --lon-end) or longitude grid increment (SX / --sx) or --global-closure."
-            )
-
-        if lat_end is None and sy is None:
-            raise ValueError(
-                "Missing mandatory parameter for regular grid: must provide either "
-                "last latitude (LAT_END / --lat-end) or latitude grid increment (SY / --sy)."
-            )
+    if gtype in ("regular", "stereographic"):
         return
-
-    elif gtype == "stereographic":
-        missing = []
-        for param in ("CENTER_LON", "CENTER_LAT"):
-            val = kwargs.get(param) if kwargs.get(param) is not None else kwargs.get(param.lower())
-            if val is None:
-                missing.append(f"--{param.lower().replace('_', '-')}")
-
-        ext_km = kwargs.get("EXTENT_KM") if kwargs.get("EXTENT_KM") is not None else kwargs.get("extent_km")
-        ext_deg = kwargs.get("EXTENT_DEG") if kwargs.get("EXTENT_DEG") is not None else kwargs.get("extent_deg")
-        if ext_km is None and ext_deg is None:
-            missing.append("--extent-km or --extent-deg")
-
-        if missing:
-            raise ValueError(
-                f"Missing mandatory parameter(s) for stereographic grid: {', '.join(missing)}"
-            )
     else:
         raise ValueError(
             f"Unsupported grid_type '{grid_type}'. Supported grid types: "
