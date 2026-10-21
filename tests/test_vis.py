@@ -363,7 +363,7 @@ def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
 
 
 def test_default_title_and_subtitle(tmp_path):
-    """Verify default title and subtitle with dataset filename in parentheses."""
+    """Verify default title uses input dataset filename and subtitle includes bathymetry source."""
     lon1d = np.array([10.0, 20.0])
     lat1d = np.array([10.0, 18.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -372,14 +372,15 @@ def test_default_title_and_subtitle(tmp_path):
         "lat": lat,
         "depth": np.full((2, 2), -10.0),
         "mask": np.ones((2, 2), dtype=int),
-        "filename": "ww4_grid_ugrid.nc",
+        "filename": "my_ww4_grid_ugrid.nc",
+        "bathy_source": "etopo2",
     }
 
     fig = plot_grid(data)
     ax = fig.axes[0]
-    assert ax.get_title() == "Bathymetry and Orography (ww4_grid_ugrid.nc)"
+    assert ax.get_title() == "Bathymetry and Orography (etopo2)"
     texts = [t.get_text() for t in ax.texts]
-    assert "WAVEWATCH IV Grid" in texts
+    assert "my_ww4_grid_ugrid.nc" in texts
 
 
 def test_custom_and_disabled_title_subtitle(tmp_path):
@@ -393,17 +394,18 @@ def test_custom_and_disabled_title_subtitle(tmp_path):
         "depth": np.full((2, 2), -10.0),
         "mask": np.ones((2, 2), dtype=int),
         "filename": "ww4_grid_ugrid.nc",
+        "bathy_source": "gebco_2024",
     }
 
-    # Custom
-    fig = plot_grid(data, title="Custom Main Title", subtitle="Custom Subtitle")
+    # Custom title, subtitle, and bathy source
+    fig = plot_grid(data, title="Custom Main Title", subtitle="Custom Subtitle", bathy_source="gebco_2024")
     ax = fig.axes[0]
-    assert ax.get_title() == "Custom Subtitle (ww4_grid_ugrid.nc)"
+    assert ax.get_title() == "Custom Subtitle (gebco_2024)"
     texts = [t.get_text() for t in ax.texts]
     assert "Custom Main Title" in texts
 
-    # Disabled
-    fig_no_title = plot_grid(data, title=None, subtitle=None)
+    # Disabled title and subtitle
+    fig_no_title = plot_grid(data, title="", subtitle="")
     ax_no_title = fig_no_title.axes[0]
     assert ax_no_title.get_title() == ""
 

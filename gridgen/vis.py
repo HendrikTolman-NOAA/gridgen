@@ -159,6 +159,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             sx = ds["sx"].values if "sx" in ds else None
             sy = ds["sy"].values if "sy" in ds else None
 
+        bathy_src = str(ds.attrs.get("bathy_source", ds.attrs.get("source", "etopo2")))
         ds.close()
         return {
             "lon": lon,
@@ -168,6 +169,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "sx": sx,
             "sy": sy,
             "filename": path.name,
+            "bathy_source": bathy_src,
         }
 
     # 2. Legacy WW3 ASCII files
@@ -207,6 +209,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "sx": sx,
             "sy": sy,
             "filename": path.name,
+            "bathy_source": "etopo2",
         }
 
     raise FileNotFoundError(
@@ -254,14 +257,15 @@ def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
 
 def plot_grid(
     data: dict[str, Any],
-    title: str | None = "WAVEWATCH IV Grid",
+    title: str | None = None,
     subtitle: str | None = "Bathymetry and Orography",
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
-    max_depth: float | None = -500.0,
+    max_depth: float | None = -8000.0,
     max_orography: float | None = 10.0,
     zoom: tuple[float, float, float] | list[float] | str | None = None,
+    bathy_source: str | None = None,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry and orography plot.
 
@@ -270,9 +274,9 @@ def plot_grid(
     data : dict[str, Any]
         Dictionary containing grid data ('lon', 'lat', 'depth', 'mask', 'sx', 'sy').
     title : str, optional
-        Main figure title string (default: "WAVEWATCH IV Grid"). Can be set to None or empty to disable.
+        Main figure title string (default: input dataset filename). Can be set to empty string to disable.
     subtitle : str, optional
-        Figure subtitle string (default: "Bathymetry and Orography"). Can be set to None or empty to disable.
+        Figure subtitle string (default: "Bathymetry and Orography"). Can be set to empty string to disable.
     output_path : str or Path, optional
         File path where the resulting plot figure should be saved.
     show : bool
@@ -280,7 +284,7 @@ def plot_grid(
     show_mask : bool
         If True, mask out dry land cells (mask == 0) and use dark green background. Default is True.
     max_depth : float, optional
-        Maximum depth (minimum numerical bathymetry limit, e.g., -500.0) for color scale range limit. Default is -500.0.
+        Maximum depth (minimum numerical bathymetry limit, e.g., -8000.0) for color scale range limit. Default is -8000.0.
     max_orography : float, optional
         Maximum orography elevation limit in meters (default: 10.0) for land color scale.
     zoom : tuple or list of (central_lon, central_lat, zoom_factor), optional
@@ -302,7 +306,7 @@ def plot_grid(
     if show_mask:
         ax1.set_facecolor(dark_green)
 
-    depth_limit = -abs(max_depth) if max_depth is not None else -500.0
+    depth_limit = -abs(max_depth) if max_depth is not None else -8000.0
     vmax_orog = max_orography if max_orography is not None else 10.0
 
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
@@ -331,11 +335,13 @@ def plot_grid(
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
 
+    main_title = title if title is not None else data.get("filename", "ww4_grid_ugrid.nc")
+
     sub_text = ""
     if subtitle:
-        fname = data.get("filename")
-        if fname and f"({fname})" not in subtitle:
-            sub_text = f"{subtitle} ({fname})"
+        bsource = bathy_source or data.get("bathy_source", "etopo2")
+        if bsource and f"({bsource})" not in subtitle:
+            sub_text = f"{subtitle} ({bsource})"
         else:
             sub_text = subtitle
 
@@ -343,11 +349,11 @@ def plot_grid(
     ax1.set_ylabel("Latitude")
     ax1.grid(True, linestyle="--", alpha=0.5)
 
-    if title and sub_text:
+    if main_title and sub_text:
         ax1.set_title(sub_text, fontsize=10, fontweight="normal", pad=6)
-        ax1.text(0.5, 1.08, title, transform=ax1.transAxes, ha="center", va="bottom", fontsize=14, fontweight="bold")
-    elif title:
-        ax1.set_title(title, fontsize=14, fontweight="bold", pad=10)
+        ax1.text(0.5, 1.08, main_title, transform=ax1.transAxes, ha="center", va="bottom", fontsize=14, fontweight="bold")
+    elif main_title:
+        ax1.set_title(main_title, fontsize=14, fontweight="bold", pad=10)
     elif sub_text:
         ax1.set_title(sub_text, fontsize=10, fontweight="normal", pad=10)
 
@@ -493,14 +499,14 @@ def main() -> None:
     parser.add_argument(
         "--title",
         type=str,
-        default="WAVEWATCH IV Grid",
-        help="Figure main title (default: WAVEWATCH IV Grid)",
+        default=None,
+        help="Figure main title (default: input dataset filename)",
     )
     parser.add_argument(
         "--no-title",
         dest="title",
         action="store_const",
-        const=None,
+        const="",
         help="Disable main figure title",
     )
     parser.add_argument(
@@ -513,8 +519,14 @@ def main() -> None:
         "--no-subtitle",
         dest="subtitle",
         action="store_const",
-        const=None,
+        const="",
         help="Disable figure subtitle",
+    )
+    parser.add_argument(
+        "--bathy-source",
+        type=str,
+        default="etopo2",
+        help="Bathymetry reference dataset identifier for subtitle (default: etopo2)",
     )
     parser.add_argument(
         "--no-mask",
@@ -532,8 +544,8 @@ def main() -> None:
     parser.add_argument(
         "--max-depth",
         type=float,
-        default=-500.0,
-        help="Maximum depth limit for color scale (default: -500.0)",
+        default=-8000.0,
+        help="Maximum depth limit for color scale (default: -8000.0)",
     )
     parser.add_argument(
         "--max-orography",
@@ -587,6 +599,7 @@ def main() -> None:
         max_depth=args.max_depth,
         max_orography=args.max_orography,
         zoom=args.zoom,
+        bathy_source=args.bathy_source,
     )
 
 
