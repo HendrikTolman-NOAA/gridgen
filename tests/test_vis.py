@@ -490,8 +490,8 @@ def test_zoom_with_negative_coordinates(tmp_path: Path):
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "plot_grid.sh"
 
-    lon1d = np.array([-80.0, -60.0])
-    lat1d = np.array([30.0, 50.0])
+    lon1d = np.array([-180.0, -140.0])
+    lat1d = np.array([10.0, 30.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
     depth = np.full((2, 2), -10.0)
     mask = np.ones((2, 2), dtype=int)
@@ -499,22 +499,22 @@ def test_zoom_with_negative_coordinates(tmp_path: Path):
 
     nc_file = tmp_path / "neg_zoom_ugrid.nc"
     write_ugrid_nc(ds, str(nc_file))
-    out_jpg = tmp_path / "neg_zoom.jpg"
 
-    # Test via plot_grid.sh with space-separated negative zoom coordinates
+    # Test via plot_grid.sh with trailing decimal dot coordinates: --zoom -160. 20. 5
+    out_jpg1 = tmp_path / "neg_zoom1.jpg"
     result_sh = subprocess.run(
         [
             str(script_path),
             "-i",
             str(nc_file),
             "-o",
-            str(out_jpg),
+            str(out_jpg1),
             "-f",
             "jpg",
             "--zoom",
-            "-70",
-            "40",
-            "2",
+            "-160.",
+            "20.",
+            "5",
             "--no-display",
         ],
         capture_output=True,
@@ -523,9 +523,9 @@ def test_zoom_with_negative_coordinates(tmp_path: Path):
     )
 
     assert result_sh.returncode == 0
-    assert out_jpg.exists()
+    assert out_jpg1.exists()
 
-    # Test via python -m gridgen.vis directly with negative zoom
+    # Test via python -m gridgen.vis directly with trailing decimal dots: --zoom -160. 20. 5
     out_jpg2 = tmp_path / "neg_zoom2.jpg"
     result_py = subprocess.run(
         [
@@ -539,9 +539,9 @@ def test_zoom_with_negative_coordinates(tmp_path: Path):
             "-f",
             "jpg",
             "--zoom",
-            "-70",
-            "40",
-            "2",
+            "-160.",
+            "20.",
+            "5",
             "--no-display",
         ],
         capture_output=True,
@@ -550,6 +550,68 @@ def test_zoom_with_negative_coordinates(tmp_path: Path):
     )
 
     assert result_py.returncode == 0
+    assert out_jpg2.exists()
+
+
+def test_zoom_coordinate_formats(tmp_path: Path):
+    """Verify --zoom accepts cardinal directions, degree symbols, and leading dots across CLI drivers."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    lon1d = np.array([-180.0, -140.0])
+    lat1d = np.array([10.0, 30.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((2, 2), -10.0)
+    mask = np.ones((2, 2), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Format Zoom Test")
+
+    nc_file = tmp_path / "fmt_zoom_ugrid.nc"
+    write_ugrid_nc(ds, str(nc_file))
+
+    # Test cardinal directions (160W 20N 5) via plot_grid.sh
+    out_jpg1 = tmp_path / "fmt_zoom1.jpg"
+    res1 = subprocess.run(
+        [
+            str(script_path),
+            "-i",
+            str(nc_file),
+            "-o",
+            str(out_jpg1),
+            "--zoom",
+            "160W",
+            "20N",
+            "5",
+            "--no-display",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res1.returncode == 0
+    assert out_jpg1.exists()
+
+    # Test degree symbols (-160.0° 20.0° 5) via gridgen.vis
+    out_jpg2 = tmp_path / "fmt_zoom2.jpg"
+    res2 = subprocess.run(
+        [
+            "python3",
+            "-m",
+            "gridgen.vis",
+            "-i",
+            str(nc_file),
+            "-o",
+            str(out_jpg2),
+            "--zoom",
+            "-160.0°",
+            "20.0°",
+            "5",
+            "--no-display",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res2.returncode == 0
     assert out_jpg2.exists()
 
 

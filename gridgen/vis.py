@@ -217,6 +217,22 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
     )
 
 
+def _parse_coord_token(s: str) -> float:
+    """Parse floating-point coordinate token supporting degrees, cardinal directions, and trailing/leading dots."""
+    token = str(s).strip()
+    if not token:
+        raise ValueError("Empty coordinate token")
+    mult = 1.0
+    upper_tok = token.upper()
+    if upper_tok.endswith(("W", "S")):
+        mult = -1.0
+        token = token[:-1]
+    elif upper_tok.endswith(("N", "E")):
+        token = token[:-1]
+    token = token.replace("°", "").strip()
+    return float(token) * mult
+
+
 def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
     """Parse zoom parameter from tuple/list, string, or CLI sequence.
 
@@ -232,19 +248,21 @@ def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
     """
     if zoom_input is None:
         return None
+    parts = []
     if isinstance(zoom_input, (list, tuple)):
         if len(zoom_input) == 0:
             return None
-        parts = []
         for item in zoom_input:
             if isinstance(item, str):
                 clean_item = item.replace(",", " ")
-                parts.extend([float(p) for p in clean_item.split()])
+                for token in clean_item.split():
+                    parts.append(_parse_coord_token(token))
             else:
                 parts.append(float(item))
     elif isinstance(zoom_input, str):
         clean_item = zoom_input.replace(",", " ")
-        parts = [float(p) for p in clean_item.split()]
+        for token in clean_item.split():
+            parts.append(_parse_coord_token(token))
     else:
         raise TypeError("zoom parameter must be a tuple, list, or string of 3 numbers")
 
@@ -473,6 +491,16 @@ def plot_grid(
     return fig
 
 
+def _is_option_flag(val: str) -> bool:
+    """Check if token is a CLI option flag starting with hyphen and letter."""
+    if not val.startswith("-"):
+        return False
+    clean = val.lstrip("-")
+    if not clean:
+        return False
+    return bool(clean[0].isalpha() and not any(c.isdigit() for c in val))
+
+
 def main() -> None:
     """CLI driver for displaying resulting grid bathymetry."""
     import sys
@@ -487,8 +515,8 @@ def main() -> None:
             j = idx + 1
             while j < len(sys.argv):
                 val = sys.argv[j]
-                # Stop if encountering another flag like -i, -o, --no-display, etc.
-                if val.startswith("-") and not val.replace("-", "", 1).replace(".", "", 1).replace(",", "").isdigit():
+                # Stop if encountering another option flag like -i, -o, --no-display, etc.
+                if _is_option_flag(val):
                     break
                 zoom_tokens.append(val)
                 j += 1
