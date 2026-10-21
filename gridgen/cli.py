@@ -1,0 +1,304 @@
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+#
+# Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+# NWS often uses Generative AI (GenAI) for code development and refactoring.
+# Whenever GenAI is used, NWS requires a full human review of code before it
+# is added to its repositories.
+#
+# @file cli.py
+# @brief Command line interface for WAVEWATCH III / WAVEWATCH IV grid generation.
+# @author Aldgisl (Agentic AI), Hendrik Tolman
+# @author Jules (Agentic AI) (contributor)
+# @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-19
+#
+# Code Heritage:
+# WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
+
+"""Command line interface for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) grid generation."""
+
+from __future__ import annotations
+
+import argparse
+
+import numpy as np
+
+from .coordinates import create_grid_coordinates
+from .grid import generate_grid
+from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
+from .io.coards import nc_ww3_grdwrite
+from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
+from .masking import clean_mask, define_boundary_points, load_user_polygons, remove_lake
+from .obstructions import create_obstr
+
+
+def main() -> None:
+    """CLI driver for grid generation and multi-format export."""
+    parser = argparse.ArgumentParser(
+        description="WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid Generation Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # Group 1: General & Dimension Options (Common to all grid options)
+    gen_group = parser.add_argument_group(
+        "General & Dimension Parameters (Common to all grid options)"
+    )
+    gen_group.add_argument(
+        "--nx",
+        type=int,
+        default=1440,
+        metavar="NX",
+        help="[Optional] Discrete grid dimension NX (number of X points, default: 1440)",
+    )
+    gen_group.add_argument(
+        "--ny",
+        type=int,
+        default=601,
+        metavar="NY",
+        help="[Optional] Discrete grid dimension NY (number of Y points, default: 601)",
+    )
+    gen_group.add_argument(
+        "--name", type=str, default="ww4_grid", help="Grid prefix identifier (default: ww4_grid)"
+    )
+    gen_group.add_argument(
+        "--grid-type",
+        type=str,
+        default="regular",
+        choices=[
+            "regular",
+            "stereographic",
+            "custom",
+        ],
+        help="Grid coordinate projection/layout type (default: regular)",
+    )
+    gen_group.add_argument(
+        "--out-dir", type=str, default=".", help="Output directory for generated files (default: .)"
+    )
+    gen_group.add_argument(
+        "--ref-dir", type=str, default="reference_data", help="Reference data directory (default: reference_data)"
+    )
+    gen_group.add_argument(
+        "--bathy-source",
+        type=str,
+        default="etopo2",
+        help="Bathymetry reference dataset identifier or filename prefix (default: etopo2)",
+    )
+    gen_group.add_argument(
+        "--boundary-points",
+        action="store_true",
+        help="Define input boundary points (mask value 2) along regional grid boundaries",
+    )
+    gen_group.add_argument(
+        "--user-polygons-flag",
+        type=str,
+        default=None,
+        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
+    )
+    gen_group.add_argument(
+        "--keep-lakes",
+        action="store_true",
+        help="Do not mask out disconnected lakes / water bodies (sets lake_tol=0)",
+    )
+
+    # Group 2: Regular Grid Parameters
+    reg_group = parser.add_argument_group("Regular Grid Parameters (--grid-type regular)")
+    reg_group.add_argument(
+        "--lon-start",
+        type=float,
+        default=None,
+        metavar="LON_START",
+        help="[Mandatory] Lower-left corner longitude in degrees",
+    )
+    reg_group.add_argument(
+        "--lat-start",
+        type=float,
+        default=None,
+        metavar="LAT_START",
+        help="[Mandatory] Lower-left corner latitude in degrees",
+    )
+    reg_group.add_argument(
+        "--lon-end",
+        type=float,
+        default=None,
+        metavar="LON_END",
+        help="[Mandatory if --sx omitted] Upper-right corner longitude in degrees",
+    )
+    reg_group.add_argument(
+        "--lat-end",
+        type=float,
+        default=None,
+        metavar="LAT_END",
+        help="[Mandatory if --sy omitted] Upper-right corner latitude in degrees",
+    )
+    reg_group.add_argument(
+        "--sx",
+        type=float,
+        default=None,
+        metavar="SX",
+        help="[Mandatory if --lon-end omitted] Longitude grid increment in degrees",
+    )
+    reg_group.add_argument(
+        "--sy",
+        type=float,
+        default=None,
+        metavar="SY",
+        help="[Mandatory if --lat-end omitted] Latitude grid increment in degrees",
+    )
+    reg_group.add_argument(
+        "--pole-lon",
+        type=float,
+        default=None,
+        metavar="POLE_LON",
+        help="[Optional] Longitude of rotated north pole in geographic coordinates",
+    )
+    reg_group.add_argument(
+        "--pole-lat",
+        type=float,
+        default=None,
+        metavar="POLE_LAT",
+        help="[Optional] Latitude of rotated north pole in geographic coordinates",
+    )
+    reg_group.add_argument(
+        "--global-closure",
+        "--global",
+        dest="global_closure",
+        action="store_true",
+        help="[Optional] Traditional regular grid with global closure (sx = 360/NX, lon_end calculated)",
+    )
+
+    # Group 3: Stereographic Projection Parameters
+    ste_group = parser.add_argument_group("Stereographic Grid Parameters (--grid-type stereographic)")
+    ste_group.add_argument(
+        "--center-lon",
+        type=float,
+        default=None,
+        metavar="CENTER_LON",
+        help="[Mandatory] Projection center longitude in degrees",
+    )
+    ste_group.add_argument(
+        "--center-lat",
+        type=float,
+        default=None,
+        metavar="CENTER_LAT",
+        help="[Mandatory] Projection center latitude in degrees",
+    )
+    ste_group.add_argument(
+        "--extent-km",
+        type=float,
+        default=None,
+        metavar="EXTENT_KM",
+        help="[Mandatory if --extent-deg omitted] Half-width domain extent in kilometers",
+    )
+    ste_group.add_argument(
+        "--extent-deg",
+        type=float,
+        default=None,
+        metavar="EXTENT_DEG",
+        help="[Mandatory if --extent-km omitted] Half-width domain extent in arc degrees",
+    )
+    ste_group.add_argument(
+        "--rotation",
+        type=float,
+        default=0.0,
+        metavar="ROTATION",
+        help="[Optional] Grid rotation angle in degrees on projection plane (default: 0.0)",
+    )
+
+    # Group 4: Custom Grid File Parameters
+    cus_group = parser.add_argument_group("Custom Grid Parameters (--grid-type custom)")
+    cus_group.add_argument(
+        "--custom-grid",
+        type=str,
+        default=None,
+        metavar="CUSTOM_GRID",
+        help="[Mandatory] Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)",
+    )
+
+    args = parser.parse_args()
+
+    # Step 1: Create 2D grid coordinates array
+    print(f"[Step 1/5] Generating 2D '{args.grid_type}' grid coordinates for '{args.name}'...")
+    lon, lat = create_grid_coordinates(**vars(args))
+    print(f"  Grid matrix dimensions: NY={lon.shape[0]}, NX={lon.shape[1]}")
+
+    # Step 2: Extract bathymetry
+    print(f"[Step 2/5] Extracting bathymetry depths from '{args.bathy_source}' dataset...")
+    depth = generate_grid(
+        lon, lat, ref_dir=args.ref_dir, bathy_source=args.bathy_source
+    )
+    m = np.ones_like(depth, dtype=int)
+    m[depth == 999999.0] = 0
+
+    user_bounds = []
+    if args.user_polygons_flag:
+        user_bounds = load_user_polygons(
+            ref_dir=args.ref_dir, flag_file=args.user_polygons_flag
+        )
+        if user_bounds:
+            print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
+            m = clean_mask(lon, lat, m, user_bounds)
+
+    # Step 3: Land/Sea Masking & Lake Removal
+    print("[Step 3/5] Generating land/sea mask and applying lake removal...")
+    lake_tol = 0 if getattr(args, "keep_lakes", False) else -1
+    m_mod, _ = remove_lake(m, lake_tol=lake_tol, igl=0, lon=lon)
+    if args.boundary_points:
+        m_mod = define_boundary_points(m_mod, lon, lat)
+
+    # Step 4: Calculate sub-grid obstructions
+    print("[Step 4/5] Computing directional sub-grid obstruction factors (sx, sy)...")
+    sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
+
+    # Step 5: Multi-Format Export
+    print("[Step 5/5] Exporting grid files in legacy ASCII, COARDS NC, and WW4 UGRID NC formats...")
+    # 1. Legacy WW3 ASCII
+    depth_scale = 1000.0
+    obstr_scale = 100.0
+    d_ascii = np.round(depth * depth_scale)
+    write_ww3file(f"{args.out_dir}/{args.name}.depth_ascii", d_ascii)
+    write_ww3file(f"{args.out_dir}/{args.name}.maskorig_ascii", m_mod)
+    write_ww3obstr(
+        f"{args.out_dir}/{args.name}.obstr_lev1",
+        np.round(sx * obstr_scale),
+        np.round(sy * obstr_scale),
+    )
+    write_ww3meta(
+        f"{args.out_dir}/{args.name}",
+        "RECT",
+        lon,
+        lat,
+        1.0 / depth_scale,
+        1.0 / obstr_scale,
+        1.0,
+    )
+
+    # 2. Legacy GMT/NetCDF COARDS
+    nc_ww3_grdwrite(
+        lon,
+        lat,
+        depth,
+        f"{args.out_dir}/{args.name}_coards.nc",
+        mask=m_mod,
+        sx=sx,
+        sy=sy,
+        bathy_source=args.bathy_source,
+    )
+
+    # 3. WW4 NetCDF-UGRID 1.0
+    ds_ugrid = create_ugrid_dataset(
+        lon,
+        lat,
+        depth,
+        m_mod,
+        sx=sx,
+        sy=sy,
+        title=f"WW4 Grid {args.name}",
+        bathy_source=args.bathy_source,
+    )
+    write_ugrid_nc(ds_ugrid, f"{args.out_dir}/{args.name}_ugrid.nc")
+
+    print("Successfully exported all grid formats (ASCII, COARDS NC, UGRID NC)!")
+
+
+if __name__ == "__main__":
+    main()
