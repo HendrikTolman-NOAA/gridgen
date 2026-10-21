@@ -360,25 +360,3 @@ def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
 
     assert result.returncode == 0
     assert (tmp_path / out_jpg).exists()
-
-
-def test_vis_subtitle_bathy_source(tmp_path: Path):
-    """Verify plot_grid formats subtitle with bathymetry source in parentheses."""
-    lon1d = np.array([10.0, 11.0, 12.0])
-    lat1d = np.array([20.0, 21.0, 22.0])
-    lon, lat = np.meshgrid(lon1d, lat1d)
-    data = {
-        "lon": lon,
-        "lat": lat,
-        "depth": np.full((3, 3), -10.0),
-        "mask": np.ones((3, 3), dtype=int),
-        "bathy_source": "gebco_2024",
-    }
-
-    out_file = str(tmp_path / "test_bathy_sub.jpg")
-    fig = plot_grid(data, title="Bathy Source Subtitle Test", output_path=out_file)
-    assert fig is not None
-
-    ax = fig.axes[0]
-    subtitle_text = ax.get_title()
-    assert subtitle_text == "Bathymetry & Orography (gebco_2024)"

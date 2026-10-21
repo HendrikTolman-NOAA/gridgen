@@ -34,7 +34,6 @@ def nc_ww3_grdwrite(
     mask: np.ndarray | None = None,
     sx: np.ndarray | None = None,
     sy: np.ndarray | None = None,
-    bathy_source: str | None = None,
 ) -> None:
     """Write GMT / COARDS compliant NetCDF grid file for WAVEWATCH III.
 
@@ -141,7 +140,6 @@ def nc_ww3_grdwrite(
             "history": "File written by WAVEWATCH IV Python gridgen package",
             "description": f"Created {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
             "GMT_version": "4.x",
-            **({"bathy_source": bathy_source} if bathy_source else {}),
         },
     )
 

@@ -159,9 +159,8 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             sx = ds["sx"].values if "sx" in ds else None
             sy = ds["sy"].values if "sy" in ds else None
 
-        bathy_src = ds.attrs.get("bathy_source", None)
         ds.close()
-        res = {
+        return {
             "lon": lon,
             "lat": lat,
             "depth": depth,
@@ -169,9 +168,6 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "sx": sx,
             "sy": sy,
         }
-        if bathy_src:
-            res["bathy_source"] = str(bathy_src)
-        return res
 
     # 2. Legacy WW3 ASCII files
     base_prefix = str(path).replace(".depth_ascii", "").replace(".maskorig_ascii", "")
@@ -219,8 +215,6 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
 def plot_grid(
     data: dict[str, Any],
     title: str = "WAVEWATCH IV Grid",
-    subtitle: str | None = None,
-    bathy_source: str = "etopo2",
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
@@ -291,13 +285,7 @@ def plot_grid(
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
 
-    if subtitle is not None:
-        eff_subtitle = subtitle
-    else:
-        src = data.get("bathy_source", bathy_source)
-        eff_subtitle = f"Bathymetry & Orography ({src})" if src else "Bathymetry & Orography"
-
-    ax1.set_title(eff_subtitle)
+    ax1.set_title("Bathymetry & Orography")
     ax1.set_xlabel("Longitude")
     ax1.set_ylabel("Latitude")
     ax1.grid(True, linestyle="--", alpha=0.5)
@@ -422,18 +410,6 @@ def main() -> None:
         help="Figure title",
     )
     parser.add_argument(
-        "--subtitle",
-        type=str,
-        default=None,
-        help="Figure subtitle (default: Bathymetry & Orography (<bathy_source>))",
-    )
-    parser.add_argument(
-        "--bathy-source",
-        type=str,
-        default="etopo2",
-        help="Bathymetry reference source identifier (default: etopo2)",
-    )
-    parser.add_argument(
         "--mask",
         dest="mask",
         action="store_true",
@@ -497,8 +473,6 @@ def main() -> None:
     plot_grid(
         data,
         title=args.title,
-        subtitle=args.subtitle,
-        bathy_source=args.bathy_source,
         output_path=out_path,
         show=args.display,
         show_mask=args.mask,

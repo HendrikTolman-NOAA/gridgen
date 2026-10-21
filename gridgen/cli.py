@@ -274,19 +274,11 @@ def main() -> None:
         mask=m_mod,
         sx=sx,
         sy=sy,
-        bathy_source=args.bathy_source,
     )
 
     # 3. WW4 NetCDF-UGRID 1.0
     ds_ugrid = create_ugrid_dataset(
-        lon,
-        lat,
-        depth,
-        m_mod,
-        sx=sx,
-        sy=sy,
-        title=f"WW4 Grid {args.name}",
-        bathy_source=args.bathy_source,
+        lon, lat, depth, m_mod, sx=sx, sy=sy, title=f"WW4 Grid {args.name}"
     )
     write_ugrid_nc(ds_ugrid, f"{args.out_dir}/{args.name}_ugrid.nc")
 
