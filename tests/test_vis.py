@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-21
 
 from __future__ import annotations
 
@@ -360,3 +360,132 @@ def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
 
     assert result.returncode == 0
     assert (tmp_path / out_jpg).exists()
+
+
+def test_default_title_and_subtitle(tmp_path):
+    """Verify default title and subtitle are applied when not overridden."""
+    lon1d = np.array([10.0, 20.0])
+    lat1d = np.array([10.0, 18.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    data = {"lon": lon, "lat": lat, "depth": np.full((2, 2), -10.0), "mask": np.ones((2, 2), dtype=int)}
+
+    fig = plot_grid(data)
+    ax = fig.axes[0]
+    assert fig._suptitle is not None
+    assert fig._suptitle.get_text() == "WAVEWATCH IV Grid"
+    assert ax.get_title() == "Bathymetry and Orography"
+
+
+def test_custom_and_disabled_title_subtitle(tmp_path):
+    """Verify custom titles/subtitles and disabled titles/subtitles."""
+    lon1d = np.array([10.0, 20.0])
+    lat1d = np.array([10.0, 18.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    data = {"lon": lon, "lat": lat, "depth": np.full((2, 2), -10.0), "mask": np.ones((2, 2), dtype=int)}
+
+    # Custom
+    fig = plot_grid(data, title="Custom Main Title", subtitle="Custom Subtitle")
+    ax = fig.axes[0]
+    assert fig._suptitle.get_text() == "Custom Main Title"
+    assert ax.get_title() == "Custom Subtitle"
+
+    # Disabled
+    fig_no_title = plot_grid(data, title=None, subtitle=None)
+    ax_no_title = fig_no_title.axes[0]
+    assert fig_no_title._suptitle is None or fig_no_title._suptitle.get_text() == ""
+    assert ax_no_title.get_title() == ""
+
+
+def test_zoom_functionality(tmp_path):
+    """Verify zoom shifts view box with factor 1 and narrows view box with factor 2."""
+    lon1d = np.array([10.0, 20.0])  # span_lon = 10
+    lat1d = np.array([10.0, 18.0])  # span_lat = 8
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    data = {"lon": lon, "lat": lat, "depth": np.full((2, 2), -10.0), "mask": np.ones((2, 2), dtype=int)}
+
+    # Zoom factor 1 centered at (15.0, 14.0) -> same span [10, 20], [10, 18]
+    fig1 = plot_grid(data, zoom=(15.0, 14.0, 1.0))
+    ax1 = fig1.axes[0]
+    assert ax1.get_xlim() == (10.0, 20.0)
+    assert ax1.get_ylim() == (10.0, 18.0)
+
+    # Zoom factor 1 shifted to central lon 18.0, lat 14.0 -> xlim=[13.0, 23.0]
+    fig_shift = plot_grid(data, zoom=(18.0, 14.0, 1.0))
+    ax_shift = fig_shift.axes[0]
+    assert ax_shift.get_xlim() == (13.0, 23.0)
+    assert ax_shift.get_ylim() == (10.0, 18.0)
+
+    # Zoom factor 2 centered at (15.0, 14.0) -> half span [12.5, 17.5], [12.0, 16.0]
+    fig2 = plot_grid(data, zoom=(15.0, 14.0, 2.0))
+    ax2 = fig2.axes[0]
+    assert ax2.get_xlim() == (12.5, 17.5)
+    assert ax2.get_ylim() == (12.0, 16.0)
+
+
+def test_zoom_cli_options(tmp_path: Path):
+    """Verify --zoom and --no-title / --no-subtitle / --no-mask CLI options via plot_grid.sh."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    lon1d = np.array([10.0, 20.0])
+    lat1d = np.array([10.0, 18.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((2, 2), -10.0)
+    mask = np.ones((2, 2), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="CLI Options Test")
+
+    nc_file = tmp_path / "cli_test_ugrid.nc"
+    write_ugrid_nc(ds, str(nc_file))
+    out_jpg = tmp_path / "cli_test.jpg"
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "-i",
+            str(nc_file),
+            "-o",
+            str(out_jpg),
+            "-f",
+            "jpg",
+            "--no-title",
+            "--no-subtitle",
+            "--no-mask",
+            "--zoom",
+            "15.0",
+            "14.0",
+            "2.0",
+            "--no-display",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert out_jpg.exists()
+
+
+def test_mask_option_removed(tmp_path: Path):
+    """Verify passing --mask raises an error as --mask option is removed."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    nc_file = tmp_path / "dummy_ugrid.nc"
+    lon, lat = np.meshgrid([10, 11], [10, 11])
+    ds = create_ugrid_dataset(lon, lat, np.full((2, 2), -10.0), np.ones((2, 2), dtype=int))
+    write_ugrid_nc(ds, str(nc_file))
+
+    result = subprocess.run(
+        [
+            str(script_path),
+            "-i",
+            str(nc_file),
+            "--mask",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "unrecognized option '--mask'" in result.stderr or "Unknown option: --mask" in result.stderr

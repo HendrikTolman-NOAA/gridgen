@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-21
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -214,12 +214,14 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
 
 def plot_grid(
     data: dict[str, Any],
-    title: str = "WAVEWATCH IV Grid",
+    title: str | None = "WAVEWATCH IV Grid",
+    subtitle: str | None = "Bathymetry and Orography",
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
     max_depth: float | None = -500.0,
     max_orography: float | None = 10.0,
+    zoom: tuple[float, float, float] | list[float] | None = None,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry and orography plot.
 
@@ -227,8 +229,10 @@ def plot_grid(
     ----------
     data : dict[str, Any]
         Dictionary containing grid data ('lon', 'lat', 'depth', 'mask', 'sx', 'sy').
-    title : str
-        Main figure title string.
+    title : str, optional
+        Main figure title string (default: "WAVEWATCH IV Grid"). Can be set to None or empty to disable.
+    subtitle : str, optional
+        Figure subtitle string (default: "Bathymetry and Orography"). Can be set to None or empty to disable.
     output_path : str or Path, optional
         File path where the resulting plot figure should be saved.
     show : bool
@@ -239,6 +243,8 @@ def plot_grid(
         Maximum depth (minimum numerical bathymetry limit, e.g., -500.0) for color scale range limit. Default is -500.0.
     max_orography : float, optional
         Maximum orography elevation limit in meters (default: 10.0) for land color scale.
+    zoom : tuple or list of (central_lon, central_lat, zoom_factor), optional
+        Zoom view centered at (central_lon, central_lat) with zoom_factor. A zoom_factor of 1 shifts the view frame.
 
     Returns
     -------
@@ -285,12 +291,40 @@ def plot_grid(
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
 
-    ax1.set_title("Bathymetry & Orography")
+    if subtitle:
+        ax1.set_title(subtitle)
+
     ax1.set_xlabel("Longitude")
     ax1.set_ylabel("Latitude")
     ax1.grid(True, linestyle="--", alpha=0.5)
 
-    fig.suptitle(title, fontsize=14, fontweight="bold")
+    if title:
+        fig.suptitle(title, fontsize=14, fontweight="bold")
+
+    if zoom is not None:
+        if len(zoom) != 3:
+            raise ValueError("zoom parameter must be a tuple/list of (central_lon, central_lat, zoom_factor)")
+        central_lon, central_lat, zoom_factor = float(zoom[0]), float(zoom[1]), float(zoom[2])
+        if zoom_factor <= 0:
+            raise ValueError("zoom_factor must be positive.")
+
+        lon_min, lon_max = float(np.nanmin(lon)), float(np.nanmax(lon))
+        lat_min, lat_max = float(np.nanmin(lat)), float(np.nanmax(lat))
+
+        span_lon = lon_max - lon_min if lon_max > lon_min else 1.0
+        span_lat = lat_max - lat_min if lat_max > lat_min else 1.0
+
+        c_lon = central_lon
+        if lon_min >= 0 and lon_max > 180 and central_lon < 0:
+            c_lon = central_lon % 360.0
+        elif lon_max <= 180 and lon_min < 0 and central_lon > 180:
+            c_lon = (central_lon + 180.0) % 360.0 - 180.0
+
+        new_span_lon = span_lon / zoom_factor
+        new_span_lat = span_lat / zoom_factor
+
+        ax1.set_xlim(c_lon - new_span_lon / 2.0, c_lon + new_span_lon / 2.0)
+        ax1.set_ylim(central_lat - new_span_lat / 2.0, central_lat + new_span_lat / 2.0)
     fig.tight_layout()
 
     # Orography colorbar (top-right, placed above Bathymetry colorbar)
@@ -407,20 +441,42 @@ def main() -> None:
         "--title",
         type=str,
         default="WAVEWATCH IV Grid",
-        help="Figure title",
+        help="Figure main title (default: WAVEWATCH IV Grid)",
     )
     parser.add_argument(
-        "--mask",
-        dest="mask",
-        action="store_true",
-        default=True,
-        help="Apply land-sea mask to dry cells (default: enabled)",
+        "--no-title",
+        dest="title",
+        action="store_const",
+        const=None,
+        help="Disable main figure title",
+    )
+    parser.add_argument(
+        "--subtitle",
+        type=str,
+        default="Bathymetry and Orography",
+        help="Figure subtitle (default: Bathymetry and Orography)",
+    )
+    parser.add_argument(
+        "--no-subtitle",
+        dest="subtitle",
+        action="store_const",
+        const=None,
+        help="Disable figure subtitle",
     )
     parser.add_argument(
         "--no-mask",
         dest="mask",
         action="store_false",
+        default=True,
         help="Disable land-sea mask display",
+    )
+    parser.add_argument(
+        "--zoom",
+        nargs=3,
+        type=float,
+        metavar=("LON", "LAT", "FACTOR"),
+        default=None,
+        help="Zoom view centered at central longitude, central latitude with zoom factor (e.g. --zoom -70 40 2)",
     )
     parser.add_argument(
         "--max-depth",
@@ -473,11 +529,13 @@ def main() -> None:
     plot_grid(
         data,
         title=args.title,
+        subtitle=args.subtitle,
         output_path=out_path,
         show=args.display,
         show_mask=args.mask,
         max_depth=args.max_depth,
         max_orography=args.max_orography,
+        zoom=args.zoom,
     )
 
 
