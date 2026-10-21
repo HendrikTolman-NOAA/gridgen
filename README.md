@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-19
+# @date Latest Update: 2026-10-21
 -->
 
 <p align="center">
@@ -174,7 +174,14 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `-i, --input PATH` | Input grid dataset filepath (`_ugrid.nc`, `_coards.nc`, or ASCII prefix). Default: `ww4_grid_ugrid.nc`. |
 | `-o, --output PATH` | Output figure image path. Default: `<GRIDNAME>.<format>` (e.g. `ww4_grid.jpg`). |
 | `-f, --format FORMAT` | Output graphic format: `jpg`, `png`, `pdf`, `eps`, or `gif`. Default: `jpg`. |
-| `--title TITLE` | Custom title for the generated figure. |
+| `--title TITLE` | Custom main figure title (default: input dataset filename). |
+| `--no-title` | Disable main figure title. |
+| `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry and Orography`). |
+| `--no-subtitle` | Disable figure subtitle. |
+| `--bathy-source SOURCE` | Bathymetry reference dataset identifier for subtitle (default: `etopo2`). |
+| `--no-mask` | Disable land-sea mask display. |
+| `--zoom LON LAT FACTOR` | Zoom view centered at central longitude and latitude with zoom factor (e.g. `--zoom -70 40 2`). |
+| `--max-depth DEPTH` | Maximum depth limit for color scale (default: `-8000`). |
 | `--display` | Interactively display figure window (default: enabled). |
 | `--no-display` | Disable interactive figure window display. |
 
