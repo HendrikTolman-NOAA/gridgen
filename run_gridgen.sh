@@ -39,10 +39,13 @@ POLE_LON=""
 POLE_LAT=""
 NX="1440"
 NY="601"
+GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
-KEEP_LAKES=0
+LAKE_MIN_POINTS="25"
+LAKE_MIN_FRACTION="0.001"
+LEGACY=0
 USER_POLYGONS_FLAG=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
@@ -65,7 +68,11 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
-  --keep-lakes           Do not mask out disconnected lakes / water bodies [Optional]
+  --lake-min-points PTS  Minimum points for a lake to be retained (default: 25) [Optional]
+  --lake-min-fraction FRAC
+                         Minimum grid fraction for a lake to be retained
+                         (default: 0.001 [0.1%]) [Optional]
+  --legacy               Export legacy ASCII and COARDS NetCDF files [Optional]
   --user-polygons-flag FILE
                          Flag file for optional user coastal polygons [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
@@ -75,24 +82,30 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -h, --help             Display this help message and exit
 
 2. Regular Grid Parameters (--grid-type regular):
-  --lon-start LON        Lower-left longitude [Mandatory]
-  --lat-start LAT        Lower-left latitude [Mandatory]
-  --lon-end LON          Upper-right longitude [Mandatory if --sx omitted]
-  --lat-end LAT          Upper-right latitude [Mandatory if --sy omitted]
-  --sx SX                Longitude increment in deg [Mandatory if --lon-end omitted]
-  --sy SY                Latitude increment in deg [Mandatory if --lat-end omitted]
-  --pole-lon LON         Rotated north pole longitude in deg [Optional]
-  --pole-lat LAT         Rotated north pole latitude in deg [Optional]
+  --lon-start LON        Lower-left longitude in deg (default: 20.0) [Optional]
+  --lat-start LAT        Lower-left latitude in deg (default: -75.0) [Optional]
+  --lon-end LON          Upper-right longitude in deg (default: 379.75) [Optional]
+  --lat-end LAT          Upper-right latitude in deg (default: 75.0) [Optional]
+  --sx SX                Longitude increment in deg [Optional]
+  --sy SY                Latitude increment in deg [Optional]
+  --global-closure       Create traditional regular grid with global closure
+                         (sx = 360/NX, lon-end calculated) [Optional]
+  --pole-lon LON         Rotated north pole longitude in deg (default: 0.0)
+                         [Optional]
+  --pole-lat LAT         Rotated north pole latitude in deg (default: 90.0)
+                         [Optional]
 
 3. Stereographic Grid Parameters (--grid-type stereographic):
-  --center-lon LON       [Mandatory] Projection center longitude in degrees
-  --center-lat LAT       [Mandatory] Projection center latitude in degrees
-  --extent-km KM         [Mandatory if --extent-deg omitted] Half-width in km
-  --extent-deg DEG       [Mandatory if --extent-km omitted] Half-width in deg
-  --rotation DEG         [Optional] Grid rotation angle in degrees
+  --center-lon LON       Projection center longitude in deg (default: 0.0)
+                         [Optional]
+  --center-lat LAT       Projection center latitude in deg (default: 90.0)
+                         [Optional]
+  --extent-km KM         Half-width extent in km (default: 1000.0) [Optional]
+  --extent-deg DEG       Half-width extent in deg [Optional]
+  --rotation DEG         Grid rotation angle in deg (default: 0.0) [Optional]
 
 4. Custom Grid Parameters (--grid-type custom):
-  --custom-grid FILE     [Mandatory] Path to custom layout file
+  --custom-grid FILE     Path to custom layout file [Mandatory for custom]
                          (.nc, .npz, .npy, .mat, .dat, .txt, .csv)
 
 Description:
@@ -140,6 +153,10 @@ while [[ $# -gt 0 ]]; do
     --sy|--SY)
       SY="$2"
       shift 2
+      ;;
+    --global-closure|--global|--global-grid)
+      GLOBAL_CLOSURE=1
+      shift 1
       ;;
     --center-lon|--CENTER-LON)
       CENTER_LON="$2"
@@ -199,8 +216,16 @@ while [[ $# -gt 0 ]]; do
       BOUNDARY_POINTS=1
       shift 1
       ;;
-    --keep-lakes)
-      KEEP_LAKES=1
+    --lake-min-points)
+      LAKE_MIN_POINTS="$2"
+      shift 2
+      ;;
+    --lake-min-fraction)
+      LAKE_MIN_FRACTION="$2"
+      shift 2
+      ;;
+    --legacy)
+      LEGACY=1
       shift 1
       ;;
     --user-polygons-flag)
@@ -274,51 +299,64 @@ echo "========================================================================"
 
 # Display verbose input parameter summary for active grid configuration
 echo "Grid Configuration Summary:"
-echo "  Prefix Name          : ${NAME}"
-echo "  Grid Type            : ${GRID_TYPE}"
-echo "  Output Directory     : ${OUT_DIR}"
-echo "  Reference Directory  : ${REF_DIR}"
-echo "  Bathymetry Source    : ${BATHY_SOURCE}"
-if [ -n "$NX" ]; then echo "  NX (Lon/X Points)    : ${NX}"; fi
-if [ -n "$NY" ]; then echo "  NY (Lat/Y Points)    : ${NY}"; fi
+printf "  %-22s : %s\n" "Prefix Name" "${NAME}"
+printf "  %-22s : %s\n" "Grid Type" "${GRID_TYPE}"
+printf "  %-22s : %s\n" "Output Directory" "${OUT_DIR}"
+printf "  %-22s : %s\n" "Reference Directory" "${REF_DIR}"
+printf "  %-22s : %s\n" "Bathymetry Source" "${BATHY_SOURCE}"
+if [ -n "$NX" ]; then printf "  %-22s : %s\n" "NX (Lon/X Points)" "${NX}"; fi
+if [ -n "$NY" ]; then printf "  %-22s : %s\n" "NY (Lat/Y Points)" "${NY}"; fi
 
 case "${GRID_TYPE}" in
   regular)
-    if [ -n "$LON_START" ]; then echo "  LON_START (Lower-Left): ${LON_START} deg"; fi
-    if [ -n "$LAT_START" ]; then echo "  LAT_START (Lower-Left): ${LAT_START} deg"; fi
-    if [ -n "$LON_END" ]; then echo "  LON_END (Upper-Right)  : ${LON_END} deg"; fi
-    if [ -n "$LAT_END" ]; then echo "  LAT_END (Upper-Right)  : ${LAT_END} deg"; fi
-    if [ -n "$POLE_LON" ]; then echo "  POLE_LON             : ${POLE_LON} deg"; fi
-    if [ -n "$POLE_LAT" ]; then echo "  POLE_LAT             : ${POLE_LAT} deg"; fi
-
     if [ -n "$LON_START" ] && [ -n "$LAT_START" ] && [ -n "$NX" ] && [ -n "$NY" ]; then
-      GRID_CALCS=$(awk -v lon_s="$LON_START" -v lon_e="$LON_END" -v lat_s="$LAT_START" -v lat_e="$LAT_END" -v sx_in="$SX" -v sy_in="$SY" -v nx="$NX" -v ny="$NY" 'BEGIN {
+      GRID_CALCS=$(awk -v lon_s="$LON_START" -v lon_e="$LON_END" -v lat_s="$LAT_START" -v lat_e="$LAT_END" -v sx_in="$SX" -v sy_in="$SY" -v nx="$NX" -v ny="$NY" -v is_global="$GLOBAL_CLOSURE" 'BEGIN {
         sx = sx_in;
         sy = sy_in;
-        if (sx == "" && lon_e != "") { sx = (nx > 1) ? (lon_e - lon_s) / (nx - 1) : 0.0; }
-        if (sy == "" && lat_e != "") { sy = (ny > 1) ? (lat_e - lat_s) / (ny - 1) : 0.0; }
+        lon_end = lon_e;
+        lat_end = lat_e;
+
+        if (is_global == 1) {
+          sx = 360.0 / nx;
+          lon_end = lon_s + (nx - 1) * sx;
+        } else {
+          if (sx == "" && lon_end != "") { sx = (nx > 1) ? (lon_end - lon_s) / (nx - 1) : 0.0; }
+          if (lon_end == "" && sx != "") { lon_end = lon_s + (nx - 1) * sx; }
+        }
+
+        if (sy == "" && lat_end != "") { sy = (ny > 1) ? (lat_end - lat_s) / (ny - 1) : 0.0; }
+        if (lat_end == "" && sy != "") { lat_end = lat_s + (ny - 1) * sy; }
+
         sx_val = (sx != "") ? sx : 0.0;
         sy_val = (sy != "") ? sy : 0.0;
         span = nx * sx_val;
         diff = span - 360.0; if (diff < 0) diff = -diff;
-        closure = (diff < 0.0001) ? "Yes" : "No";
-        printf "SX=%.6f SY=%.6f CLOSURE=%s", sx_val, sy_val, closure
+        closure = (is_global == 1 || diff < 0.0001) ? "Yes" : "No";
+
+        printf "SX=%.6f; SY=%.6f; LON_END=%.4f; LAT_END=%.4f; CLOSURE=%s;", sx_val, sy_val, lon_end, lat_end, closure
       }')
       eval "$GRID_CALCS"
-      echo "  SX (Lon Increment)   : ${SX} deg"
-      echo "  SY (Lat Increment)   : ${SY} deg"
-      echo "  Global Closure       : ${CLOSURE}"
     fi
+
+    if [ -n "$LON_START" ]; then printf "  %-22s : %s deg\n" "LON_START (Lower-Left)" "${LON_START}"; fi
+    if [ -n "$LAT_START" ]; then printf "  %-22s : %s deg\n" "LAT_START (Lower-Left)" "${LAT_START}"; fi
+    if [ -n "$LON_END" ]; then printf "  %-22s : %s deg\n" "LON_END (Upper-Right)" "${LON_END}"; fi
+    if [ -n "$LAT_END" ]; then printf "  %-22s : %s deg\n" "LAT_END (Upper-Right)" "${LAT_END}"; fi
+    if [ -n "$POLE_LON" ]; then printf "  %-22s : %s deg\n" "POLE_LON" "${POLE_LON}"; fi
+    if [ -n "$POLE_LAT" ]; then printf "  %-22s : %s deg\n" "POLE_LAT" "${POLE_LAT}"; fi
+    if [ -n "$SX" ]; then printf "  %-22s : %s deg\n" "SX (Lon Increment)" "${SX}"; fi
+    if [ -n "$SY" ]; then printf "  %-22s : %s deg\n" "SY (Lat Increment)" "${SY}"; fi
+    if [ -n "${CLOSURE:-}" ]; then printf "  %-22s : %s\n" "Global Closure" "${CLOSURE}"; fi
     ;;
   stereographic)
-    if [ -n "$CENTER_LON" ]; then echo "  CENTER_LON (Proj)    : ${CENTER_LON} deg"; fi
-    if [ -n "$CENTER_LAT" ]; then echo "  CENTER_LAT (Proj)    : ${CENTER_LAT} deg"; fi
-    if [ -n "$EXTENT_KM" ]; then echo "  EXTENT_KM            : ${EXTENT_KM} km"; fi
-    if [ -n "$EXTENT_DEG" ]; then echo "  EXTENT_DEG           : ${EXTENT_DEG} deg"; fi
-    if [ -n "$ROTATION" ]; then echo "  ROTATION             : ${ROTATION} deg"; fi
+    if [ -n "$CENTER_LON" ]; then printf "  %-22s : %s deg\n" "CENTER_LON (Proj)" "${CENTER_LON}"; fi
+    if [ -n "$CENTER_LAT" ]; then printf "  %-22s : %s deg\n" "CENTER_LAT (Proj)" "${CENTER_LAT}"; fi
+    if [ -n "$EXTENT_KM" ]; then printf "  %-22s : %s km\n" "EXTENT_KM" "${EXTENT_KM}"; fi
+    if [ -n "$EXTENT_DEG" ]; then printf "  %-22s : %s deg\n" "EXTENT_DEG" "${EXTENT_DEG}"; fi
+    if [ -n "$ROTATION" ]; then printf "  %-22s : %s deg\n" "ROTATION" "${ROTATION}"; fi
     ;;
   custom)
-    if [ -n "$CUSTOM_GRID" ]; then echo "  Custom Grid File     : ${CUSTOM_GRID}"; fi
+    if [ -n "$CUSTOM_GRID" ]; then printf "  %-22s : %s\n" "Custom Grid File" "${CUSTOM_GRID}"; fi
     ;;
 esac
 echo "========================================================================"
@@ -376,8 +414,11 @@ if [ -n "$POLE_LAT" ]; then CMD_ARGS+=(--pole-lat "$POLE_LAT"); fi
 if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi
 if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
+if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
-if [ "$KEEP_LAKES" -eq 1 ]; then CMD_ARGS+=(--keep-lakes); fi
+if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINTS"); fi
+if [ -n "$LAKE_MIN_FRACTION" ]; then CMD_ARGS+=(--lake-min-fraction "$LAKE_MIN_FRACTION"); fi
+if [ "$LEGACY" -eq 1 ]; then CMD_ARGS+=(--legacy); fi
 if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"

@@ -154,14 +154,14 @@ def test_remove_lake_keep_lakes_and_global_closure():
     lat1d = np.linspace(-10.0, 10.0, 5)
     lon, _ = np.meshgrid(lon1d, lat1d)
 
-    # 1. With lake_tol = 0 (keep lakes)
-    m_keep, _ = remove_lake(mask, lake_tol=0, lon=lon)
+    # 1. With min_lake_points=0 and min_lake_fraction=0.0 (preserve all lakes)
+    m_keep, _ = remove_lake(mask, min_lake_points=0, min_lake_fraction=0.0, lon=lon)
     assert m_keep[4, 4] == 1  # Lake preserved
 
-    # 2. With lake_tol = -1 and auto-detected global closure (lon spans 360°)
-    m_closure, _ = remove_lake(mask, lake_tol=-1, igl=0, lon=lon)
+    # 2. With default thresholds (min_lake_points=25, min_lake_fraction=0.001) and global closure
+    m_closure, _ = remove_lake(mask, min_lake_points=25, min_lake_fraction=0.001, igl=0, lon=lon)
     # Ocean on col 0 and col 9 should be merged as one contiguous ocean body (size 4)
-    # The small lake at (4,4) (size 1) should be removed
+    # The small lake at (4,4) (size 1) should be removed as it is below min_lake_points (25)
     assert m_closure[2, 0] == 1
     assert m_closure[2, 9] == 1
     assert m_closure[4, 4] == 0  # Lake removed

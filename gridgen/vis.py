@@ -335,7 +335,11 @@ def plot_grid(
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
 
-    main_title = title if title is not None else data.get("filename", "ww4_grid_ugrid.nc")
+    if title is not None:
+        main_title = title
+    else:
+        fname = data.get("filename", "ww4_grid_ugrid.nc")
+        main_title = fname if fname.startswith("WAVEWATCH IV grid") else f"WAVEWATCH IV grid {fname}"
 
     sub_text = ""
     if subtitle:
@@ -471,6 +475,31 @@ def plot_grid(
 
 def main() -> None:
     """CLI driver for displaying resulting grid bathymetry."""
+    import sys
+
+    # Preprocess sys.argv to combine zoom tokens into --zoom="LON LAT FACTOR" format
+    new_argv = []
+    idx = 0
+    while idx < len(sys.argv):
+        arg = sys.argv[idx]
+        if arg == "--zoom" and idx + 1 < len(sys.argv):
+            zoom_tokens = []
+            j = idx + 1
+            while j < len(sys.argv):
+                val = sys.argv[j]
+                # Stop if encountering another flag like -i, -o, --no-display, etc.
+                if val.startswith("-") and not val.replace("-", "", 1).replace(".", "", 1).replace(",", "").isdigit():
+                    break
+                zoom_tokens.append(val)
+                j += 1
+            if zoom_tokens:
+                new_argv.append(f"--zoom={' '.join(zoom_tokens)}")
+                idx = j
+                continue
+        new_argv.append(arg)
+        idx += 1
+    sys.argv = new_argv
+
     parser = argparse.ArgumentParser(
         description="Graphically display WAVEWATCH III / IV resulting grid."
     )
@@ -525,8 +554,8 @@ def main() -> None:
     parser.add_argument(
         "--bathy-source",
         type=str,
-        default="etopo2",
-        help="Bathymetry reference dataset identifier for subtitle (default: etopo2)",
+        default=None,
+        help="Bathymetry reference dataset identifier for subtitle (default: auto from dataset metadata)",
     )
     parser.add_argument(
         "--no-mask",

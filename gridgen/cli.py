@@ -95,9 +95,23 @@ def main() -> None:
         help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
     )
     gen_group.add_argument(
-        "--keep-lakes",
+        "--lake-min-points",
+        type=int,
+        default=25,
+        metavar="POINTS",
+        help="Minimum number of grid points for a water body/lake to be retained (default: 25)",
+    )
+    gen_group.add_argument(
+        "--lake-min-fraction",
+        type=float,
+        default=0.001,
+        metavar="FRACTION",
+        help="Minimum fraction of total grid points for a water body/lake to be retained (default: 0.001 [0.1%])",
+    )
+    gen_group.add_argument(
+        "--legacy",
         action="store_true",
-        help="Do not mask out disconnected lakes / water bodies (sets lake_tol=0)",
+        help="Export legacy WAVEWATCH III ASCII files and COARDS NetCDF file in addition to WW4 UGRID NC (default: False)",
     )
 
     # Group 2: Regular Grid Parameters
@@ -105,58 +119,65 @@ def main() -> None:
     reg_group.add_argument(
         "--lon-start",
         type=float,
-        default=None,
+        default=0.0,
         metavar="LON_START",
-        help="[Mandatory] Lower-left corner longitude in degrees",
+        help="Lower-left corner longitude in degrees (default: 0.0)",
     )
     reg_group.add_argument(
         "--lat-start",
         type=float,
-        default=None,
+        default=-90.0,
         metavar="LAT_START",
-        help="[Mandatory] Lower-left corner latitude in degrees",
+        help="Lower-left corner latitude in degrees (default: -90.0)",
     )
     reg_group.add_argument(
         "--lon-end",
         type=float,
         default=None,
         metavar="LON_END",
-        help="[Mandatory if --sx omitted] Upper-right corner longitude in degrees",
+        help="Upper-right corner longitude in degrees (default: 359.75)",
     )
     reg_group.add_argument(
         "--lat-end",
         type=float,
         default=None,
         metavar="LAT_END",
-        help="[Mandatory if --sy omitted] Upper-right corner latitude in degrees",
+        help="Upper-right corner latitude in degrees (default: 90.0)",
     )
     reg_group.add_argument(
         "--sx",
         type=float,
         default=None,
         metavar="SX",
-        help="[Mandatory if --lon-end omitted] Longitude grid increment in degrees",
+        help="Longitude grid increment in degrees (default: 0.25)",
     )
     reg_group.add_argument(
         "--sy",
         type=float,
         default=None,
         metavar="SY",
-        help="[Mandatory if --lat-end omitted] Latitude grid increment in degrees",
+        help="Latitude grid increment in degrees (default: 0.3)",
     )
     reg_group.add_argument(
         "--pole-lon",
         type=float,
-        default=None,
+        default=0.0,
         metavar="POLE_LON",
-        help="[Optional] Longitude of rotated north pole in geographic coordinates",
+        help="Longitude of rotated north pole in geographic coordinates (default: 0.0)",
     )
     reg_group.add_argument(
         "--pole-lat",
         type=float,
-        default=None,
+        default=90.0,
         metavar="POLE_LAT",
-        help="[Optional] Latitude of rotated north pole in geographic coordinates",
+        help="Latitude of rotated north pole in geographic coordinates (default: 90.0)",
+    )
+    reg_group.add_argument(
+        "--global-closure",
+        "--global",
+        dest="global_closure",
+        action="store_true",
+        help="Traditional regular grid with global closure (sx = 360/NX, lon_end calculated) (default: False)",
     )
 
     # Group 3: Stereographic Projection Parameters
@@ -164,37 +185,37 @@ def main() -> None:
     ste_group.add_argument(
         "--center-lon",
         type=float,
-        default=None,
+        default=0.0,
         metavar="CENTER_LON",
-        help="[Mandatory] Projection center longitude in degrees",
+        help="Projection center longitude in degrees (default: 0.0)",
     )
     ste_group.add_argument(
         "--center-lat",
         type=float,
-        default=None,
+        default=90.0,
         metavar="CENTER_LAT",
-        help="[Mandatory] Projection center latitude in degrees",
+        help="Projection center latitude in degrees (default: 90.0)",
     )
     ste_group.add_argument(
         "--extent-km",
         type=float,
-        default=None,
+        default=1000.0,
         metavar="EXTENT_KM",
-        help="[Mandatory if --extent-deg omitted] Half-width domain extent in kilometers",
+        help="Half-width domain extent in kilometers (default: 1000.0)",
     )
     ste_group.add_argument(
         "--extent-deg",
         type=float,
         default=None,
         metavar="EXTENT_DEG",
-        help="[Mandatory if --extent-km omitted] Half-width domain extent in arc degrees",
+        help="Half-width domain extent in arc degrees (default: None)",
     )
     ste_group.add_argument(
         "--rotation",
         type=float,
         default=0.0,
         metavar="ROTATION",
-        help="[Optional] Grid rotation angle in degrees on projection plane (default: 0.0)",
+        help="Grid rotation angle in degrees on projection plane (default: 0.0)",
     )
 
     # Group 4: Custom Grid File Parameters
@@ -204,7 +225,7 @@ def main() -> None:
         type=str,
         default=None,
         metavar="CUSTOM_GRID",
-        help="[Mandatory] Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv)",
+        help="Path to custom grid layout file (.nc, .npz, .npy, .mat, .dat, .txt, .csv) (default: None)",
     )
 
     args = parser.parse_args()
@@ -233,8 +254,17 @@ def main() -> None:
 
     # Step 3: Land/Sea Masking & Lake Removal
     print("[Step 3/5] Generating land/sea mask and applying lake removal...")
-    lake_tol = 0 if getattr(args, "keep_lakes", False) else -1
-    m_mod, _ = remove_lake(m, lake_tol=lake_tol, igl=0, lon=lon)
+    print(
+        f"  Lake removal threshold settings: min_lake_points={args.lake_min_points}, "
+        f"min_lake_fraction={args.lake_min_fraction} ({args.lake_min_fraction * 100.0:.1f}%)"
+    )
+    m_mod, _ = remove_lake(
+        m,
+        min_lake_points=args.lake_min_points,
+        min_lake_fraction=args.lake_min_fraction,
+        igl=0,
+        lon=lon,
+    )
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
@@ -242,47 +272,54 @@ def main() -> None:
     print("[Step 4/5] Computing directional sub-grid obstruction factors (sx, sy)...")
     sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
 
-    # Step 5: Multi-Format Export
-    print("[Step 5/5] Exporting grid files in legacy ASCII, COARDS NC, and WW4 UGRID NC formats...")
-    # 1. Legacy WW3 ASCII
-    depth_scale = 1000.0
-    obstr_scale = 100.0
-    d_ascii = np.round(depth * depth_scale)
-    write_ww3file(f"{args.out_dir}/{args.name}.depth_ascii", d_ascii)
-    write_ww3file(f"{args.out_dir}/{args.name}.maskorig_ascii", m_mod)
-    write_ww3obstr(
-        f"{args.out_dir}/{args.name}.obstr_lev1",
-        np.round(sx * obstr_scale),
-        np.round(sy * obstr_scale),
-    )
-    write_ww3meta(
-        f"{args.out_dir}/{args.name}",
-        "RECT",
-        lon,
-        lat,
-        1.0 / depth_scale,
-        1.0 / obstr_scale,
-        1.0,
-    )
-
-    # 2. Legacy GMT/NetCDF COARDS
-    nc_ww3_grdwrite(
+    # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
+    print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 grid dataset...")
+    ds_ugrid = create_ugrid_dataset(
         lon,
         lat,
         depth,
-        f"{args.out_dir}/{args.name}_coards.nc",
-        mask=m_mod,
+        m_mod,
         sx=sx,
         sy=sy,
+        title=f"WW4 Grid {args.name}",
+        bathy_source=args.bathy_source,
     )
+    nc_path = f"{args.out_dir}/{args.name}_ugrid.nc"
+    write_ugrid_nc(ds_ugrid, nc_path)
 
-    # 3. WW4 NetCDF-UGRID 1.0
-    ds_ugrid = create_ugrid_dataset(
-        lon, lat, depth, m_mod, sx=sx, sy=sy, title=f"WW4 Grid {args.name}"
-    )
-    write_ugrid_nc(ds_ugrid, f"{args.out_dir}/{args.name}_ugrid.nc")
+    if args.legacy:
+        print("  Exporting legacy WW3 ASCII and COARDS NetCDF grid files...")
+        depth_scale = 1000.0
+        obstr_scale = 100.0
+        d_ascii = np.round(depth * depth_scale)
+        write_ww3file(f"{args.out_dir}/{args.name}.depth_ascii", d_ascii)
+        write_ww3file(f"{args.out_dir}/{args.name}.maskorig_ascii", m_mod)
+        write_ww3obstr(
+            f"{args.out_dir}/{args.name}.obstr_lev1",
+            np.round(sx * obstr_scale),
+            np.round(sy * obstr_scale),
+        )
+        write_ww3meta(
+            f"{args.out_dir}/{args.name}",
+            "RECT",
+            lon,
+            lat,
+            1.0 / depth_scale,
+            1.0 / obstr_scale,
+            1.0,
+        )
+        nc_ww3_grdwrite(
+            lon,
+            lat,
+            depth,
+            f"{args.out_dir}/{args.name}_coards.nc",
+            mask=m_mod,
+            sx=sx,
+            sy=sy,
+            bathy_source=args.bathy_source,
+        )
 
-    print("Successfully exported all grid formats (ASCII, COARDS NC, UGRID NC)!")
+    print("Successfully generated WW4 NetCDF-UGRID grid output!")
 
 
 if __name__ == "__main__":
