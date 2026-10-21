@@ -233,9 +233,9 @@ def test_run_gridgen_execution(tmp_path: Path):
     assert result.stdout.count("SY (Lat Increment)     :") == 1
     assert "Global Closure         :" in result.stdout
     assert out_dir.exists()
-    # Default output generates NetCDF-UGRID and plot image only
+    # Default output generates NetCDF-UGRID only
     assert (out_dir / "test_grid_ugrid.nc").exists()
-    assert (out_dir / "test_grid.jpg").exists()
+    assert not (out_dir / "test_grid.jpg").exists()
     assert not (out_dir / "test_grid.depth_ascii").exists()
     assert not (out_dir / "test_grid_coards.nc").exists()
 

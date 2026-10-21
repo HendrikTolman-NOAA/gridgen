@@ -30,7 +30,6 @@ from .io.coards import nc_ww3_grdwrite
 from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
 from .masking import clean_mask, define_boundary_points, load_user_polygons, remove_lake
 from .obstructions import create_obstr
-from .vis import plot_grid
 
 
 def main() -> None:
@@ -112,7 +111,7 @@ def main() -> None:
     gen_group.add_argument(
         "--legacy",
         action="store_true",
-        help="Export legacy WAVEWATCH III ASCII files and COARDS NetCDF file in addition to WW4 UGRID NC and plot image (default: False)",
+        help="Export legacy WAVEWATCH III ASCII files and COARDS NetCDF file in addition to WW4 UGRID NC (default: False)",
     )
 
     # Group 2: Regular Grid Parameters
@@ -255,6 +254,10 @@ def main() -> None:
 
     # Step 3: Land/Sea Masking & Lake Removal
     print("[Step 3/5] Generating land/sea mask and applying lake removal...")
+    print(
+        f"  Lake removal threshold settings: min_lake_points={args.lake_min_points}, "
+        f"min_lake_fraction={args.lake_min_fraction} ({args.lake_min_fraction * 100.0:.1f}%)"
+    )
     m_mod, _ = remove_lake(
         m,
         min_lake_points=args.lake_min_points,
@@ -269,8 +272,8 @@ def main() -> None:
     print("[Step 4/5] Computing directional sub-grid obstruction factors (sx, sy)...")
     sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
 
-    # Step 5: Export NetCDF-UGRID 1.0 and Plot Image (Default Output)
-    print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 dataset and generating grid plot image...")
+    # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
+    print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 grid dataset...")
     ds_ugrid = create_ugrid_dataset(
         lon,
         lat,
@@ -283,19 +286,6 @@ def main() -> None:
     )
     nc_path = f"{args.out_dir}/{args.name}_ugrid.nc"
     write_ugrid_nc(ds_ugrid, nc_path)
-
-    plot_data = {
-        "lon": lon,
-        "lat": lat,
-        "depth": depth,
-        "mask": m_mod,
-        "sx": sx,
-        "sy": sy,
-        "filename": f"{args.name}_ugrid.nc",
-        "bathy_source": args.bathy_source,
-    }
-    plot_path = f"{args.out_dir}/{args.name}.jpg"
-    plot_grid(plot_data, output_path=plot_path, show=False, bathy_source=args.bathy_source)
 
     if args.legacy:
         print("  Exporting legacy WW3 ASCII and COARDS NetCDF grid files...")
@@ -329,7 +319,7 @@ def main() -> None:
             bathy_source=args.bathy_source,
         )
 
-    print("Successfully generated grid outputs (NetCDF-UGRID NC and plot image)!")
+    print("Successfully generated WW4 NetCDF-UGRID grid output!")
 
 
 if __name__ == "__main__":
