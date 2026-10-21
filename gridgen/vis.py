@@ -246,7 +246,7 @@ def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
         clean_item = zoom_input.replace(",", " ")
         parts = [float(p) for p in clean_item.split()]
     else:
-        raise ValueError("zoom parameter must be a tuple, list, or string of 3 numbers")
+        raise TypeError("zoom parameter must be a tuple, list, or string of 3 numbers")
 
     if len(parts) != 3:
         raise ValueError(
