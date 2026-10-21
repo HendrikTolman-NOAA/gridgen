@@ -266,7 +266,10 @@ def clean_mask(
 
 
 def remove_lake(
-    mask: np.ndarray, lake_tol: float = -1, igl: int = 0
+    mask: np.ndarray,
+    lake_tol: float = -1,
+    igl: int = 0,
+    lon: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Group wet cells into independent water bodies and remove isolated lakes.
 
@@ -281,6 +284,9 @@ def remove_lake(
         - If = 0: no removal.
     igl : int
         1 for global grid (wrap-around in x), 0 for regional grid.
+    lon : Optional[np.ndarray]
+        Optional 2D or 1D longitude array used to auto-detect global grid closure
+        if igl is 0.
 
     Returns
     -------
@@ -290,6 +296,15 @@ def remove_lake(
         2D array with -1 for dry cells and unique water body IDs for wet cells.
     """
     Ny, Nx = mask.shape
+
+    if igl == 0 and lon is not None:
+        lon_arr = np.asarray(lon, dtype=np.float64)
+        lon_span = float(np.max(lon_arr) - np.min(lon_arr))
+        dx = float(abs(lon_arr[0, 1] - lon_arr[0, 0])) if lon_arr.ndim == 2 and lon_arr.shape[1] > 1 else (
+            float(abs(lon_arr[1] - lon_arr[0])) if lon_arr.ndim == 1 and len(lon_arr) > 1 else 0.0
+        )
+        if lon_span >= 355.0 or (Nx * dx >= 359.0):
+            igl = 1
     mask_map = np.full((Ny, Nx), -1, dtype=int)
     mask_map[mask == 1] = 0
 
