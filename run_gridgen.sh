@@ -43,7 +43,8 @@ GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
-KEEP_LAKES=0
+LAKE_MIN_POINTS="25"
+LAKE_MIN_FRACTION="0.001"
 LEGACY=0
 USER_POLYGONS_FLAG=""
 OUT_DIR="."
@@ -67,7 +68,10 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
-  --keep-lakes           Do not mask out disconnected lakes / water bodies [Optional]
+  --lake-min-points PTS  Minimum points for a lake to be retained (default: 25) [Optional]
+  --lake-min-fraction FRAC
+                         Minimum grid fraction for a lake to be retained
+                         (default: 0.001 [0.1%]) [Optional]
   --legacy               Export legacy ASCII and COARDS NetCDF files [Optional]
   --user-polygons-flag FILE
                          Flag file for optional user coastal polygons [Optional]
@@ -212,9 +216,13 @@ while [[ $# -gt 0 ]]; do
       BOUNDARY_POINTS=1
       shift 1
       ;;
-    --keep-lakes)
-      KEEP_LAKES=1
-      shift 1
+    --lake-min-points)
+      LAKE_MIN_POINTS="$2"
+      shift 2
+      ;;
+    --lake-min-fraction)
+      LAKE_MIN_FRACTION="$2"
+      shift 2
       ;;
     --legacy)
       LEGACY=1
@@ -408,7 +416,8 @@ if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
-if [ "$KEEP_LAKES" -eq 1 ]; then CMD_ARGS+=(--keep-lakes); fi
+if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINTS"); fi
+if [ -n "$LAKE_MIN_FRACTION" ]; then CMD_ARGS+=(--lake-min-fraction "$LAKE_MIN_FRACTION"); fi
 if [ "$LEGACY" -eq 1 ]; then CMD_ARGS+=(--legacy); fi
 if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
 

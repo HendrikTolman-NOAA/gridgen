@@ -267,7 +267,9 @@ def clean_mask(
 
 def remove_lake(
     mask: np.ndarray,
-    lake_tol: float = -1,
+    min_lake_points: int = 25,
+    min_lake_fraction: float = 0.001,
+    lake_tol: float | None = None,
     igl: int = 0,
     lon: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -277,11 +279,12 @@ def remove_lake(
     ----------
     mask : np.ndarray
         2D land/sea mask (1 = wet, 0 = dry).
-    lake_tol : float
-        Tolerance for lake removal:
-        - If > 0: remove water bodies with fewer than `lake_tol` cells.
-        - If < 0: keep only the single largest water body.
-        - If = 0: no removal.
+    min_lake_points : int
+        Minimum number of grid cells required for a water body/lake to be retained (default: 25).
+    min_lake_fraction : float
+        Minimum fraction of total grid points required for a water body/lake to be retained (default: 0.001 [0.1%]).
+    lake_tol : Optional[float]
+        Legacy tolerance override if explicitly specified.
     igl : int
         1 for global grid (wrap-around in x), 0 for regional grid.
     lon : Optional[np.ndarray]
@@ -296,6 +299,7 @@ def remove_lake(
         2D array with -1 for dry cells and unique water body IDs for wet cells.
     """
     Ny, Nx = mask.shape
+    N_total = Ny * Nx
 
     if igl == 0 and lon is not None:
         lon_arr = np.asarray(lon, dtype=np.float64)
@@ -349,15 +353,21 @@ def remove_lake(
 
     mask_mod = np.copy(mask)
 
-    if lake_tol != 0 and body_sizes:
-        if lake_tol < 0:
-            largest_id = max(body_sizes, key=body_sizes.get)
-            for body_id in body_sizes:
-                if body_id != largest_id:
-                    mask_mod[mask_map == body_id] = 0
+    if body_sizes:
+        largest_id = max(body_sizes, key=body_sizes.get)
+        if lake_tol is not None:
+            if lake_tol < 0:
+                for body_id in body_sizes:
+                    if body_id != largest_id:
+                        mask_mod[mask_map == body_id] = 0
+            elif lake_tol > 0:
+                for body_id, size in body_sizes.items():
+                    if body_id != largest_id and size < lake_tol:
+                        mask_mod[mask_map == body_id] = 0
         else:
+            eff_min_points = max(int(min_lake_points), int(np.ceil(min_lake_fraction * N_total)))
             for body_id, size in body_sizes.items():
-                if size < lake_tol:
+                if body_id != largest_id and size < eff_min_points:
                     mask_mod[mask_map == body_id] = 0
 
     return mask_mod, mask_map

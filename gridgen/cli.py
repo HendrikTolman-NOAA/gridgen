@@ -96,9 +96,18 @@ def main() -> None:
         help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
     )
     gen_group.add_argument(
-        "--keep-lakes",
-        action="store_true",
-        help="Do not mask out disconnected lakes / water bodies (sets lake_tol=0) (default: False)",
+        "--lake-min-points",
+        type=int,
+        default=25,
+        metavar="POINTS",
+        help="Minimum number of grid points for a water body/lake to be retained (default: 25)",
+    )
+    gen_group.add_argument(
+        "--lake-min-fraction",
+        type=float,
+        default=0.001,
+        metavar="FRACTION",
+        help="Minimum fraction of total grid points for a water body/lake to be retained (default: 0.001 [0.1%])",
     )
     gen_group.add_argument(
         "--legacy",
@@ -246,8 +255,13 @@ def main() -> None:
 
     # Step 3: Land/Sea Masking & Lake Removal
     print("[Step 3/5] Generating land/sea mask and applying lake removal...")
-    lake_tol = 0 if getattr(args, "keep_lakes", False) else -1
-    m_mod, _ = remove_lake(m, lake_tol=lake_tol, igl=0, lon=lon)
+    m_mod, _ = remove_lake(
+        m,
+        min_lake_points=args.lake_min_points,
+        min_lake_fraction=args.lake_min_fraction,
+        igl=0,
+        lon=lon,
+    )
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 

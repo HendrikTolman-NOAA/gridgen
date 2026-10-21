@@ -209,7 +209,7 @@ if [ -n "$MASK_FLAG" ]; then
 fi
 
 if [ ${#ZOOM_ARGS[@]} -gt 0 ]; then
-  CMD_ARGS+=(--zoom "${ZOOM_ARGS[@]}")
+  CMD_ARGS+=("--zoom=${ZOOM_ARGS[*]}")
 fi
 
 if [ -n "$MAX_DEPTH" ]; then

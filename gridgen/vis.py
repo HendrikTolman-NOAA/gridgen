@@ -475,6 +475,31 @@ def plot_grid(
 
 def main() -> None:
     """CLI driver for displaying resulting grid bathymetry."""
+    import sys
+
+    # Preprocess sys.argv to combine zoom tokens into --zoom="LON LAT FACTOR" format
+    new_argv = []
+    idx = 0
+    while idx < len(sys.argv):
+        arg = sys.argv[idx]
+        if arg == "--zoom" and idx + 1 < len(sys.argv):
+            zoom_tokens = []
+            j = idx + 1
+            while j < len(sys.argv):
+                val = sys.argv[j]
+                # Stop if encountering another flag like -i, -o, --no-display, etc.
+                if val.startswith("-") and not val.replace("-", "", 1).replace(".", "", 1).replace(",", "").isdigit():
+                    break
+                zoom_tokens.append(val)
+                j += 1
+            if zoom_tokens:
+                new_argv.append(f"--zoom={' '.join(zoom_tokens)}")
+                idx = j
+                continue
+        new_argv.append(arg)
+        idx += 1
+    sys.argv = new_argv
+
     parser = argparse.ArgumentParser(
         description="Graphically display WAVEWATCH III / IV resulting grid."
     )
