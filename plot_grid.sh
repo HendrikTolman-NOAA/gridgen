@@ -24,6 +24,8 @@ INPUT_FILE="ww4_grid_ugrid.nc"
 OUTPUT_FILE=""
 FORMAT="jpg"
 TITLE="WAVEWATCH IV Grid"
+SUBTITLE=""
+BATHY_SOURCE="etopo2"
 MASK_FLAG="--mask"
 MAX_DEPTH="-500"
 MAX_OROGRAPHY="10"
@@ -43,6 +45,8 @@ Options:
   -o, --output PATH      Output plot image file path (default: <GRIDNAME>.<format>)
   -f, --format FORMAT    Output graphic format: jpg, png, pdf, eps, or gif (default: jpg)
   --title TITLE          Custom figure title (default: WAVEWATCH IV Grid)
+  --subtitle SUBTITLE    Custom figure subtitle
+  --bathy-source SOURCE  Bathymetry reference source identifier (default: etopo2)
   --mask                 Apply land-sea mask to dry cells (default: enabled)
   --no-mask              Disable land-sea mask
   --max-depth DEPTH      Maximum depth limit for color scale (default: -500)
@@ -76,6 +80,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --title)
       TITLE="$2"
+      shift 2
+      ;;
+    --subtitle)
+      SUBTITLE="$2"
+      shift 2
+      ;;
+    --bathy-source)
+      BATHY_SOURCE="$2"
       shift 2
       ;;
     --mask)
@@ -162,6 +174,12 @@ if [ -n "$MAX_DEPTH" ]; then
 fi
 if [ -n "$MAX_OROGRAPHY" ]; then
   CMD_ARGS+=(--max-orography "$MAX_OROGRAPHY")
+fi
+if [ -n "$SUBTITLE" ]; then
+  CMD_ARGS+=(--subtitle "$SUBTITLE")
+fi
+if [ -n "$BATHY_SOURCE" ]; then
+  CMD_ARGS+=(--bathy-source "$BATHY_SOURCE")
 fi
 if [ -n "$OUTPUT_FILE" ]; then
   CMD_ARGS+=(--output "$OUTPUT_FILE")

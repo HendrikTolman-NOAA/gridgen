@@ -94,6 +94,11 @@ def main() -> None:
         default=None,
         help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
     )
+    gen_group.add_argument(
+        "--keep-lakes",
+        action="store_true",
+        help="Do not mask out disconnected lakes / water bodies (sets lake_tol=0)",
+    )
 
     # Group 2: Regular Grid Parameters
     reg_group = parser.add_argument_group("Regular Grid Parameters (--grid-type regular)")
@@ -228,7 +233,8 @@ def main() -> None:
 
     # Step 3: Land/Sea Masking & Lake Removal
     print("[Step 3/5] Generating land/sea mask and applying lake removal...")
-    m_mod, _ = remove_lake(m, lake_tol=-1, igl=0)
+    lake_tol = 0 if getattr(args, "keep_lakes", False) else -1
+    m_mod, _ = remove_lake(m, lake_tol=lake_tol, igl=0, lon=lon)
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
@@ -268,11 +274,19 @@ def main() -> None:
         mask=m_mod,
         sx=sx,
         sy=sy,
+        bathy_source=args.bathy_source,
     )
 
     # 3. WW4 NetCDF-UGRID 1.0
     ds_ugrid = create_ugrid_dataset(
-        lon, lat, depth, m_mod, sx=sx, sy=sy, title=f"WW4 Grid {args.name}"
+        lon,
+        lat,
+        depth,
+        m_mod,
+        sx=sx,
+        sy=sy,
+        title=f"WW4 Grid {args.name}",
+        bathy_source=args.bathy_source,
     )
     write_ugrid_nc(ds_ugrid, f"{args.out_dir}/{args.name}_ugrid.nc")
 

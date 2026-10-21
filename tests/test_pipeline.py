@@ -138,3 +138,30 @@ def test_gebco_bathymetry_source_loading(tmp_path):
     depth_ds = generate_grid(lon_grid, lat_grid, bathy_source=ds_gebco)
     assert depth_ds.shape == (5, 5)
     assert np.allclose(depth_ds, -200.0)
+
+
+def test_remove_lake_keep_lakes_and_global_closure():
+    """Test lake removal tolerance options and global closure wrap-around connection."""
+    # Create mask with ocean spanning col 0 and col 9 (global closure), and a separate lake
+    mask = np.zeros((5, 10), dtype=int)
+    mask[2, 0] = 1  # Ocean left boundary
+    mask[2, 1] = 1
+    mask[2, 8] = 1
+    mask[2, 9] = 1  # Ocean right boundary (connected if igl=1)
+    mask[4, 4] = 1  # Isolated small lake
+
+    lon1d = np.linspace(0.0, 360.0, 10)
+    lat1d = np.linspace(-10.0, 10.0, 5)
+    lon, _ = np.meshgrid(lon1d, lat1d)
+
+    # 1. With lake_tol = 0 (keep lakes)
+    m_keep, _ = remove_lake(mask, lake_tol=0, lon=lon)
+    assert m_keep[4, 4] == 1  # Lake preserved
+
+    # 2. With lake_tol = -1 and auto-detected global closure (lon spans 360°)
+    m_closure, _ = remove_lake(mask, lake_tol=-1, igl=0, lon=lon)
+    # Ocean on col 0 and col 9 should be merged as one contiguous ocean body (size 4)
+    # The small lake at (4,4) (size 1) should be removed
+    assert m_closure[2, 0] == 1
+    assert m_closure[2, 9] == 1
+    assert m_closure[4, 4] == 0  # Lake removed

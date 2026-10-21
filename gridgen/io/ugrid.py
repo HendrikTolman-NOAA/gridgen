@@ -35,6 +35,7 @@ def create_ugrid_dataset(
     sx: np.ndarray | None = None,
     sy: np.ndarray | None = None,
     title: str = "WAVEWATCH IV UGRID Mesh",
+    bathy_source: str | None = None,
     start_index: int = 0,
 ) -> xr.Dataset:
     """Create an xarray Dataset compliant with the NetCDF-UGRID 1.0 conventions.
@@ -276,6 +277,7 @@ def create_ugrid_dataset(
             "Conventions": "CF-1.8 UGRID-1.0",
             "title": title,
             "source": "WAVEWATCH IV Gridgen Package",
+            "bathy_source": bathy_source or "etopo2",
             "history": f"Created {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
         },
     )
