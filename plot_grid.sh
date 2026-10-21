@@ -25,7 +25,7 @@ OUTPUT_FILE=""
 FORMAT="jpg"
 TITLE=""
 SUBTITLE="Bathymetry and Orography"
-BATHY_SOURCE="etopo2"
+BATHY_SOURCE=""
 NO_TITLE=0
 NO_SUBTITLE=0
 MASK_FLAG=""
@@ -51,7 +51,7 @@ Options:
   --no-title             Disable main figure title
   --subtitle SUBTITLE    Custom figure subtitle (default: Bathymetry and Orography)
   --no-subtitle          Disable figure subtitle
-  --bathy-source SOURCE  Bathymetry reference dataset identifier for subtitle (default: etopo2)
+  --bathy-source SOURCE  Bathymetry reference dataset identifier for subtitle [Optional]
   --no-mask              Disable land-sea mask
   --zoom LON LAT FACTOR  Zoom view centered at central longitude and latitude with zoom factor
   --max-depth DEPTH      Maximum depth limit for color scale (default: -8000)
@@ -209,7 +209,7 @@ if [ -n "$MASK_FLAG" ]; then
 fi
 
 if [ ${#ZOOM_ARGS[@]} -gt 0 ]; then
-  CMD_ARGS+=(--zoom "${ZOOM_ARGS[@]}")
+  CMD_ARGS+=("--zoom=${ZOOM_ARGS[*]}")
 fi
 
 if [ -n "$MAX_DEPTH" ]; then

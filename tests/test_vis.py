@@ -380,7 +380,7 @@ def test_default_title_and_subtitle(tmp_path):
     ax = fig.axes[0]
     assert ax.get_title() == "Bathymetry and Orography (etopo2)"
     texts = [t.get_text() for t in ax.texts]
-    assert "my_ww4_grid_ugrid.nc" in texts
+    assert "WAVEWATCH IV grid my_ww4_grid_ugrid.nc" in texts
 
 
 def test_custom_and_disabled_title_subtitle(tmp_path):
@@ -483,6 +483,74 @@ def test_zoom_cli_options(tmp_path: Path):
 
     assert result.returncode == 0
     assert out_jpg.exists()
+
+
+def test_zoom_with_negative_coordinates(tmp_path: Path):
+    """Verify --zoom accepts negative coordinates without argparse errors."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    lon1d = np.array([-80.0, -60.0])
+    lat1d = np.array([30.0, 50.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((2, 2), -10.0)
+    mask = np.ones((2, 2), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Negative Zoom Test")
+
+    nc_file = tmp_path / "neg_zoom_ugrid.nc"
+    write_ugrid_nc(ds, str(nc_file))
+    out_jpg = tmp_path / "neg_zoom.jpg"
+
+    # Test via plot_grid.sh with space-separated negative zoom coordinates
+    result_sh = subprocess.run(
+        [
+            str(script_path),
+            "-i",
+            str(nc_file),
+            "-o",
+            str(out_jpg),
+            "-f",
+            "jpg",
+            "--zoom",
+            "-70",
+            "40",
+            "2",
+            "--no-display",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result_sh.returncode == 0
+    assert out_jpg.exists()
+
+    # Test via python -m gridgen.vis directly with negative zoom
+    out_jpg2 = tmp_path / "neg_zoom2.jpg"
+    result_py = subprocess.run(
+        [
+            "python3",
+            "-m",
+            "gridgen.vis",
+            "-i",
+            str(nc_file),
+            "-o",
+            str(out_jpg2),
+            "-f",
+            "jpg",
+            "--zoom",
+            "-70",
+            "40",
+            "2",
+            "--no-display",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result_py.returncode == 0
+    assert out_jpg2.exists()
 
 
 def test_mask_option_removed(tmp_path: Path):

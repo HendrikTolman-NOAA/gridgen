@@ -229,16 +229,105 @@ def test_run_gridgen_execution(tmp_path: Path):
     )
 
     assert result.returncode == 0
-    assert result.stdout.count("SX (Lon Increment)   :") == 1
-    assert result.stdout.count("SY (Lat Increment)   :") == 1
-    assert "Global Closure       :" in result.stdout
+    assert result.stdout.count("SX (Lon Increment)     :") == 1
+    assert result.stdout.count("SY (Lat Increment)     :") == 1
+    assert "Global Closure         :" in result.stdout
+    assert "Lake removal threshold settings: 15, 0.0005 (0.05%)" in result.stdout
     assert out_dir.exists()
-    assert (out_dir / "test_grid.depth_ascii").exists()
-    assert (out_dir / "test_grid.maskorig_ascii").exists()
-    assert (out_dir / "test_grid.obstr_lev1").exists()
-    assert (out_dir / "test_grid.meta").exists()
-    assert (out_dir / "test_grid_coards.nc").exists()
+    # Default output generates NetCDF-UGRID only
     assert (out_dir / "test_grid_ugrid.nc").exists()
+    assert not (out_dir / "test_grid.jpg").exists()
+    assert not (out_dir / "test_grid.depth_ascii").exists()
+    assert not (out_dir / "test_grid_coards.nc").exists()
+
+    # Test with --legacy flag
+    result_legacy = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_grid_legacy",
+            "--LON-START",
+            "10.0",
+            "--LON-END",
+            "12.0",
+            "--LAT-START",
+            "20.0",
+            "--LAT-END",
+            "22.0",
+            "--NX",
+            "10",
+            "--NY",
+            "10",
+            "--legacy",
+            "-r",
+            str(ref_dir),
+            "--out-dir",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result_legacy.returncode == 0
+    assert (out_dir / "test_grid_legacy.depth_ascii").exists()
+    assert (out_dir / "test_grid_legacy.maskorig_ascii").exists()
+    assert (out_dir / "test_grid_legacy.obstr_lev1").exists()
+    assert (out_dir / "test_grid_legacy.meta").exists()
+    assert (out_dir / "test_grid_legacy_coards.nc").exists()
+    assert (out_dir / "test_grid_legacy_ugrid.nc").exists()
+
+
+def test_run_gridgen_global_closure_and_increments(tmp_path: Path):
+    """Verify run_gridgen.sh computes LON_END and LAT_END when SX/SY or --global-closure are supplied."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    out_dir = tmp_path / "grid_output"
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    import numpy as np
+    import xarray as xr
+
+    lon = np.linspace(0.0, 360.0, 36)
+    lat = np.linspace(-90.0, 90.0, 19)
+    z = np.full((19, 36), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
+
+    # Test --global-closure
+    result = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "global_grid",
+            "--lon-start",
+            "0.0",
+            "--lat-start",
+            "-90.0",
+            "--lat-end",
+            "90.0",
+            "--nx",
+            "360",
+            "--ny",
+            "181",
+            "--global-closure",
+            "-r",
+            str(ref_dir),
+            "--out-dir",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "LON_END (Upper-Right)  : 359.0000 deg" in result.stdout
+    assert "SX (Lon Increment)     : 1.000000 deg" in result.stdout
+    assert "Global Closure         : Yes" in result.stdout
 
 
 def test_run_gridgen_with_ref_dir(tmp_path: Path):
@@ -279,6 +368,7 @@ def test_run_gridgen_with_ref_dir(tmp_path: Path):
             "20",
             "--NY",
             "20",
+                "--legacy",
             "-r",
             str(ref_dir),
             "-o",
