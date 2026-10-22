@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-21
+# @date Latest Update: 2026-10-22
 -->
 
 <p align="center">
@@ -178,16 +178,13 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `--no-title` | Disable main figure title. |
 | `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry and Orography`). |
 | `--no-subtitle` | Disable figure subtitle. |
-| `--bathy-source SOURCE` | Bathymetry reference dataset identifier for subtitle (default: `etopo2`). |
 | `--no-mask` | Disable land-sea mask display. |
 | `--zoom LON LAT FACTOR` | Zoom view centered at central longitude and latitude with zoom factor (e.g. `--zoom -70 40 2`). |
 | `--max-depth DEPTH` | Maximum depth limit for color scale (default: `-8000`). |
-| `--display` | Interactively display figure window (default: enabled). |
-| `--no-display` | Disable interactive figure window display. |
 
 ---
 
-**Last updated:** October 15, 2026
+**Last updated:** October 22, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">
