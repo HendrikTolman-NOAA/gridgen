@@ -12,6 +12,10 @@
 # @date Latest Update: 2026-10-22
 -->
 
+<p align="center">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/WW_tools_banner.jpg" alt="WW_tools_banner" height="100">
+</p>
+
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Data Directory
 
 This directory (`gridgen_data/`) contains internal polygon configuration datasets unique to the `ww4gridgen` tool. Unlike large external bathymetry grids and shoreline vector databases stored in `reference_data/`, the files in this directory are lightweight, tool-specific assets that are maintained directly within version control.
@@ -45,3 +49,10 @@ python3 -m gridgen.cli --user-polygons-flag gridgen_data/user_polygons.flag
 ```
 
 Custom flag control files or polygon database directories can be provided via `--user-polygons-flag FILE` and `--gridgen-data-dir DIR`.
+
+---
+
+<p align="right">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">
+  <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/nws.jpg" alt="NWS Logo" height="50" width="50">
+</p>
