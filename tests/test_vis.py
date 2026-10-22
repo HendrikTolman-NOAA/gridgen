@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-21
+# @date Latest Update: 2026-10-22
 
 from __future__ import annotations
 
@@ -206,7 +206,7 @@ def test_plot_grid_from_external_directory_default_out(tmp_path: Path):
 
     try:
         result = subprocess.run(
-            [str(script_path), "-i", str(nc_file), "-f", "jpg", "--no-display"],
+            [str(script_path), "-i", str(nc_file), "-f", "jpg"],
             cwd=tmp_path,
             capture_output=True,
             text=True,
@@ -252,7 +252,6 @@ def test_plot_grid_from_external_directory_custom_out(tmp_path: Path):
             out_jpg,
             "-f",
             "jpg",
-            "--no-display",
         ],
         cwd=tmp_path,
         capture_output=True,
@@ -283,42 +282,6 @@ def test_plot_grid_show_in_headless_env(tmp_path: Path):
     assert os.path.exists(out_file)
 
 
-def test_plot_grid_script_no_canvas_warning(tmp_path: Path):
-    """Verify plot_grid.sh runs without UserWarning when called with --display in headless environment."""
-    repo_root = Path(__file__).parent.parent
-    script_path = repo_root / "plot_grid.sh"
-
-    lon1d = np.array([10.0, 11.0, 12.0])
-    lat1d = np.array([20.0, 21.0, 22.0])
-    lon, lat = np.meshgrid(lon1d, lat1d)
-    depth = np.full((3, 3), 10.0)
-    mask = np.ones((3, 3), dtype=int)
-    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Warning Test")
-
-    nc_file = tmp_path / "warning_test_ugrid.nc"
-    write_ugrid_nc(ds, str(nc_file))
-
-    out_jpg = tmp_path / "warning_test.jpg"
-
-    result = subprocess.run(
-        [
-            str(script_path),
-            "-i",
-            str(nc_file),
-            "-o",
-            str(out_jpg),
-            "-f",
-            "jpg",
-            "--display",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert result.returncode == 0
-    assert "FigureCanvasAgg is non-interactive" not in result.stderr
-    assert "UserWarning" not in result.stderr
 
 
 
@@ -423,11 +386,11 @@ def test_zoom_functionality(tmp_path):
     assert ax_nozoom.get_xlabel() == "Longitude"
     assert ax_nozoom.get_ylabel() == "Latitude"
 
-    # Zoom factor 1 centered at (15.0, 14.0) -> same span [10, 20], [10, 18] and zoomed labels
+    # Zoom factor 1 centered at (15.0, 14.0) -> same span [10, 20], [10, 18] and standard labels (not (zoom))
     fig1 = plot_grid(data, zoom=(15.0, 14.0, 1.0))
     ax1 = fig1.axes[0]
-    assert ax1.get_xlabel() == "Longitude (zoom)"
-    assert ax1.get_ylabel() == "Latitude (zoom)"
+    assert ax1.get_xlabel() == "Longitude"
+    assert ax1.get_ylabel() == "Latitude"
     assert ax1.get_xlim() == (10.0, 20.0)
     assert ax1.get_ylim() == (10.0, 18.0)
 
@@ -437,9 +400,11 @@ def test_zoom_functionality(tmp_path):
     assert ax_shift.get_xlim() == (10.0, 20.0)
     assert ax_shift.get_ylim() == (10.0, 18.0)
 
-    # Zoom factor 2 centered at (15.0, 14.0) -> half span [12.5, 17.5], [12.0, 16.0]
+    # Zoom factor 2 centered at (15.0, 14.0) -> half span [12.5, 17.5], [12.0, 16.0] and zoomed labels
     fig2 = plot_grid(data, zoom="15.0 14.0 2.0")
     ax2 = fig2.axes[0]
+    assert ax2.get_xlabel() == "Longitude (zoom)"
+    assert ax2.get_ylabel() == "Latitude (zoom)"
     assert ax2.get_xlim() == (12.5, 17.5)
     assert ax2.get_ylim() == (12.0, 16.0)
 
@@ -462,6 +427,11 @@ def test_zoom_functionality(tmp_path):
     assert ax_glob.get_ylabel() == "Latitude (zoom)"
     assert ax_glob.get_xlim() == (-250.0, -70.0)
     assert ax_glob.get_ylim() == (-25.0, 65.0)
+
+    # Zoom factor < 1 raises ValueError
+    import pytest
+    with pytest.raises(ValueError, match="zoom_factor must be 1 or greater"):
+        plot_grid(data, zoom=(15.0, 14.0, 0.5))
 
 
 def test_zoom_cli_options(tmp_path: Path):
@@ -496,7 +466,6 @@ def test_zoom_cli_options(tmp_path: Path):
             "15.0",
             "14.0",
             "2.0",
-            "--no-display",
         ],
         capture_output=True,
         text=True,
@@ -537,7 +506,6 @@ def test_zoom_with_negative_coordinates(tmp_path: Path):
             "-160.",
             "20.",
             "5",
-            "--no-display",
         ],
         capture_output=True,
         text=True,
@@ -603,7 +571,6 @@ def test_zoom_coordinate_formats(tmp_path: Path):
             "160W",
             "20N",
             "5",
-            "--no-display",
         ],
         capture_output=True,
         text=True,

@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-21
+# @date Latest Update: 2026-10-22
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -392,7 +392,7 @@ def plot_grid(
         else:
             sub_text = subtitle
 
-    if zoom_parsed is not None:
+    if zoom_parsed is not None and zoom_parsed[2] > 1.0:
         ax1.set_xlabel("Longitude (zoom)")
         ax1.set_ylabel("Latitude (zoom)")
     else:
@@ -411,8 +411,8 @@ def plot_grid(
 
     if zoom_parsed is not None:
         central_lon, central_lat, zoom_factor = zoom_parsed
-        if zoom_factor <= 0:
-            raise ValueError("zoom_factor must be positive.")
+        if zoom_factor < 1.0:
+            raise ValueError("zoom_factor must be 1 or greater.")
 
         c_lon = central_lon
 
