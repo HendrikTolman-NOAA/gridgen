@@ -71,5 +71,5 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # The default user_polygons.flag has all 50 polygons set to 0 by default
-    assert len(active_polys) == 0
+    # user_polygons.flag has active polygons (e.g. Black Sea and Baltic Sea set to 1)
+    assert len(active_polys) == 2
