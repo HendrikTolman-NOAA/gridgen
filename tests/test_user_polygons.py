@@ -19,7 +19,8 @@ import os
 import numpy as np
 import scipy.io as sio
 
-from gridgen.masking import load_user_polygons
+from gridgen.coordinates import create_regular_grid
+from gridgen.masking import clean_mask, load_user_polygons
 
 
 class DummyBound:
@@ -73,3 +74,59 @@ def test_load_repo_gridgen_data() -> None:
     assert isinstance(active_polys, list)
     # user_polygons.flag has active polygons (e.g. Black Sea and Baltic Sea set to 1)
     assert len(active_polys) == 2
+
+    txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
+    assert os.path.exists(txt_file)
+
+
+def test_load_user_polygons_writes_text_file(tmp_path) -> None:
+    """Test that loading MAT optional polygons simultaneously writes a plain text file."""
+    ref_dir = str(tmp_path)
+    mat_filename = "optional_coastal_polygons.mat"
+    mat_path = os.path.join(ref_dir, mat_filename)
+    txt_path = os.path.join(ref_dir, "optional_coastal_polygons.txt")
+
+    poly = DummyBound(
+        np.array([10.0, 20.0, 20.0, 10.0, 10.0]),
+        np.array([10.0, 10.0, 20.0, 20.0, 10.0]),
+    )
+    sio.savemat(mat_path, {"user_bound": np.array([poly], dtype=object)})
+
+    assert not os.path.exists(txt_path)
+    load_user_polygons(ref_dir=ref_dir, mat_filename=mat_filename)
+    assert os.path.exists(txt_path)
+
+    with open(txt_path) as f:
+        content = f.read()
+    assert "# WAVEWATCH Optional Coastal Polygon Database" in content
+    assert "10.000000" in content
+
+
+def test_clean_mask_global_closure() -> None:
+    """Test polygon masking properly addresses 360-degree longitude wrap-around on global grid."""
+    lon, lat = create_regular_grid(
+        NX=36,
+        NY=18,
+        LON_START=0.0,
+        LON_END=350.0,
+        LAT_START=-80.0,
+        LAT_END=80.0,
+    )
+    mask = np.ones_like(lon, dtype=int)
+
+    # Polygon at negative longitudes [-10, 10]
+    poly_neg = {
+        "x": np.array([-10.0, 10.0, 10.0, -10.0, -10.0]),
+        "y": np.array([-10.0, -10.0, 10.0, 10.0, -10.0]),
+        "level": 1,
+    }
+
+    # Apply clean_mask on global grid (longitudes 0..350)
+    cleaned = clean_mask(lon, lat, mask, [poly_neg])
+
+    # Check that cells in [0, 10] AND cells in [350, 360] (350 = -10 mod 360) are masked dry (0)
+    idx_start = np.where((lon >= 0.0) & (lon <= 10.0) & (lat >= -10.0) & (lat <= 10.0))
+    idx_end = np.where((lon >= 350.0) & (lat >= -10.0) & (lat <= 10.0))
+
+    assert np.all(cleaned[idx_start] == 0)
+    assert np.all(cleaned[idx_end] == 0)

@@ -211,19 +211,44 @@ def clean_mask(
     if not bound_ingrid:
         return clean_m
 
+    grid_x_min = float(np.min(x))
+    grid_x_max = float(np.max(x))
+    dx = float(abs(x[0, 1] - x[0, 0])) if x.ndim == 2 and x.shape[1] > 1 else 1.0
+    gx_min = grid_x_min - dx
+    gx_max = grid_x_max + dx
+
     polygons = []
     for b in bound_ingrid:
-        if "polygon" in b and b["polygon"] is not None:
-            p = b["polygon"]
-        else:
-            bx = np.asarray(b["x"], dtype=np.float64)
-            by = np.asarray(b["y"], dtype=np.float64)
-            p = Polygon(np.column_stack((bx, by)))
-        if offset > 0:
-            p = p.buffer(offset)
-        if not p.is_valid:
-            p = p.buffer(0)
-        polygons.append(p)
+        bx = np.asarray(b["x"], dtype=np.float64)
+        by = np.asarray(b["y"], dtype=np.float64)
+        if len(bx) < 3:
+            continue
+
+        p_west, p_east = float(np.min(bx)), float(np.max(bx))
+
+        k_min = int(np.floor((gx_min - p_east) / 360.0))
+        k_max = int(np.ceil((gx_max - p_west) / 360.0))
+
+        for k in range(k_min, k_max + 1):
+            shift_x = k * 360.0
+            s_west = p_west + shift_x
+            s_east = p_east + shift_x
+
+            if s_east < gx_min or s_west > gx_max:
+                continue
+
+            bx_shifted = bx + shift_x
+            poly_coords = np.column_stack((bx_shifted, by))
+            p = Polygon(poly_coords)
+            if offset > 0:
+                p = p.buffer(offset)
+            if not p.is_valid:
+                p = p.buffer(0)
+            if not p.is_empty:
+                polygons.append(p)
+
+    if not polygons:
+        return clean_m
 
     tree = STRtree(polygons)
 
@@ -517,6 +542,40 @@ def define_boundary_points(
     return m_new
 
 
+def _write_plain_text_polygons(user_bound: Any, mat_path: str) -> str:
+    """Write a plain text version of user coastal polygons in the same directory as mat_path.
+
+    Parameters
+    ----------
+    user_bound : Any
+        Array or list of user_bound polygon objects.
+    mat_path : str
+        Path to the loaded MAT file.
+
+    Returns
+    -------
+    txt_path : str
+        Path to the generated plain text file.
+    """
+    txt_path = os.path.splitext(mat_path)[0] + ".txt"
+    try:
+        with open(txt_path, "w") as f:
+            f.write("# WAVEWATCH Optional Coastal Polygon Database (Plain Text Format)\n")
+            f.write(f"# Total Polygons: {len(user_bound)}\n#\n")
+            for idx, bound_obj in enumerate(user_bound):
+                name = str(getattr(bound_obj, "name", f"Polygon_{idx + 1}")).strip()
+                level = int(getattr(bound_obj, "level", 1))
+                bx = np.asarray(getattr(bound_obj, "x", []), dtype=np.float64)
+                by = np.asarray(getattr(bound_obj, "y", []), dtype=np.float64)
+                f.write(f"# Polygon {idx + 1}: {name} (Level: {level}, Points: {len(bx)})\n")
+                for px_val, py_val in zip(bx, by):
+                    f.write(f"{px_val:14.6f} {py_val:14.6f}\n")
+                f.write("\n")
+    except Exception:
+        pass
+    return txt_path
+
+
 def load_user_polygons(
     ref_dir: str = "gridgen_data",
     flag_file: str | None = None,
@@ -559,6 +618,9 @@ def load_user_polygons(
     user_bound = mat_data["user_bound"]
     if not isinstance(user_bound, np.ndarray):
         user_bound = np.array([user_bound])
+
+    # Write plain text version of optional_coastal_polygons in same directory
+    _write_plain_text_polygons(user_bound, mat_path)
 
     switches = []
     target_flag = None

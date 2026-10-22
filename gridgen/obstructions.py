@@ -65,15 +65,42 @@ def create_obstr(
     if not bound_list:
         return sx, sy
 
+    grid_x_min = float(np.min(x))
+    grid_x_max = float(np.max(x))
+    dx = float(abs(x[0, 1] - x[0, 0])) if x.ndim == 2 and x.shape[1] > 1 else 1.0
+    gx_min = grid_x_min - dx
+    gx_max = grid_x_max + dx
+
     polygons = []
     for b in bound_list:
-        if "polygon" in b and b["polygon"] is not None:
-            p = b["polygon"]
-        else:
-            bx = np.asarray(b["x"], dtype=np.float64)
-            by = np.asarray(b["y"], dtype=np.float64)
-            p = Polygon(np.column_stack((bx, by)))
-        polygons.append(p)
+        bx = np.asarray(b["x"], dtype=np.float64)
+        by = np.asarray(b["y"], dtype=np.float64)
+        if len(bx) < 3:
+            continue
+
+        p_west, p_east = float(np.min(bx)), float(np.max(bx))
+
+        k_min = int(np.floor((gx_min - p_east) / 360.0))
+        k_max = int(np.ceil((gx_max - p_west) / 360.0))
+
+        for k in range(k_min, k_max + 1):
+            shift_x = k * 360.0
+            s_west = p_west + shift_x
+            s_east = p_east + shift_x
+
+            if s_east < gx_min or s_west > gx_max:
+                continue
+
+            bx_shifted = bx + shift_x
+            poly_coords = np.column_stack((bx_shifted, by))
+            p = Polygon(poly_coords)
+            if not p.is_valid:
+                p = p.buffer(0)
+            if not p.is_empty:
+                polygons.append(p)
+
+    if not polygons:
+        return sx, sy
 
     for j in range(Nx):
         for k in range(Ny):
