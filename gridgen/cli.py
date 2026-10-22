@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-19
+# @date Latest Update: 2026-10-22
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -76,6 +76,12 @@ def main() -> None:
     )
     gen_group.add_argument(
         "--ref-dir", type=str, default="reference_data", help="Reference data directory (default: reference_data)"
+    )
+    gen_group.add_argument(
+        "--gridgen-data-dir",
+        type=str,
+        default="gridgen_data",
+        help="Gridgen repository data directory for polygon databases (default: gridgen_data)",
     )
     gen_group.add_argument(
         "--bathy-source",
@@ -246,7 +252,7 @@ def main() -> None:
     user_bounds = []
     if args.user_polygons_flag:
         user_bounds = load_user_polygons(
-            ref_dir=args.ref_dir, flag_file=args.user_polygons_flag
+            ref_dir=args.gridgen_data_dir, flag_file=args.user_polygons_flag
         )
         if user_bounds:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")

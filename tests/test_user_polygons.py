@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-22
 
 """Unit tests for user-defined optional coastal polygon loading."""
 
@@ -62,3 +62,14 @@ def test_load_user_polygons(tmp_path) -> None:
     assert len(active_polys) == 1
     assert np.isclose(active_polys[0]["west"], 30.0)
     assert np.isclose(active_polys[0]["east"], 40.0)
+
+
+def test_load_repo_gridgen_data() -> None:
+    """Test loading actual repository gridgen_data files with default parameters."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
+
+    active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
+    assert isinstance(active_polys, list)
+    # The default user_polygons.flag has all 50 polygons set to 0 by default
+    assert len(active_polys) == 0

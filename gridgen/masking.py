@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-22
 #
 # Code Heritage:
 # Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m,
@@ -518,9 +518,10 @@ def define_boundary_points(
 
 
 def load_user_polygons(
-    ref_dir: str = "reference_data",
+    ref_dir: str = "gridgen_data",
     flag_file: str | None = None,
     mat_filename: str = "optional_coastal_polygons.mat",
+    data_dir: str | None = None,
 ) -> list[dict[str, Any]]:
     """Load user-defined optional coastal polygons filtered by a flag control file.
 
@@ -529,20 +530,27 @@ def load_user_polygons(
     Parameters
     ----------
     ref_dir : str
-        Directory containing optional coastal polygon MAT datasets.
+        Directory containing optional coastal polygon MAT datasets (default: "gridgen_data").
     flag_file : Optional[str]
         Path to text file containing binary switches (0 = off, 1 = on) per polygon.
     mat_filename : str
         Filename of MAT file containing user coastal polygons.
+    data_dir : Optional[str]
+        Alias directory parameter for gridgen_data.
 
     Returns
     -------
     active_polygons : List[Dict[str, Any]]
         List of active user boundary polygon dictionaries.
     """
-    mat_path = os.path.join(ref_dir, mat_filename)
+    target_dir = data_dir if data_dir is not None else ref_dir
+
+    mat_path = os.path.join(target_dir, mat_filename)
     if not os.path.exists(mat_path):
-        return []
+        if os.path.exists(os.path.join("gridgen_data", mat_filename)):
+            mat_path = os.path.join("gridgen_data", mat_filename)
+        else:
+            return []
 
     mat_data = sio.loadmat(mat_path, squeeze_me=True, struct_as_record=False)
     if "user_bound" not in mat_data:
@@ -553,8 +561,20 @@ def load_user_polygons(
         user_bound = np.array([user_bound])
 
     switches = []
+    target_flag = None
     if flag_file and os.path.exists(flag_file):
-        with open(flag_file) as f:
+        target_flag = flag_file
+    elif flag_file and os.path.exists(os.path.join(target_dir, flag_file)):
+        target_flag = os.path.join(target_dir, flag_file)
+    elif flag_file is None:
+        default_flag = os.path.join(target_dir, "user_polygons.flag")
+        if os.path.exists(default_flag):
+            target_flag = default_flag
+        elif os.path.exists(os.path.join("gridgen_data", "user_polygons.flag")):
+            target_flag = os.path.join("gridgen_data", "user_polygons.flag")
+
+    if target_flag and os.path.exists(target_flag):
+        with open(target_flag) as f:
             for line in f:
                 line_str = line.strip()
                 if not line_str or line_str.startswith("#"):
