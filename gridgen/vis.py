@@ -327,6 +327,8 @@ def plot_grid(
     depth_limit = -abs(max_depth) if max_depth is not None else -8000.0
     vmax_orog = max_orography if max_orography is not None else 10.0
 
+    zoom_parsed = parse_zoom_args(zoom)
+
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
     bathymetry_mask = (depth <= 0) & (mask != 0) if show_mask else (depth <= 0)
     orography_mask = (depth > 0) & (depth < 999999.0) & (mask != 0) if show_mask else ((depth > 0) & (depth < 999999.0))
@@ -337,18 +339,41 @@ def plot_grid(
     vmin_bathy = depth_limit
     vmax_bathy = 0.0
 
-    vmax_orog = max_orography if max_orography is not None else 10.0
+    lon_min, lon_max = float(np.nanmin(lon)), float(np.nanmax(lon))
+    lat_min, lat_max = float(np.nanmin(lat)), float(np.nanmax(lat))
 
-    if lon.ndim == 2:
+    span_lon_raw = lon_max - lon_min if lon_max > lon_min else 1.0
+    span_lat_raw = lat_max - lat_min if lat_max > lat_min else 1.0
+
+    is_global = bool(span_lon_raw >= 350.0)
+
+    if is_global:
+        if lon.ndim == 2:
+            lon_plot = np.hstack([lon - 360.0, lon, lon + 360.0])
+            lat_plot = np.hstack([lat, lat, lat])
+            depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy])
+            depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog])
+        else:
+            lon_plot = np.concatenate([lon - 360.0, lon, lon + 360.0])
+            lat_plot = np.concatenate([lat, lat, lat])
+            depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy])
+            depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog])
+    else:
+        lon_plot = lon
+        lat_plot = lat
+        depth_bathy_plot = depth_bathy
+        depth_orog_plot = depth_orog
+
+    if lon_plot.ndim == 2:
         pcm1 = ax1.pcolormesh(
-            lon, lat, depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
+            lon_plot, lat_plot, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
         )
         pcm2 = ax1.pcolormesh(
-            lon, lat, depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
+            lon_plot, lat_plot, depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
         )
     else:
-        pcm1 = ax1.scatter(lon, lat, c=depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
-        pcm2 = ax1.scatter(lon, lat, c=depth_orog, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
+        pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
+        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
 
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
@@ -367,8 +392,13 @@ def plot_grid(
         else:
             sub_text = subtitle
 
-    ax1.set_xlabel("Longitude")
-    ax1.set_ylabel("Latitude")
+    if zoom_parsed is not None:
+        ax1.set_xlabel("Longitude (zoom)")
+        ax1.set_ylabel("Latitude (zoom)")
+    else:
+        ax1.set_xlabel("Longitude")
+        ax1.set_ylabel("Latitude")
+
     ax1.grid(True, linestyle="--", alpha=0.5)
 
     if main_title and sub_text:
@@ -379,33 +409,56 @@ def plot_grid(
     elif sub_text:
         ax1.set_title(sub_text, fontsize=10, fontweight="normal", pad=10)
 
-    zoom_parsed = parse_zoom_args(zoom)
     if zoom_parsed is not None:
         central_lon, central_lat, zoom_factor = zoom_parsed
         if zoom_factor <= 0:
             raise ValueError("zoom_factor must be positive.")
 
-        lon_min, lon_max = float(np.nanmin(lon)), float(np.nanmax(lon))
-        lat_min, lat_max = float(np.nanmin(lat)), float(np.nanmax(lat))
-
-        span_lon = lon_max - lon_min if lon_max > lon_min else 1.0
-        span_lat = lat_max - lat_min if lat_max > lat_min else 1.0
-
         c_lon = central_lon
-        if lon_min >= 0 and lon_max > 180 and central_lon < 0:
-            c_lon = central_lon % 360.0
-        elif lon_max <= 180 and lon_min < 0 and central_lon > 180:
-            c_lon = (central_lon + 180.0) % 360.0 - 180.0
 
-        new_span_lon = span_lon / zoom_factor
-        new_span_lat = span_lat / zoom_factor
+        new_span_lat = span_lat_raw / zoom_factor
+        if new_span_lat >= span_lat_raw:
+            ylim = (lat_min, lat_max)
+        else:
+            ymin = central_lat - new_span_lat / 2.0
+            ymax = central_lat + new_span_lat / 2.0
+            if ymin < lat_min:
+                ymin = lat_min
+                ymax = lat_min + new_span_lat
+            if ymax > lat_max:
+                ymax = lat_max
+                ymin = lat_max - new_span_lat
+            ylim = (ymin, ymax)
 
-        xlim = (c_lon - new_span_lon / 2.0, c_lon + new_span_lon / 2.0)
-        ylim = (central_lat - new_span_lat / 2.0, central_lat + new_span_lat / 2.0)
+        if is_global:
+            new_span_lon = 360.0 / zoom_factor
+            xlim = (c_lon - new_span_lon / 2.0, c_lon + new_span_lon / 2.0)
+        else:
+            new_span_lon = span_lon_raw / zoom_factor
+            if new_span_lon >= span_lon_raw:
+                xlim = (lon_min, lon_max)
+            else:
+                if lon_min >= 0 and lon_max > 180 and c_lon < 0:
+                    c_lon = c_lon % 360.0
+                elif lon_max <= 180 and lon_min < 0 and c_lon > 180:
+                    c_lon = (c_lon + 180.0) % 360.0 - 180.0
+
+                xmin = c_lon - new_span_lon / 2.0
+                xmax = c_lon + new_span_lon / 2.0
+                if xmin < lon_min:
+                    xmin = lon_min
+                    xmax = lon_min + new_span_lon
+                if xmax > lon_max:
+                    xmax = lon_max
+                    xmin = lon_max - new_span_lon
+                xlim = (xmin, xmax)
 
         ax1.set_xlim(xlim)
         ax1.set_ylim(ylim)
         print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
+    elif is_global:
+        ax1.set_xlim(lon_min, lon_max)
+        ax1.set_ylim(lat_min, lat_max)
     fig.tight_layout()
 
     # Orography colorbar (top-right, placed above Bathymetry colorbar)

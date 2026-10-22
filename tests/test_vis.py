@@ -411,22 +411,30 @@ def test_custom_and_disabled_title_subtitle(tmp_path):
 
 
 def test_zoom_functionality(tmp_path):
-    """Verify zoom shifts view box with factor 1 and narrows view box with factor 2 across multiple formats."""
+    """Verify zoom shifts view box, clamps regional view box within full grid, sets zoomed labels, and allows global grid rotation."""
     lon1d = np.array([10.0, 20.0])  # span_lon = 10
     lat1d = np.array([10.0, 18.0])  # span_lat = 8
     lon, lat = np.meshgrid(lon1d, lat1d)
     data = {"lon": lon, "lat": lat, "depth": np.full((2, 2), -10.0), "mask": np.ones((2, 2), dtype=int)}
 
-    # Zoom factor 1 centered at (15.0, 14.0) -> same span [10, 20], [10, 18]
+    # Unzoomed plot checks standard labels
+    fig_nozoom = plot_grid(data)
+    ax_nozoom = fig_nozoom.axes[0]
+    assert ax_nozoom.get_xlabel() == "Longitude"
+    assert ax_nozoom.get_ylabel() == "Latitude"
+
+    # Zoom factor 1 centered at (15.0, 14.0) -> same span [10, 20], [10, 18] and zoomed labels
     fig1 = plot_grid(data, zoom=(15.0, 14.0, 1.0))
     ax1 = fig1.axes[0]
+    assert ax1.get_xlabel() == "Longitude (zoom)"
+    assert ax1.get_ylabel() == "Latitude (zoom)"
     assert ax1.get_xlim() == (10.0, 20.0)
     assert ax1.get_ylim() == (10.0, 18.0)
 
-    # Zoom factor 1 shifted to central lon 18.0, lat 14.0 -> xlim=[13.0, 23.0]
+    # Regional grid zoom factor 1 shifted to central lon 18.0, lat 14.0 -> clamped to [10.0, 20.0]
     fig_shift = plot_grid(data, zoom=(18.0, 14.0, 1.0))
     ax_shift = fig_shift.axes[0]
-    assert ax_shift.get_xlim() == (13.0, 23.0)
+    assert ax_shift.get_xlim() == (10.0, 20.0)
     assert ax_shift.get_ylim() == (10.0, 18.0)
 
     # Zoom factor 2 centered at (15.0, 14.0) -> half span [12.5, 17.5], [12.0, 16.0]
@@ -440,6 +448,20 @@ def test_zoom_functionality(tmp_path):
     ax3 = fig3.axes[0]
     assert ax3.get_xlim() == (12.5, 17.5)
     assert ax3.get_ylim() == (12.0, 16.0)
+
+    # Globally closed regular grid zoom allows rotation across 0°/360°
+    glon1d = np.linspace(0.0, 359.0, 360)
+    glat1d = np.linspace(-90.0, 90.0, 181)
+    glon, glat = np.meshgrid(glon1d, glat1d)
+    gdata = {"lon": glon, "lat": glat, "depth": np.full((181, 360), -50.0), "mask": np.ones((181, 360), dtype=int)}
+
+    # Global grid zoom factor 2 centered at -160°, 20°N -> xlim = [-250.0, -70.0], ylim = [-25.0, 65.0]
+    fig_glob = plot_grid(gdata, zoom=(-160.0, 20.0, 2.0))
+    ax_glob = fig_glob.axes[0]
+    assert ax_glob.get_xlabel() == "Longitude (zoom)"
+    assert ax_glob.get_ylabel() == "Latitude (zoom)"
+    assert ax_glob.get_xlim() == (-250.0, -70.0)
+    assert ax_glob.get_ylim() == (-25.0, 65.0)
 
 
 def test_zoom_cli_options(tmp_path: Path):
