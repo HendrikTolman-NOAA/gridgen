@@ -568,10 +568,9 @@ def _write_plain_text_polygons(user_bound: Any, mat_path: str) -> str:
                 bx = np.asarray(getattr(bound_obj, "x", []), dtype=np.float64)
                 by = np.asarray(getattr(bound_obj, "y", []), dtype=np.float64)
                 f.write(f"# Polygon {idx + 1}: {name} (Level: {level}, Points: {len(bx)})\n")
-                for px_val, py_val in zip(bx, by):
-                    f.write(f"{px_val:14.6f} {py_val:14.6f}\n")
+                f.writelines(f"{px_val:14.6f} {py_val:14.6f}\n" for px_val, py_val in zip(bx, by))
                 f.write("\n")
-    except Exception:
+    except (OSError, ValueError):
         pass
     return txt_path
 
