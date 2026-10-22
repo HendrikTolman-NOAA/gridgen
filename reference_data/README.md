@@ -71,17 +71,7 @@ Run `./populate_reference_data.sh --help` for full CLI options and dataset infor
   * **Source**: NOAA NCEP gridgen distribution tarball (`gridgen_addit.tar.gz`).
   * **Usage**: Loaded by grid generation pipelines (`compute_boundary`, `clean_mask`, `split_boundary`, `create_obstr`) to compute domain boundaries, refine land/sea masks, split large shoreline geometries, and calculate subgrid obstruction factors for WAVEWATCH wave modeling.
 
-* **Optional Regional Polygons (`optional_coastal_polygons.mat`)**
-  * **Source**: NOAA NCEP gridgen distribution tarball (`gridgen_addit.tar.gz`).
-  * **Size**: ~1.5 MB
-  * **Description**: Geometry data structures for user-defined optional regional shoreline and coastal feature polygons.
-  * **Usage**: Loaded when optional polygon masking (`opt_poly=1`) is enabled.
-
-* **`user_polygons.flag`**
-  * **Source**: Version controlled in `reference_data/` of this repository.
-  * **Size**: ~1.5 KB
-  * **Description**: Plain text configuration file listing numeric identifiers, status toggle flags (`0` = ignore, `1` = include/account for), and regional descriptions for 50 predefined coastal domains (e.g., Hudson Bay, Mediterranean Sea, Chesapeake Bay, San Francisco Harbor).
-  * **Usage**: Read by `optional_bound` to determine active optional coastal feature polygons during land/sea mask generation.
+> **Note**: Tool-unique polygon databases (`optional_coastal_polygons.mat` and `user_polygons.flag`) are maintained directly in version control under the `gridgen_data/` directory. See `gridgen_data/README.md` for details.
 
 ---
 

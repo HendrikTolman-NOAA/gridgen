@@ -49,10 +49,12 @@ LEGACY=0
 USER_POLYGONS_FLAG=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
+GRIDGEN_DATA_DIR="${SCRIPT_DIR}/gridgen_data"
 CLEANUP=0
 
 OUT_DIR_SPECIFIED=0
 REF_DIR_SPECIFIED=0
+GRIDGEN_DATA_DIR_SPECIFIED=0
 
 usage() {
   cat << 'EOF'
@@ -78,6 +80,8 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
                          [Optional]
+  --gridgen-data-dir DIR Gridgen repository polygon data directory
+                         (default: ./gridgen_data) [Optional]
   -c, --clean, --cleanup Remove generated grid files and graphics for NAME
   -h, --help             Display this help message and exit
 
@@ -208,6 +212,11 @@ while [[ $# -gt 0 ]]; do
       REF_DIR_SPECIFIED=1
       shift 2
       ;;
+    --gridgen-data-dir)
+      GRIDGEN_DATA_DIR="$2"
+      GRIDGEN_DATA_DIR_SPECIFIED=1
+      shift 2
+      ;;
     --bathy-source|--BATHY-SOURCE)
       BATHY_SOURCE="$2"
       shift 2
@@ -263,6 +272,14 @@ if [ "$REF_DIR_SPECIFIED" -eq 1 ]; then
   fi
 else
   REF_DIR="${SCRIPT_DIR}/reference_data"
+fi
+
+if [ "$GRIDGEN_DATA_DIR_SPECIFIED" -eq 1 ]; then
+  if [[ "$GRIDGEN_DATA_DIR" != /* ]]; then
+    GRIDGEN_DATA_DIR="${ORIG_DIR}/${GRIDGEN_DATA_DIR}"
+  fi
+else
+  GRIDGEN_DATA_DIR="${SCRIPT_DIR}/gridgen_data"
 fi
 
 # Check for cleanup option
@@ -395,6 +412,7 @@ CMD_ARGS=(
   --grid-type "$GRID_TYPE"
   --out-dir "$OUT_DIR"
   --ref-dir "$REF_DIR"
+  --gridgen-data-dir "$GRIDGEN_DATA_DIR"
   --bathy-source "$BATHY_SOURCE"
 )
 

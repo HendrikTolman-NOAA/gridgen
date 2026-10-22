@@ -59,7 +59,6 @@ def test_reference_data_gitignore():
         "coastal_bound_high.mat",
         "coastal_bound_inter.mat",
         "coastal_bound_low.mat",
-        "optional_coastal_polygons.mat",
         "gridgen_addit.tar.gz",
         "etopo_2022.nc",
         "gebco_2024.nc",
@@ -129,7 +128,6 @@ def test_populate_script_existing_legacy_files(tmp_path: Path):
         "coastal_bound_low.mat",
         "coastal_bound_full.mat",
         "coastal_bound_inter.mat",
-        "optional_coastal_polygons.mat",
     ]
 
     for fname in legacy_files:
@@ -207,7 +205,6 @@ def test_populate_script_clean_option(tmp_path: Path):
     ]
     preserved_files = [
         "README.md",
-        "user_polygons.flag",
         ".gitignore",
     ]
 

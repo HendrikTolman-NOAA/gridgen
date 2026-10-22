@@ -63,7 +63,7 @@ Default Behavior:
 Authoritative External Data Sources:
   1. Legacy NCEP Gridgen (Defunct):
      ftp://polar.ncep.noaa.gov/waves/gridgen/gridgen_addit.tar.gz
-     Provides: etopo1.nc, etopo2.nc, coastal_bound_*.mat, optional_coastal_polygons.mat
+     Provides: etopo1.nc, etopo2.nc, coastal_bound_*.mat
   2. ETOPO 2022 (NOAA NCEI):
      https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/
      Replaces ETOPO1/2 with higher resolution 15s/30s/60s global bathymetry & topography.
@@ -182,7 +182,7 @@ if [ "$CLEANUP" = true ]; then
     for file in "${TARGET_DIR}"/*; do
       [ -e "$file" ] || continue
       fname="$(basename "$file")"
-      if [ "$fname" != "README.md" ] && [ "$fname" != "user_polygons.flag" ] && [ "$fname" != ".gitignore" ]; then
+      if [ "$fname" != "README.md" ] && [ "$fname" != ".gitignore" ]; then
         rm -rf "$file"
         echo "Removed ${file}"
         REMOVED_COUNT=$((REMOVED_COUNT + 1))
@@ -213,7 +213,6 @@ if [ "$FETCH_LEGACY" = true ]; then
     "coastal_bound_low.mat"
     "coastal_bound_full.mat"
     "coastal_bound_inter.mat"
-    "optional_coastal_polygons.mat"
   )
 
   MISSING_FILES=()

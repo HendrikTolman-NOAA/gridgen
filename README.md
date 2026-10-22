@@ -99,12 +99,11 @@ The reference dataset files include:
   - `coastal_bound_low.mat`
   - `coastal_bound_full.mat`
   - `coastal_bound_inter.mat`
-  - `optional_coastal_polygons.mat`
 
-### User-Defined Coastal Polygons
+### User-Defined Coastal Polygons (`gridgen_data/`)
 
-Optional user-defined coastal polygons (`optional_coastal_polygons.mat`) allow users to explicitly mask out water bodies (such as inland lakes, bays, or estuaries) that do not play a significant role in wave propagation. User polygon selection is controlled by a flag text file (e.g. `user_polygons.flag`) containing binary switches (0 = off, 1 = on) per polygon index:
-- `load_user_polygons(ref_dir, flag_file)` loads and filters active user boundary polygons based on the control switches.
+Optional user-defined coastal polygon coordinates (`optional_coastal_polygons.mat`) and polygon switch control file (`user_polygons.flag`) are unique to the tool and maintained directly in the repository in `gridgen_data/`. They allow users to explicitly mask out water bodies (such as inland lakes, bays, or estuaries) that do not play a significant role in wave propagation. User polygon selection is controlled by binary switches (`0` = off, `1` = on) per polygon index:
+- `load_user_polygons(ref_dir="gridgen_data", flag_file=...)` loads and filters active user boundary polygons based on the control switches.
 - Active user polygons are passed into `clean_mask()` to refine land/sea mask boundaries and `create_obstr()` to calculate directional sub-grid obstruction factors ($S_x$, $S_y$).
 
 ### Running Grid Generation Tool (`run_gridgen.sh`)
@@ -125,7 +124,8 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
 | `--bathy-source SOURCE` | Bathymetry dataset identifier or NetCDF prefix (e.g. `etopo1`, `etopo2`, `ETOPO_2022_v1_60s_N90W180_bed`) (default: `etopo2`). `[Optional]` |
 | `--boundary-points` | Define input boundary cells (mask value 2) along regional grid boundaries. `[Optional]` |
-| `--user-polygons-flag FILE` | Path to flag file for optional user coastal polygons (`optional_coastal_polygons.mat`). `[Optional]` |
+| `--user-polygons-flag FILE` | Path to flag file for optional user coastal polygons (`gridgen_data/user_polygons.flag`). `[Optional]` |
+| `--gridgen-data-dir DIR` | Directory containing tool-specific polygon databases (`gridgen_data/`) (default: `gridgen_data`). `[Optional]` |
 | `--lon-start LON` | Lower-left corner longitude in degrees. `[Mandatory for regular grid]` |
 | `--lat-start LAT` | Lower-left corner latitude in degrees. `[Mandatory for regular grid]` |
 | `--lon-end LON` | Upper-right corner longitude in degrees. `[Mandatory if --sx omitted]` |

@@ -78,6 +78,12 @@ def main() -> None:
         "--ref-dir", type=str, default="reference_data", help="Reference data directory (default: reference_data)"
     )
     gen_group.add_argument(
+        "--gridgen-data-dir",
+        type=str,
+        default="gridgen_data",
+        help="Gridgen repository data directory for polygon databases (default: gridgen_data)",
+    )
+    gen_group.add_argument(
         "--bathy-source",
         type=str,
         default="etopo2",
@@ -246,7 +252,7 @@ def main() -> None:
     user_bounds = []
     if args.user_polygons_flag:
         user_bounds = load_user_polygons(
-            ref_dir=args.ref_dir, flag_file=args.user_polygons_flag
+            ref_dir=args.gridgen_data_dir, flag_file=args.user_polygons_flag
         )
         if user_bounds:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
