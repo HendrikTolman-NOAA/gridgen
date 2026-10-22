@@ -567,8 +567,18 @@ def _write_plain_text_polygons(user_bound: Any, mat_path: str) -> str:
                 level = int(getattr(bound_obj, "level", 1))
                 bx = np.asarray(getattr(bound_obj, "x", []), dtype=np.float64)
                 by = np.asarray(getattr(bound_obj, "y", []), dtype=np.float64)
+
+                if len(bx) > 0:
+                    bx_180 = (bx + 180.0) % 360.0 - 180.0
+                    if float(np.max(bx_180) - np.min(bx_180)) > 180.0:
+                        bx_out = np.mod(bx, 360.0)
+                    else:
+                        bx_out = bx_180
+                else:
+                    bx_out = bx
+
                 f.write(f"# Polygon {idx + 1}: {name} (Level: {level}, Points: {len(bx)})\n")
-                f.writelines(f"{px_val:14.6f} {py_val:14.6f}\n" for px_val, py_val in zip(bx, by))
+                f.writelines(f"{px_val:14.6f} {py_val:14.6f}\n" for px_val, py_val in zip(bx_out, by))
                 f.write("\n")
     except (OSError, ValueError):
         pass

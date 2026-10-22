@@ -80,17 +80,23 @@ def test_load_repo_gridgen_data() -> None:
 
 
 def test_load_user_polygons_writes_text_file(tmp_path) -> None:
-    """Test that loading MAT optional polygons simultaneously writes a plain text file."""
+    """Test that loading MAT optional polygons simultaneously writes a plain text file with -180..180 longitudes."""
     ref_dir = str(tmp_path)
     mat_filename = "optional_coastal_polygons.mat"
     mat_path = os.path.join(ref_dir, mat_filename)
     txt_path = os.path.join(ref_dir, "optional_coastal_polygons.txt")
 
-    poly = DummyBound(
-        np.array([10.0, 20.0, 20.0, 10.0, 10.0]),
+    # Poly 1: 270.0 degrees (which is -90.0 in -180..180 range)
+    poly1 = DummyBound(
+        np.array([270.0, 280.0, 280.0, 270.0, 270.0]),
         np.array([10.0, 10.0, 20.0, 20.0, 10.0]),
     )
-    sio.savemat(mat_path, {"user_bound": np.array([poly], dtype=object)})
+    # Poly 2: polygon crossing 180 (e.g. 170 to 190 degrees)
+    poly2 = DummyBound(
+        np.array([170.0, 190.0, 190.0, 170.0, 170.0]),
+        np.array([10.0, 10.0, 20.0, 20.0, 10.0]),
+    )
+    sio.savemat(mat_path, {"user_bound": np.array([poly1, poly2], dtype=object)})
 
     assert not os.path.exists(txt_path)
     load_user_polygons(ref_dir=ref_dir, mat_filename=mat_filename)
@@ -99,7 +105,10 @@ def test_load_user_polygons_writes_text_file(tmp_path) -> None:
     with open(txt_path) as f:
         content = f.read()
     assert "# WAVEWATCH Optional Coastal Polygon Database" in content
-    assert "10.000000" in content
+    # Poly 1 converted 270 -> -90.0
+    assert "-90.000000" in content
+    # Poly 2 crosses 180, so stays 0..360 (170.0, 190.0)
+    assert "190.000000" in content
 
 
 def test_clean_mask_global_closure() -> None:
