@@ -407,6 +407,8 @@ def test_zoom_functionality(tmp_path):
     assert ax2.get_ylabel() == "Latitude (zoom)"
     assert ax2.get_xlim() == (12.5, 17.5)
     assert ax2.get_ylim() == (12.0, 16.0)
+    expected_aspect = 1.0 / np.cos(np.radians(14.0))
+    assert np.isclose(ax2.get_aspect(), expected_aspect)
 
     # Zoom string with commas "15.0, 14.0, 2.0"
     fig3 = plot_grid(data, zoom="15.0, 14.0, 2.0")
