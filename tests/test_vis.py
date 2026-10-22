@@ -609,6 +609,34 @@ def test_zoom_coordinate_formats(tmp_path: Path):
     assert out_jpg2.exists()
 
 
+def test_zoom_cyclic_longitudes(tmp_path: Path):
+    """Verify zoom and plot_grid properly normalize cyclic longitudes for regional and global grids."""
+    # 1. Regional grid [10, 50] with central longitude specified in cyclic range 390°
+    rlon1d = np.linspace(10.0, 50.0, 41)
+    rlat1d = np.linspace(-10.0, 10.0, 21)
+    rlon, rlat = np.meshgrid(rlon1d, rlat1d)
+    rdata = {"lon": rlon, "lat": rlat, "depth": np.full((21, 41), -50.0), "mask": np.ones((21, 41), dtype=int)}
+
+    # central_lon = 390 -> normalized to 30.0 -> zoom factor 2 -> xlim = [20.0, 40.0]
+    fig_reg = plot_grid(rdata, zoom=(390.0, 0.0, 2.0))
+    ax_reg = fig_reg.axes[0]
+    assert ax_reg.get_xlim() == (20.0, 40.0)
+
+    # 2. Global grid [0, 360] with central longitude shifted by +360° (c_lon = 500°) or -360° (c_lon = -200°)
+    glon1d = np.linspace(0.0, 359.0, 360)
+    glat1d = np.linspace(-90.0, 90.0, 181)
+    glon, glat = np.meshgrid(glon1d, glat1d)
+    gdata = {"lon": glon, "lat": glat, "depth": np.full((181, 360), -50.0), "mask": np.ones((181, 360), dtype=int)}
+
+    fig_g1 = plot_grid(gdata, zoom=(500.0, 0.0, 2.0))
+    ax_g1 = fig_g1.axes[0]
+    assert ax_g1.get_xlim() == (410.0, 590.0)
+
+    fig_g2 = plot_grid(gdata, zoom=(-600.0, 0.0, 2.0))
+    ax_g2 = fig_g2.axes[0]
+    assert ax_g2.get_xlim() == (30.0, 210.0)
+
+
 def test_mask_option_removed(tmp_path: Path):
     """Verify passing --mask raises an error as --mask option is removed."""
     repo_root = Path(__file__).parent.parent

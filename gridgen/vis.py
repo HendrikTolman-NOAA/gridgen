@@ -413,7 +413,18 @@ def plot_grid(
         central_lon, central_lat, zoom_factor = zoom_parsed
         zoom_factor = max(zoom_factor, 1.0)
 
-        c_lon = central_lon
+        if is_global:
+            # For global grids, lon_plot spans [lon_min - 360, lon_max + 360]
+            # Keep user central_lon if inside valid plot range, otherwise normalize modulo 360
+            if (lon_min - 360.0) <= central_lon <= (lon_max + 360.0):
+                c_lon = central_lon
+            else:
+                c_lon = lon_min + (central_lon - lon_min) % 360.0
+        else:
+            # Normalize central longitude modulo 360 into base grid range [lon_min, lon_max]
+            c_lon = lon_min + (central_lon - lon_min) % 360.0
+            if np.isclose(c_lon, lon_min) and abs(central_lon - lon_max) < abs(central_lon - lon_min):
+                c_lon = lon_max
 
         new_span_lat = span_lat_raw / zoom_factor
         if new_span_lat >= span_lat_raw:
@@ -437,11 +448,6 @@ def plot_grid(
             if new_span_lon >= span_lon_raw:
                 xlim = (lon_min, lon_max)
             else:
-                if lon_min >= 0 and lon_max > 180 and c_lon < 0:
-                    c_lon = c_lon % 360.0
-                elif lon_max <= 180 and lon_min < 0 and c_lon > 180:
-                    c_lon = (c_lon + 180.0) % 360.0 - 180.0
-
                 xmin = c_lon - new_span_lon / 2.0
                 xmax = c_lon + new_span_lon / 2.0
                 if xmin < lon_min:
