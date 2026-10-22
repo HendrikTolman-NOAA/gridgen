@@ -428,10 +428,13 @@ def test_zoom_functionality(tmp_path):
     assert ax_glob.get_xlim() == (-250.0, -70.0)
     assert ax_glob.get_ylim() == (-25.0, 65.0)
 
-    # Zoom factor < 1 raises ValueError
-    import pytest
-    with pytest.raises(ValueError, match="zoom_factor must be 1 or greater"):
-        plot_grid(data, zoom=(15.0, 14.0, 0.5))
+    # Zoom factor < 1 is clamped to 1.0 without error and retains standard labels
+    fig_sub1 = plot_grid(data, zoom=(15.0, 14.0, 0.5))
+    ax_sub1 = fig_sub1.axes[0]
+    assert ax_sub1.get_xlabel() == "Longitude"
+    assert ax_sub1.get_ylabel() == "Latitude"
+    assert ax_sub1.get_xlim() == (10.0, 20.0)
+    assert ax_sub1.get_ylim() == (10.0, 18.0)
 
 
 def test_zoom_cli_options(tmp_path: Path):

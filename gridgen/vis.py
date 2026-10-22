@@ -412,7 +412,7 @@ def plot_grid(
     if zoom_parsed is not None:
         central_lon, central_lat, zoom_factor = zoom_parsed
         if zoom_factor < 1.0:
-            raise ValueError("zoom_factor must be 1 or greater.")
+            zoom_factor = 1.0
 
         c_lon = central_lon
 
