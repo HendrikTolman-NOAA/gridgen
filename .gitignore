@@ -14,3 +14,9 @@ dist/
 /docs/man/
 /docs/build/
 *.doxytag
+
+# Local user coastal polygon files in root directory
+/user_polygons.flag
+/optional_coastal_polygons.txt
+/optional_coastal_polygons.mat
+/optional_coastal_polygons.dat

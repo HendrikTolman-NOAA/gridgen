@@ -47,6 +47,8 @@ LAKE_MIN_POINTS="15"
 LAKE_MIN_FRACTION="0.0005"
 LEGACY=0
 USER_POLYGONS_FLAG=""
+LOCAL_POLYGONS=0
+NO_USER_POLYGONS=0
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
 GRIDGEN_DATA_DIR="${SCRIPT_DIR}/gridgen_data"
@@ -78,6 +80,9 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   --user-polygons-flag FILE
                          Flag file for optional user coastal polygons
                          (optional_coastal_polygons.txt) [Optional]
+  --local-polygons       Use optional user coastal polygon files from local directory (.)
+                         instead of gridgen_data [Optional]
+  --no-user-polygons     Disable loading user coastal polygons [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
                          [Optional]
@@ -242,6 +247,14 @@ while [[ $# -gt 0 ]]; do
       USER_POLYGONS_FLAG="$2"
       shift 2
       ;;
+    --local-polygons)
+      LOCAL_POLYGONS=1
+      shift 1
+      ;;
+    --no-user-polygons)
+      NO_USER_POLYGONS=1
+      shift 1
+      ;;
     -c|--clean|--cleanup)
       CLEANUP=1
       shift 1
@@ -279,6 +292,8 @@ if [ "$GRIDGEN_DATA_DIR_SPECIFIED" -eq 1 ]; then
   if [[ "$GRIDGEN_DATA_DIR" != /* ]]; then
     GRIDGEN_DATA_DIR="${ORIG_DIR}/${GRIDGEN_DATA_DIR}"
   fi
+elif [ "$LOCAL_POLYGONS" -eq 1 ]; then
+  GRIDGEN_DATA_DIR="${ORIG_DIR}"
 else
   GRIDGEN_DATA_DIR="${SCRIPT_DIR}/gridgen_data"
 fi
@@ -439,6 +454,8 @@ if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINT
 if [ -n "$LAKE_MIN_FRACTION" ]; then CMD_ARGS+=(--lake-min-fraction "$LAKE_MIN_FRACTION"); fi
 if [ "$LEGACY" -eq 1 ]; then CMD_ARGS+=(--legacy); fi
 if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
+if [ "$LOCAL_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--local-polygons); fi
+if [ "$NO_USER_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--no-user-polygons); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"
 

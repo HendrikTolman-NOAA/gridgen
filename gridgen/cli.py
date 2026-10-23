@@ -101,6 +101,16 @@ def main() -> None:
         help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.txt)",
     )
     gen_group.add_argument(
+        "--local-polygons",
+        action="store_true",
+        help="Use optional user coastal polygon files from local directory (.) instead of gridgen_data",
+    )
+    gen_group.add_argument(
+        "--no-user-polygons",
+        action="store_true",
+        help="Disable loading user coastal polygons (default: user polygons are loaded automatically)",
+    )
+    gen_group.add_argument(
         "--lake-min-points",
         type=int,
         default=15,
@@ -250,9 +260,13 @@ def main() -> None:
     m[depth == 999999.0] = 0
 
     user_bounds = []
-    if args.user_polygons_flag:
+    if not args.no_user_polygons:
+        if args.local_polygons:
+            poly_dir = args.gridgen_data_dir if args.gridgen_data_dir != "gridgen_data" else "."
+        else:
+            poly_dir = args.gridgen_data_dir
         user_bounds = load_user_polygons(
-            ref_dir=args.gridgen_data_dir, flag_file=args.user_polygons_flag
+            ref_dir=poly_dir, flag_file=args.user_polygons_flag
         )
         if user_bounds:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")

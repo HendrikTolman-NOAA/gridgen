@@ -15,6 +15,8 @@
 from __future__ import annotations
 
 import os
+import subprocess
+import sys
 
 import numpy as np
 import scipy.io as sio
@@ -127,3 +129,94 @@ def test_clean_mask_global_closure() -> None:
 
     assert np.all(cleaned[idx_start] == 0)
     assert np.all(cleaned[idx_end] == 0)
+
+
+def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
+    """Test gridgen CLI automatic polygon loading by default, --local-polygons, and --no-user-polygons."""
+    # Setup dummy reference bathymetry dataset
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    import xarray as xr
+
+    lon = np.linspace(0.0, 360.0, 10)
+    lat = np.linspace(-90.0, 90.0, 10)
+    z = np.full((10, 10), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
+
+    out_dir = tmp_path / "out"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Default CLI run (automatically loads polygons from gridgen_data)
+    cmd1 = [
+        sys.executable,
+        "-m",
+        "gridgen.cli",
+        "--name",
+        "test_default",
+        "--ref-dir",
+        str(ref_dir),
+        "--out-dir",
+        str(out_dir),
+        "--nx",
+        "10",
+        "--ny",
+        "10",
+    ]
+    res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
+    assert res1.returncode == 0
+    assert "Loaded 2 active user-defined coastal polygons." in res1.stdout
+
+    # 2. Local polygons run
+    local_poly_dir = tmp_path / "local_run"
+    local_poly_dir.mkdir(parents=True, exist_ok=True)
+    with open(local_poly_dir / "optional_coastal_polygons.txt", "w") as f:
+        f.write("# Polygon 1: Local Poly (Level: 1, Points: 5)\n")
+        f.write("0.0 0.0\n10.0 0.0\n10.0 10.0\n0.0 10.0\n0.0 0.0\n\n")
+    with open(local_poly_dir / "user_polygons.flag", "w") as f:
+        f.write("1 1\n")
+
+    cmd2 = [
+        sys.executable,
+        "-m",
+        "gridgen.cli",
+        "--name",
+        "test_local",
+        "--ref-dir",
+        str(ref_dir),
+        "--out-dir",
+        str(out_dir),
+        "--nx",
+        "10",
+        "--ny",
+        "10",
+        "--local-polygons",
+    ]
+    res2 = subprocess.run(cmd2, cwd=str(local_poly_dir), capture_output=True, text=True, check=False)
+    assert res2.returncode == 0
+    assert "Loaded 1 active user-defined coastal polygons." in res2.stdout
+
+    # 3. No user polygons run
+    cmd3 = [
+        sys.executable,
+        "-m",
+        "gridgen.cli",
+        "--name",
+        "test_no_poly",
+        "--ref-dir",
+        str(ref_dir),
+        "--out-dir",
+        str(out_dir),
+        "--nx",
+        "10",
+        "--ny",
+        "10",
+        "--no-user-polygons",
+    ]
+    res3 = subprocess.run(cmd3, capture_output=True, text=True, check=False)
+    assert res3.returncode == 0
+    assert "active user-defined coastal polygons" not in res3.stdout

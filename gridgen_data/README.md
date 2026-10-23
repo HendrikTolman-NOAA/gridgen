@@ -38,17 +38,23 @@ This directory (`gridgen_data/`) contains internal polygon configuration dataset
 
 ## Command Line Usage
 
-When invoking grid generation, the polygon database files in `gridgen_data/` are automatically loaded by default when `--user-polygons-flag` is specified:
+When invoking grid generation, the polygon database files in `gridgen_data/` are automatically loaded by default:
 
 ```bash
-# Enable user coastal polygon masking with default switch control file
-./run_gridgen.sh --user-polygons-flag gridgen_data/user_polygons.flag
+# Run grid generation with default user polygon masking from gridgen_data/
+./run_gridgen.sh
 
 # Or run directly via Python CLI
-python3 -m gridgen.cli --user-polygons-flag gridgen_data/user_polygons.flag
+python3 -m gridgen.cli
+
+# Use local directory (.) polygon files instead of gridgen_data/
+./run_gridgen.sh --local-polygons
+
+# Disable user coastal polygon masking completely
+./run_gridgen.sh --no-user-polygons
 ```
 
-Custom flag control files or polygon database directories can be provided via `--user-polygons-flag FILE` and `--gridgen-data-dir DIR`.
+Custom flag control files or polygon database directories can also be provided via `--user-polygons-flag FILE` and `--gridgen-data-dir DIR`.
 
 ---
 

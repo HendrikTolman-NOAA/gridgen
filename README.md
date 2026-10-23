@@ -102,9 +102,11 @@ The reference dataset files include:
 
 ### User-Defined Coastal Polygons (`gridgen_data/`)
 
-Optional user-defined coastal polygon coordinates (`optional_coastal_polygons.txt`) and polygon switch control file (`user_polygons.flag`) are unique to the tool and maintained directly in the repository in `gridgen_data/`. They allow users to explicitly mask out water bodies (such as inland lakes, bays, or estuaries) that do not play a significant role in wave propagation. User polygon selection is controlled by binary switches (`0` = off, `1` = on) per polygon index:
-- `load_user_polygons(ref_dir="gridgen_data", flag_file=...)` loads and filters active user boundary polygons based on the control switches.
+Optional user-defined coastal polygon coordinates (`optional_coastal_polygons.txt`) and polygon switch control file (`user_polygons.flag`) are unique to the tool and maintained directly in the repository in `gridgen_data/`. They allow users to explicitly mask out water bodies (such as inland lakes, bays, or estuaries) that do not play a significant role in wave propagation. User polygons in `gridgen_data/` are automatically loaded by default:
+- `load_user_polygons(ref_dir="gridgen_data", flag_file=...)` loads and filters active user boundary polygons based on the control switches (`0` = off, `1` = on).
 - Active user polygons are passed into `clean_mask()` to refine land/sea mask boundaries and `create_obstr()` to calculate directional sub-grid obstruction factors ($S_x$, $S_y$).
+- To use custom polygon files in the current/local directory (`.`), pass `--local-polygons`. Local polygon files appearing in the root directory of the clone (`user_polygons.flag`, `optional_coastal_polygons.txt`, `optional_coastal_polygons.mat`) are ignored by Git.
+- To disable user polygon masking completely, pass `--no-user-polygons`.
 
 ### Running Grid Generation Tool (`run_gridgen.sh`)
 
@@ -125,6 +127,8 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--bathy-source SOURCE` | Bathymetry dataset identifier or NetCDF prefix (e.g. `etopo1`, `etopo2`, `ETOPO_2022_v1_60s_N90W180_bed`) (default: `etopo2`). `[Optional]` |
 | `--boundary-points` | Define input boundary cells (mask value 2) along regional grid boundaries. `[Optional]` |
 | `--user-polygons-flag FILE` | Path to flag file for optional user coastal polygons (`gridgen_data/user_polygons.flag`). `[Optional]` |
+| `--local-polygons` | Use user coastal polygon files from local directory (`.`) instead of `gridgen_data`. Local polygon files in root clone directory are not tracked in Git. `[Optional]` |
+| `--no-user-polygons` | Disable loading user coastal polygons (loaded automatically by default). `[Optional]` |
 | `--gridgen-data-dir DIR` | Directory containing tool-specific polygon databases (`gridgen_data/`) (default: `gridgen_data`). `[Optional]` |
 | `--lon-start LON` | Lower-left corner longitude in degrees. `[Mandatory for regular grid]` |
 | `--lat-start LAT` | Lower-left corner latitude in degrees. `[Mandatory for regular grid]` |
