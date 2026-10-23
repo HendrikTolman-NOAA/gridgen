@@ -107,6 +107,7 @@ Optional user-defined coastal polygon coordinates (`optional_coastal_polygons.tx
 - Active user polygons are passed into `clean_mask()` to refine land/sea mask boundaries and `create_obstr()` to calculate directional sub-grid obstruction factors ($S_x$, $S_y$).
 - To use custom polygon files in the current/local directory (`.`), pass `--local-polygons`. Local polygon files appearing in the root directory of the clone (`user_polygons.flag`, `optional_coastal_polygons.txt`, `optional_coastal_polygons.mat`) are ignored by Git.
 - To disable user polygon masking completely, pass `--no-user-polygons`.
+- To apply all coastal polygons independent of their switch flag values in `user_polygons.flag`, pass `--all-polygons`.
 
 ### Running Grid Generation Tool (`run_gridgen.sh`)
 
@@ -126,10 +127,9 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
 | `--bathy-source SOURCE` | Bathymetry dataset identifier or NetCDF prefix (e.g. `etopo1`, `etopo2`, `ETOPO_2022_v1_60s_N90W180_bed`) (default: `etopo2`). `[Optional]` |
 | `--boundary-points` | Define input boundary cells (mask value 2) along regional grid boundaries. `[Optional]` |
-| `--user-polygons-flag FILE` | Path to flag file for optional user coastal polygons (`gridgen_data/user_polygons.flag`). `[Optional]` |
 | `--local-polygons` | Use user coastal polygon files from local directory (`.`) instead of `gridgen_data`. Local polygon files in root clone directory are not tracked in Git. `[Optional]` |
 | `--no-user-polygons` | Disable loading user coastal polygons (loaded automatically by default). `[Optional]` |
-| `--gridgen-data-dir DIR` | Directory containing tool-specific polygon databases (`gridgen_data/`) (default: `gridgen_data`). `[Optional]` |
+| `--all-polygons` | Apply all coastal polygons independent of their switch values in `user_polygons.flag`. `[Optional]` |
 | `--lon-start LON` | Lower-left corner longitude in degrees. `[Mandatory for regular grid]` |
 | `--lat-start LAT` | Lower-left corner latitude in degrees. `[Mandatory for regular grid]` |
 | `--lon-end LON` | Upper-right corner longitude in degrees. `[Mandatory if --sx omitted]` |

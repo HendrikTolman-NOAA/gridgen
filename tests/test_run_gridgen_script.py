@@ -657,4 +657,27 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
         check=False,
     )
     assert res_local.returncode == 0
-    assert "Loaded 1 active user-defined coastal polygons." in res_local.stdout
+    assert (out_dir / "test_local_sh_ugrid.nc").exists()
+
+    # 3. Test run_gridgen.sh with --all-polygons
+    res_all = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_all_sh",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--all-polygons",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res_all.returncode == 0
+    assert "Loaded 50 active user-defined coastal polygons." in res_all.stdout

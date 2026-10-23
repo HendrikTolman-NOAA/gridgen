@@ -176,7 +176,7 @@ gridgen/
 
 1. **`gridgen.cli` (Command-Line Driver)**
    - Implements `main()` as the central execution driver for the command-line tool.
-   - Parses arguments for general parameters (`--name`, `--nx`, `--ny`, `--out-dir`, `--ref-dir`, `--gridgen-data-dir`), regular grid bounds, stereographic parameters, custom grid files, boundary point flags, and user coastal polygon flags.
+   - Parses arguments for general parameters (`--name`, `--nx`, `--ny`, `--out-dir`, `--ref-dir`), regular grid bounds, stereographic parameters, custom grid files, boundary point flags, and user coastal polygon flags (`--local-polygons`, `--no-user-polygons`, `--all-polygons`).
    - Orchestrates the full pipeline: coordinate generation $\rightarrow$ bathymetry extraction $\rightarrow$ mask cleaning/lake removal $\rightarrow$ obstruction computation $\rightarrow$ multi-format export.
 
 2. **`gridgen.coordinates` (Coordinate Generation & Loading)**

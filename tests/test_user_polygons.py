@@ -220,3 +220,24 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     res3 = subprocess.run(cmd3, capture_output=True, text=True, check=False)
     assert res3.returncode == 0
     assert "active user-defined coastal polygons" not in res3.stdout
+
+    # 4. All polygons run
+    cmd4 = [
+        sys.executable,
+        "-m",
+        "gridgen.cli",
+        "--name",
+        "test_all_poly",
+        "--ref-dir",
+        str(ref_dir),
+        "--out-dir",
+        str(out_dir),
+        "--nx",
+        "10",
+        "--ny",
+        "10",
+        "--all-polygons",
+    ]
+    res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
+    assert res4.returncode == 0
+    assert "Loaded 50 active user-defined coastal polygons." in res4.stdout

@@ -32,7 +32,7 @@ This directory (`gridgen_data/`) contains internal polygon configuration dataset
 ### 2. Polygon Coordinate Database (`optional_coastal_polygons.txt`)
 * **Format**: Plain text (`.txt`)
 * **Description**: Plain text database storing coordinate polygon boundaries (`x`, `y` coordinates and nesting levels) for the 50 user-defined optional regional coastal domains.
-* **Usage**: Loaded by `gridgen.masking.load_user_polygons` when user-defined optional polygon masking is enabled via `--user-polygons-flag`.
+* **Usage**: Loaded by `gridgen.masking.load_user_polygons` during land/sea mask cleaning (`clean_mask`) and subgrid obstruction factor generation (`create_obstr`).
 
 ---
 
@@ -52,9 +52,10 @@ python3 -m gridgen.cli
 
 # Disable user coastal polygon masking completely
 ./run_gridgen.sh --no-user-polygons
-```
 
-Custom flag control files or polygon database directories can also be provided via `--user-polygons-flag FILE` and `--gridgen-data-dir DIR`.
+# Apply all coastal polygons independent of switch flag values
+./run_gridgen.sh --all-polygons
+```
 
 ---
 
