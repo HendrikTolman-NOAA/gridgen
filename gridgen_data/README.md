@@ -26,12 +26,12 @@ This directory (`gridgen_data/`) contains internal polygon configuration dataset
 
 ### 1. Polygon Switch Control File (`user_polygons.flag`)
 * **Format**: Plain text (`.flag`)
-* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 52 predefined coastal feature polygons (e.g., Hudson Bay, Mediterranean Sea, Chesapeake Bay, San Francisco Harbor, Caspian Sea, Netherlands IJsselmeer & Markermeer).
+* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 54 predefined coastal feature polygons (e.g., Hudson Bay, Mediterranean Sea, Chesapeake Bay, San Francisco Harbor, Caspian Sea, Netherlands IJsselmeer & Markermeer, Waddenzee East/North of Elbe River).
 * **Usage**: Read by `gridgen.masking.load_user_polygons` to determine which user-defined optional coastal polygons should be active during land/sea mask cleaning (`clean_mask`) and subgrid obstruction generation (`create_obstr`).
 
 ### 2. Polygon Coordinate Database (`optional_coastal_polygons.txt`)
 * **Format**: Plain text (`.txt`)
-* **Description**: Plain text database storing coordinate polygon boundaries (`x`, `y` coordinates and nesting levels) for the 52 user-defined optional regional coastal domains.
+* **Description**: Plain text database storing coordinate polygon boundaries (`x`, `y` coordinates and nesting levels) for the 54 user-defined optional regional coastal domains.
 * **Usage**: Loaded by `gridgen.masking.load_user_polygons` during land/sea mask cleaning (`clean_mask`) and subgrid obstruction factor generation (`create_obstr`).
 
 ---

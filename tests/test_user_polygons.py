@@ -240,7 +240,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 52 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 54 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -250,7 +250,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 52
+    assert len(all_polys) == 54
 
     # Locate Caspian Sea polygon (west ~ 46.8, east ~ 54.5, south ~ 36.6, north ~ 47.2)
     caspian_poly = None
@@ -284,7 +284,7 @@ def test_netherlands_polygon_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 52
+    assert len(all_polys) == 54
 
     nl_poly = None
     for p in all_polys:
@@ -309,3 +309,39 @@ def test_netherlands_polygon_loading_and_masking() -> None:
     mask_wad = np.ones_like(lon_wad, dtype=int)
     cleaned_wad = clean_mask(lon_wad, lat_wad, mask_wad, [nl_poly])
     assert cleaned_wad[1, 1] == 1
+
+
+def test_waddenzee_polygons_loading_and_masking() -> None:
+    """Test that Waddenzee polygons (53 and 54) load correctly and mask expected regions."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
+
+    all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
+    assert len(all_polys) == 54
+
+    poly_east = None
+    poly_north = None
+    for p in all_polys:
+        if p["west"] <= 5.0 and p["east"] >= 8.5 and p["south"] <= 53.0 and p["north"] >= 53.8:
+            poly_east = p
+        elif p["west"] <= 8.5 and p["east"] >= 9.0 and p["south"] <= 54.0 and p["north"] >= 55.0:
+            poly_north = p
+
+    assert poly_east is not None, "Waddenzee East polygon 53 must be present"
+    assert poly_north is not None, "Waddenzee North polygon 54 must be present"
+
+    # Test Waddenzee East point (7.0°E, 53.6°N)
+    lon_e, lat_e = create_regular_grid(
+        NX=3, NY=3, LON_START=6.9, LON_END=7.1, LAT_START=53.5, LAT_END=53.7
+    )
+    mask_e = np.ones_like(lon_e, dtype=int)
+    cleaned_e = clean_mask(lon_e, lat_e, mask_e, [poly_east])
+    assert cleaned_e[1, 1] == 0
+
+    # Test Waddenzee North point (8.6°E, 54.5°N)
+    lon_n, lat_n = create_regular_grid(
+        NX=3, NY=3, LON_START=8.5, LON_END=8.7, LAT_START=54.4, LAT_END=54.6
+    )
+    mask_n = np.ones_like(lon_n, dtype=int)
+    cleaned_n = clean_mask(lon_n, lat_n, mask_n, [poly_north])
+    assert cleaned_n[1, 1] == 0
