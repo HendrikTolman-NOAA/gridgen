@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-22
+# @date Latest Update: 2026-10-23
 -->
 
 <p align="center">
@@ -184,7 +184,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 
 ---
 
-**Last updated:** October 22, 2026
+**Last updated:** October 23, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">
