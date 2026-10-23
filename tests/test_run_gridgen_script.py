@@ -582,3 +582,102 @@ def test_run_gridgen_from_external_directory_custom_out(tmp_path: Path):
     expected_out_dir = tmp_path / custom_out
     assert expected_out_dir.exists()
     assert (expected_out_dir / f"{grid_prefix}_ugrid.nc").exists()
+
+
+def test_run_gridgen_user_polygons_flags(tmp_path: Path):
+    """Verify run_gridgen.sh supports --local-polygons and --no-user-polygons flags."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    out_dir = tmp_path / "grid_output"
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    import numpy as np
+    import xarray as xr
+
+    lon = np.linspace(10.0, 12.0, 10)
+    lat = np.linspace(20.0, 22.0, 10)
+    z = np.full((10, 10), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
+
+    # 1. Test run_gridgen.sh with --no-user-polygons
+    res_no_poly = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_no_poly",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--no-user-polygons",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res_no_poly.returncode == 0
+    assert "active user-defined coastal polygons" not in res_no_poly.stdout
+
+    # 2. Test run_gridgen.sh with --local-polygons
+    local_dir = tmp_path / "local_sh_run"
+    local_dir.mkdir(parents=True, exist_ok=True)
+    with open(local_dir / "optional_coastal_polygons.txt", "w") as f:
+        f.write("# Polygon 1: Local Poly (Level: 1, Points: 5)\n")
+        f.write("10.0 20.0\n12.0 20.0\n12.0 22.0\n10.0 22.0\n10.0 20.0\n\n")
+    with open(local_dir / "user_polygons.flag", "w") as f:
+        f.write("1 1\n")
+
+    res_local = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_local_sh",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--local-polygons",
+        ],
+        cwd=str(local_dir),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res_local.returncode == 0
+    assert (out_dir / "test_local_sh_ugrid.nc").exists()
+
+    # 3. Test run_gridgen.sh with --all-polygons
+    res_all = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_all_sh",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--all-polygons",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res_all.returncode == 0
+    assert "Loaded 50 active user-defined coastal polygons." in res_all.stdout

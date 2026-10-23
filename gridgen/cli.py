@@ -78,12 +78,6 @@ def main() -> None:
         "--ref-dir", type=str, default="reference_data", help="Reference data directory (default: reference_data)"
     )
     gen_group.add_argument(
-        "--gridgen-data-dir",
-        type=str,
-        default="gridgen_data",
-        help="Gridgen repository data directory for polygon databases (default: gridgen_data)",
-    )
-    gen_group.add_argument(
         "--bathy-source",
         type=str,
         default="etopo2",
@@ -95,10 +89,21 @@ def main() -> None:
         help="Define input boundary points (mask value 2) along regional grid boundaries",
     )
     gen_group.add_argument(
-        "--user-polygons-flag",
-        type=str,
-        default=None,
-        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.txt)",
+        "--local-polygons",
+        action="store_true",
+        help="Use optional user coastal polygon files from local directory (.) instead of gridgen_data",
+    )
+    gen_group.add_argument(
+        "--no-user-polygons",
+        action="store_true",
+        help="Disable loading user coastal polygons (default: user polygons are loaded automatically)",
+    )
+    gen_group.add_argument(
+        "--all-polygons",
+        "--all-user-polygons",
+        dest="all_polygons",
+        action="store_true",
+        help="Apply all coastal polygons independent of their actual flag values in user_polygons.flag",
     )
     gen_group.add_argument(
         "--lake-min-points",
@@ -250,9 +255,11 @@ def main() -> None:
     m[depth == 999999.0] = 0
 
     user_bounds = []
-    if args.user_polygons_flag:
+    if not args.no_user_polygons:
+        poly_dir = "." if args.local_polygons else "gridgen_data"
         user_bounds = load_user_polygons(
-            ref_dir=args.gridgen_data_dir, flag_file=args.user_polygons_flag
+            ref_dir=poly_dir,
+            all_polygons=args.all_polygons,
         )
         if user_bounds:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")

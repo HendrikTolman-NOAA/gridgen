@@ -676,6 +676,7 @@ def load_user_polygons(
     txt_filename: str = "optional_coastal_polygons.txt",
     mat_filename: str = "optional_coastal_polygons.mat",
     data_dir: str | None = None,
+    all_polygons: bool = False,
 ) -> list[dict[str, Any]]:
     """Load user-defined optional coastal polygons filtered by a flag control file.
 
@@ -693,6 +694,8 @@ def load_user_polygons(
         Legacy MAT filename parameter maintained for backward compatibility.
     data_dir : Optional[str]
         Alias directory parameter for gridgen_data.
+    all_polygons : bool
+        If True, apply all loaded polygons regardless of switch values in flag_file (default: False).
 
     Returns
     -------
@@ -759,7 +762,7 @@ def load_user_polygons(
         elif os.path.exists(os.path.join("gridgen_data", "user_polygons.flag")):
             target_flag = os.path.join("gridgen_data", "user_polygons.flag")
 
-    if target_flag and os.path.exists(target_flag):
+    if not all_polygons and target_flag and os.path.exists(target_flag):
         with open(target_flag) as f:
             for line in f:
                 line_str = line.strip()
@@ -771,7 +774,7 @@ def load_user_polygons(
                 elif len(parts) == 1:
                     switches.append(int(parts[0]))
 
-    if not switches:
+    if all_polygons or not switches:
         switches = [1] * len(user_bound)
 
     active_polygons = []
