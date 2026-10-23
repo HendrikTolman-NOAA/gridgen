@@ -98,7 +98,7 @@ def main() -> None:
         "--user-polygons-flag",
         type=str,
         default=None,
-        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
+        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.txt)",
     )
     gen_group.add_argument(
         "--lake-min-points",

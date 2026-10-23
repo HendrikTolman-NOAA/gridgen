@@ -542,6 +542,91 @@ def define_boundary_points(
     return m_new
 
 
+def read_plain_text_polygons(txt_path: str) -> list[dict[str, Any]]:
+    """Read user boundary polygons from plain text format file.
+
+    Parameters
+    ----------
+    txt_path : str
+        Path to the plain text polygon database file.
+
+    Returns
+    -------
+    polygons : List[Dict[str, Any]]
+        List of polygon dictionaries containing 'name', 'level', 'x', and 'y'.
+    """
+    polygons = []
+    curr_x: list[float] = []
+    curr_y: list[float] = []
+    curr_level = 1
+    curr_name = ""
+
+    with open(txt_path) as f:
+        for line in f:
+            line_str = line.strip()
+            if not line_str:
+                if curr_x:
+                    polygons.append(
+                        {
+                            "name": curr_name,
+                            "level": curr_level,
+                            "x": np.array(curr_x, dtype=np.float64),
+                            "y": np.array(curr_y, dtype=np.float64),
+                        }
+                    )
+                    curr_x, curr_y = [], []
+                    curr_level = 1
+                    curr_name = ""
+                continue
+
+            if line_str.startswith("#"):
+                if "Polygon" in line_str and ("Level:" in line_str or ":" in line_str):
+                    if curr_x:
+                        polygons.append(
+                            {
+                                "name": curr_name,
+                                "level": curr_level,
+                                "x": np.array(curr_x, dtype=np.float64),
+                                "y": np.array(curr_y, dtype=np.float64),
+                            }
+                        )
+                        curr_x, curr_y = [], []
+                    curr_level = 1
+                    if "Level:" in line_str:
+                        try:
+                            level_part = (
+                                line_str.split("Level:")[1]
+                                .split(",")[0]
+                                .split(")")[0]
+                                .strip()
+                            )
+                            curr_level = int(level_part)
+                        except (ValueError, IndexError):
+                            curr_level = 1
+                    curr_name = line_str.lstrip("#").strip()
+                continue
+
+            parts = line_str.split()
+            if len(parts) >= 2:
+                try:
+                    curr_x.append(float(parts[0]))
+                    curr_y.append(float(parts[1]))
+                except ValueError:
+                    pass
+
+    if curr_x:
+        polygons.append(
+            {
+                "name": curr_name,
+                "level": curr_level,
+                "x": np.array(curr_x, dtype=np.float64),
+                "y": np.array(curr_y, dtype=np.float64),
+            }
+        )
+
+    return polygons
+
+
 def _write_plain_text_polygons(user_bound: Any, mat_path: str) -> str:
     """Write a plain text version of user coastal polygons in the same directory as mat_path.
 
@@ -588,6 +673,7 @@ def _write_plain_text_polygons(user_bound: Any, mat_path: str) -> str:
 def load_user_polygons(
     ref_dir: str = "gridgen_data",
     flag_file: str | None = None,
+    txt_filename: str = "optional_coastal_polygons.txt",
     mat_filename: str = "optional_coastal_polygons.mat",
     data_dir: str | None = None,
 ) -> list[dict[str, Any]]:
@@ -598,11 +684,13 @@ def load_user_polygons(
     Parameters
     ----------
     ref_dir : str
-        Directory containing optional coastal polygon MAT datasets (default: "gridgen_data").
+        Directory containing optional coastal polygon datasets (default: "gridgen_data").
     flag_file : Optional[str]
         Path to text file containing binary switches (0 = off, 1 = on) per polygon.
+    txt_filename : str
+        Filename of plain text file containing user coastal polygons.
     mat_filename : str
-        Filename of MAT file containing user coastal polygons.
+        Legacy MAT filename parameter maintained for backward compatibility.
     data_dir : Optional[str]
         Alias directory parameter for gridgen_data.
 
@@ -613,23 +701,50 @@ def load_user_polygons(
     """
     target_dir = data_dir if data_dir is not None else ref_dir
 
+    txt_path = os.path.join(target_dir, txt_filename)
     mat_path = os.path.join(target_dir, mat_filename)
-    if not os.path.exists(mat_path):
-        if os.path.exists(os.path.join("gridgen_data", mat_filename)):
-            mat_path = os.path.join("gridgen_data", mat_filename)
-        else:
-            return []
+    user_bound = []
 
-    mat_data = sio.loadmat(mat_path, squeeze_me=True, struct_as_record=False)
-    if "user_bound" not in mat_data:
+    if os.path.exists(txt_path):
+        user_bound = read_plain_text_polygons(txt_path)
+    elif os.path.exists(mat_path):
+        mat_data = sio.loadmat(mat_path, squeeze_me=True, struct_as_record=False)
+        if "user_bound" in mat_data:
+            raw_bound = mat_data["user_bound"]
+            if not isinstance(raw_bound, np.ndarray):
+                raw_bound = np.array([raw_bound])
+            for bound_obj in raw_bound:
+                user_bound.append(
+                    {
+                        "name": str(getattr(bound_obj, "name", "")).strip(),
+                        "level": int(getattr(bound_obj, "level", 1)),
+                        "x": np.asarray(getattr(bound_obj, "x", []), dtype=np.float64),
+                        "y": np.asarray(getattr(bound_obj, "y", []), dtype=np.float64),
+                    }
+                )
+    elif os.path.exists(os.path.join("gridgen_data", txt_filename)):
+        user_bound = read_plain_text_polygons(
+            os.path.join("gridgen_data", txt_filename)
+        )
+    elif os.path.exists(os.path.join("gridgen_data", mat_filename)):
+        fallback_mat = os.path.join("gridgen_data", mat_filename)
+        mat_data = sio.loadmat(fallback_mat, squeeze_me=True, struct_as_record=False)
+        if "user_bound" in mat_data:
+            raw_bound = mat_data["user_bound"]
+            if not isinstance(raw_bound, np.ndarray):
+                raw_bound = np.array([raw_bound])
+            for bound_obj in raw_bound:
+                user_bound.append(
+                    {
+                        "name": str(getattr(bound_obj, "name", "")).strip(),
+                        "level": int(getattr(bound_obj, "level", 1)),
+                        "x": np.asarray(getattr(bound_obj, "x", []), dtype=np.float64),
+                        "y": np.asarray(getattr(bound_obj, "y", []), dtype=np.float64),
+                    }
+                )
+
+    if not user_bound:
         return []
-
-    user_bound = mat_data["user_bound"]
-    if not isinstance(user_bound, np.ndarray):
-        user_bound = np.array([user_bound])
-
-    # Write plain text version of optional_coastal_polygons in same directory
-    _write_plain_text_polygons(user_bound, mat_path)
 
     switches = []
     target_flag = None
@@ -664,8 +779,15 @@ def load_user_polygons(
         if idx >= len(switches) or switches[idx] != 1:
             continue
 
-        bx = np.asarray(getattr(bound_obj, "x", []), dtype=np.float64)
-        by = np.asarray(getattr(bound_obj, "y", []), dtype=np.float64)
+        if isinstance(bound_obj, dict):
+            bx = np.asarray(bound_obj.get("x", []), dtype=np.float64)
+            by = np.asarray(bound_obj.get("y", []), dtype=np.float64)
+            level = int(bound_obj.get("level", 1))
+        else:
+            bx = np.asarray(getattr(bound_obj, "x", []), dtype=np.float64)
+            by = np.asarray(getattr(bound_obj, "y", []), dtype=np.float64)
+            level = int(getattr(bound_obj, "level", 1))
+
         if len(bx) < 3:
             continue
 
@@ -686,7 +808,7 @@ def load_user_polygons(
                 "north": north,
                 "width": east - west,
                 "height": north - south,
-                "level": int(getattr(bound_obj, "level", 1)),
+                "level": level,
                 "polygon": poly,
             }
         )

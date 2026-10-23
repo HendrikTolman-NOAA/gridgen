@@ -71,7 +71,7 @@ Run `./populate_reference_data.sh --help` for full CLI options and dataset infor
   * **Source**: NOAA NCEP gridgen distribution tarball (`gridgen_addit.tar.gz`).
   * **Usage**: Loaded by grid generation pipelines (`compute_boundary`, `clean_mask`, `split_boundary`, `create_obstr`) to compute domain boundaries, refine land/sea masks, split large shoreline geometries, and calculate subgrid obstruction factors for WAVEWATCH wave modeling.
 
-> **Note**: Tool-unique polygon databases (`optional_coastal_polygons.mat` and `user_polygons.flag`) are maintained directly in version control under the `gridgen_data/` directory. See `gridgen_data/README.md` for details.
+> **Note**: Tool-unique polygon databases (`optional_coastal_polygons.txt` and `user_polygons.flag`) are maintained directly in version control under the `gridgen_data/` directory. See `gridgen_data/README.md` for details.
 
 ---
 

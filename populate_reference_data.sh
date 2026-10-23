@@ -245,6 +245,7 @@ if [ "$FETCH_LEGACY" = true ]; then
       echo "Extraction complete."
       rm -f "$TARBALL"
       echo "Removed tarball archive ${TARBALL}."
+      rm -f "${TARGET_DIR}/optional_coastal_polygons.mat" "${TARGET_DIR}/user_polygons.flag"
 
       STILL_MISSING=()
       for file in "${MISSING_FILES[@]}"; do

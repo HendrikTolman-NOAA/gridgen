@@ -76,7 +76,8 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: 0.0005 [0.05%]) [Optional]
   --legacy               Export legacy ASCII and COARDS NetCDF files [Optional]
   --user-polygons-flag FILE
-                         Flag file for optional user coastal polygons [Optional]
+                         Flag file for optional user coastal polygons
+                         (optional_coastal_polygons.txt) [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
                          [Optional]

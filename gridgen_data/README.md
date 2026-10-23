@@ -29,9 +29,9 @@ This directory (`gridgen_data/`) contains internal polygon configuration dataset
 * **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 50 predefined coastal feature polygons (e.g., Hudson Bay, Mediterranean Sea, Chesapeake Bay, San Francisco Harbor).
 * **Usage**: Read by `gridgen.masking.load_user_polygons` to determine which user-defined optional coastal polygons should be active during land/sea mask cleaning (`clean_mask`) and subgrid obstruction generation (`create_obstr`).
 
-### 2. Polygon Coordinate Database (`optional_coastal_polygons.mat`)
-* **Format**: MATLAB MAT-file (`.mat`)
-* **Description**: Structured array (`user_bound`) storing coordinate polygon boundaries (`x`, `y` coordinates and nesting levels) for the 50 user-defined optional regional coastal domains.
+### 2. Polygon Coordinate Database (`optional_coastal_polygons.txt`)
+* **Format**: Plain text (`.txt`)
+* **Description**: Plain text database storing coordinate polygon boundaries (`x`, `y` coordinates and nesting levels) for the 50 user-defined optional regional coastal domains.
 * **Usage**: Loaded by `gridgen.masking.load_user_polygons` when user-defined optional polygon masking is enabled via `--user-polygons-flag`.
 
 ---
