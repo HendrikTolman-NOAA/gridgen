@@ -240,7 +240,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 51 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 52 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -250,7 +250,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 51
+    assert len(all_polys) == 52
 
     # Locate Caspian Sea polygon (west ~ 46.8, east ~ 54.5, south ~ 36.6, north ~ 47.2)
     caspian_poly = None
@@ -276,3 +276,36 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Center cell (51°E, 42°N) is well inside the Caspian Sea and should be masked dry (0)
     assert cleaned_mask[5, 5] == 0
+
+
+def test_netherlands_polygon_loading_and_masking() -> None:
+    """Test that the Netherlands IJsselmeer and Markermeer user polygon (Polygon 52) loads correctly and masks inland/polder points while preserving Waddenzee."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
+
+    all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
+    assert len(all_polys) == 52
+
+    nl_poly = None
+    for p in all_polys:
+        if p["west"] <= 4.2 and p["east"] >= 5.8 and p["south"] <= 52.0 and p["north"] >= 53.0:
+            nl_poly = p
+            break
+
+    assert nl_poly is not None, "Netherlands polygon must be present"
+
+    # Test IJsselmeer point (5.2°E, 52.6°N) -> inside polygon (masked 0)
+    lon_ij, lat_ij = create_regular_grid(
+        NX=5, NY=5, LON_START=5.0, LON_END=5.4, LAT_START=52.4, LAT_END=52.8
+    )
+    mask_ij = np.ones_like(lon_ij, dtype=int)
+    cleaned_ij = clean_mask(lon_ij, lat_ij, mask_ij, [nl_poly])
+    assert cleaned_ij[2, 2] == 0
+
+    # Test Waddenzee point (5.1°E, 53.2°N) -> outside polygon (remains 1)
+    lon_wad, lat_wad = create_regular_grid(
+        NX=3, NY=3, LON_START=5.0, LON_END=5.2, LAT_START=53.15, LAT_END=53.3
+    )
+    mask_wad = np.ones_like(lon_wad, dtype=int)
+    cleaned_wad = clean_mask(lon_wad, lat_wad, mask_wad, [nl_poly])
+    assert cleaned_wad[1, 1] == 1

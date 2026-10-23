@@ -1,5 +1,5 @@
 # WAVEWATCH Optional Coastal Polygon Database (Plain Text Format)
-# Total Polygons: 51
+# Total Polygons: 52
 #
 # Polygon 1: Hudson Bay (Level: 1, Points: 16)
     -69.375000      64.744059
@@ -1055,3 +1055,17 @@
      54.000000      37.400000
      52.000000      36.600000
      49.800000      37.500000
+
+# Polygon 52: Netherlands - IJsselmeer and Markermeer (Level: 1, Points: 12)
+      4.100000      51.950000
+      4.280000      52.110000
+      4.560000      52.460000
+      4.650000      52.770000
+      4.750000      52.960000
+      5.040000      52.930000
+      5.430000      53.080000
+      5.710000      52.840000
+      5.910000      52.560000
+      6.000000      52.200000
+      4.800000      51.800000
+      4.100000      51.950000
