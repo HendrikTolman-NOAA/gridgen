@@ -634,7 +634,16 @@ def test_zoom_cyclic_longitudes(tmp_path: Path):
 
     fig_g2 = plot_grid(gdata, zoom=(-600.0, 0.0, 2.0))
     ax_g2 = fig_g2.axes[0]
-    assert ax_g2.get_xlim() == (30.0, 210.0)
+    assert ax_g2.get_xlim() == (-690.0, -510.0)
+
+    # 3. Global grid [20, 379.75] with central_lon = -168, zoom factor 1 -> xlim = [-348.0, 12.0]
+    glon_offset1d = np.linspace(20.0, 379.75, 360)
+    glon_off, glat_off = np.meshgrid(glon_offset1d, glat1d)
+    gdata_off = {"lon": glon_off, "lat": glat_off, "depth": np.full((181, 360), -50.0), "mask": np.ones((181, 360), dtype=int)}
+
+    fig_g3 = plot_grid(gdata_off, zoom=(-168.0, 0.0, 1.0))
+    ax_g3 = fig_g3.axes[0]
+    assert ax_g3.get_xlim() == (-348.0, 12.0)
 
 
 def test_mask_option_removed(tmp_path: Path):

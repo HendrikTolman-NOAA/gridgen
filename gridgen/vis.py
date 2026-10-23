@@ -349,15 +349,15 @@ def plot_grid(
 
     if is_global:
         if lon.ndim == 2:
-            lon_plot = np.hstack([lon - 360.0, lon, lon + 360.0])
-            lat_plot = np.hstack([lat, lat, lat])
-            depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy])
-            depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog])
+            lon_plot = np.hstack([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
+            lat_plot = np.hstack([lat, lat, lat, lat, lat])
+            depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
+            depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
         else:
-            lon_plot = np.concatenate([lon - 360.0, lon, lon + 360.0])
-            lat_plot = np.concatenate([lat, lat, lat])
-            depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy])
-            depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog])
+            lon_plot = np.concatenate([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
+            lat_plot = np.concatenate([lat, lat, lat, lat, lat])
+            depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
+            depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
     else:
         lon_plot = lon
         lat_plot = lat
@@ -414,9 +414,9 @@ def plot_grid(
         zoom_factor = max(zoom_factor, 1.0)
 
         if is_global:
-            # For global grids, lon_plot spans [lon_min - 360, lon_max + 360]
-            # Keep user central_lon if inside valid plot range, otherwise normalize modulo 360
-            if (lon_min - 360.0) <= central_lon <= (lon_max + 360.0):
+            # For global grids, lon_plot spans 5 tiles [lon_min - 720, lon_max + 720]
+            # Keep user central_lon if inside valid plot range [-720, 720], otherwise normalize modulo 360
+            if (lon_min - 720.0) <= central_lon <= (lon_max + 720.0):
                 c_lon = central_lon
             else:
                 c_lon = lon_min + (central_lon - lon_min) % 360.0
