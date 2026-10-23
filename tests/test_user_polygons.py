@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-22
+# @date Latest Update: 2026-10-23
 
 """Unit tests for user-defined optional coastal polygon loading."""
 
@@ -32,23 +32,18 @@ class DummyBound:
         self.level = level
 
 
-def test_load_user_polygons(tmp_path) -> None:
-    """Test loading optional user coastal polygons with flag file switches."""
+def test_load_user_polygons_txt(tmp_path) -> None:
+    """Test loading optional user coastal polygons from plain text format with flag file switches."""
     ref_dir = str(tmp_path)
-    mat_filename = "optional_coastal_polygons.mat"
-    mat_path = os.path.join(ref_dir, mat_filename)
+    txt_filename = "optional_coastal_polygons.txt"
+    txt_path = os.path.join(ref_dir, txt_filename)
 
-    # Create dummy user_bound array
-    poly1 = DummyBound(
-        np.array([10.0, 20.0, 20.0, 10.0, 10.0]),
-        np.array([10.0, 10.0, 20.0, 20.0, 10.0]),
-    )
-    poly2 = DummyBound(
-        np.array([30.0, 40.0, 40.0, 30.0, 30.0]),
-        np.array([30.0, 30.0, 40.0, 40.0, 30.0]),
-    )
-
-    sio.savemat(mat_path, {"user_bound": np.array([poly1, poly2], dtype=object)})
+    # Write dummy plain text polygons file
+    with open(txt_path, "w") as f:
+        f.write("# Polygon 1: Test Poly 1 (Level: 1, Points: 5)\n")
+        f.write("10.0 10.0\n20.0 10.0\n20.0 20.0\n10.0 20.0\n10.0 10.0\n\n")
+        f.write("# Polygon 2: Test Poly 2 (Level: 1, Points: 5)\n")
+        f.write("30.0 30.0\n40.0 30.0\n40.0 40.0\n30.0 40.0\n30.0 30.0\n\n")
 
     # Create flag file enabling only polygon 2 (0 then 1)
     flag_path = os.path.join(ref_dir, "user_polygons.flag")
@@ -57,7 +52,7 @@ def test_load_user_polygons(tmp_path) -> None:
         f.write("2 1\n")
 
     active_polys = load_user_polygons(
-        ref_dir=ref_dir, flag_file=flag_path, mat_filename=mat_filename
+        ref_dir=ref_dir, flag_file=flag_path, txt_filename=txt_filename
     )
 
     assert len(active_polys) == 1
@@ -77,38 +72,31 @@ def test_load_repo_gridgen_data() -> None:
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
+    mat_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.mat")
+    assert not os.path.exists(mat_file)
 
 
-def test_load_user_polygons_writes_text_file(tmp_path) -> None:
-    """Test that loading MAT optional polygons simultaneously writes a plain text file with -180..180 longitudes."""
+def test_load_user_polygons_mat_fallback(tmp_path) -> None:
+    """Test MAT polygon file fallback when text file is absent."""
     ref_dir = str(tmp_path)
     mat_filename = "optional_coastal_polygons.mat"
     mat_path = os.path.join(ref_dir, mat_filename)
-    txt_path = os.path.join(ref_dir, "optional_coastal_polygons.txt")
 
-    # Poly 1: 270.0 degrees (which is -90.0 in -180..180 range)
     poly1 = DummyBound(
-        np.array([270.0, 280.0, 280.0, 270.0, 270.0]),
+        np.array([10.0, 20.0, 20.0, 10.0, 10.0]),
         np.array([10.0, 10.0, 20.0, 20.0, 10.0]),
     )
-    # Poly 2: polygon crossing 180 (e.g. 170 to 190 degrees)
-    poly2 = DummyBound(
-        np.array([170.0, 190.0, 190.0, 170.0, 170.0]),
-        np.array([10.0, 10.0, 20.0, 20.0, 10.0]),
+    sio.savemat(mat_path, {"user_bound": np.array([poly1], dtype=object)})
+
+    flag_path = os.path.join(ref_dir, "user_polygons.flag")
+    with open(flag_path, "w") as f:
+        f.write("1 1\n")
+
+    active_polys = load_user_polygons(
+        ref_dir=ref_dir, flag_file=flag_path, mat_filename=mat_filename
     )
-    sio.savemat(mat_path, {"user_bound": np.array([poly1, poly2], dtype=object)})
-
-    assert not os.path.exists(txt_path)
-    load_user_polygons(ref_dir=ref_dir, mat_filename=mat_filename)
-    assert os.path.exists(txt_path)
-
-    with open(txt_path) as f:
-        content = f.read()
-    assert "# WAVEWATCH Optional Coastal Polygon Database" in content
-    # Poly 1 converted 270 -> -90.0
-    assert "-90.000000" in content
-    # Poly 2 crosses 180, so stays 0..360 (170.0, 190.0)
-    assert "190.000000" in content
+    assert len(active_polys) == 1
+    assert np.isclose(active_polys[0]["west"], 10.0)
 
 
 def test_clean_mask_global_closure() -> None:

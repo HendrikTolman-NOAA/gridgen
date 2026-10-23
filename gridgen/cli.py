@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-22
+# @date Latest Update: 2026-10-23
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -98,7 +98,7 @@ def main() -> None:
         "--user-polygons-flag",
         type=str,
         default=None,
-        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.mat)",
+        help="Path to flag file for optional user coastal polygons (optional_coastal_polygons.txt)",
     )
     gen_group.add_argument(
         "--lake-min-points",

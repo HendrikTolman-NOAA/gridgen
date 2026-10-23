@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-22
+# @date Latest Update: 2026-10-23
 #
 # Utility tool to populate the reference_data directory with authoritative
 # bathymetry, shoreline, and regional polygon datasets required by WAVEWATCH.
@@ -245,6 +245,7 @@ if [ "$FETCH_LEGACY" = true ]; then
       echo "Extraction complete."
       rm -f "$TARBALL"
       echo "Removed tarball archive ${TARBALL}."
+      rm -f "${TARGET_DIR}/optional_coastal_polygons.mat" "${TARGET_DIR}/user_polygons.flag"
 
       STILL_MISSING=()
       for file in "${MISSING_FILES[@]}"; do

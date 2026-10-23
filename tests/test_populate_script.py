@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-22
+# @date Latest Update: 2026-10-23
 
 """Unit tests for reference data population script (populate_reference_data.sh)."""
 
@@ -146,7 +146,7 @@ def test_populate_script_existing_legacy_files(tmp_path: Path):
 
 
 def test_populate_script_existing_tarball(tmp_path: Path):
-    """Verify that script extracts missing files from an existing tarball without re-downloading."""
+    """Verify that script extracts missing files from an existing tarball without re-downloading and cleans tool-unique polygon files."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "populate_reference_data.sh"
     target_dir = tmp_path / "tarball_ref_data"
@@ -161,17 +161,20 @@ def test_populate_script_existing_tarball(tmp_path: Path):
         "coastal_bound_low.mat",
         "coastal_bound_full.mat",
         "coastal_bound_inter.mat",
+    ]
+    polygon_files = [
         "optional_coastal_polygons.mat",
+        "user_polygons.flag",
     ]
 
     # Create dummy files and put into tarball
     dummy_src = tmp_path / "src_files"
     dummy_src.mkdir(parents=True, exist_ok=True)
-    for fname in legacy_files:
+    for fname in legacy_files + polygon_files:
         (dummy_src / fname).write_text(f"content of {fname}")
 
     with tarfile.open(tarball_path, "w:gz") as tar:
-        for fname in legacy_files:
+        for fname in legacy_files + polygon_files:
             tar.add(dummy_src / fname, arcname=fname)
 
     result = subprocess.run(
@@ -188,6 +191,8 @@ def test_populate_script_existing_tarball(tmp_path: Path):
 
     for fname in legacy_files:
         assert (target_dir / fname).exists()
+    for fname in polygon_files:
+        assert not (target_dir / fname).exists(), f"{fname} should be removed from reference_data"
     assert not tarball_path.exists(), "Tarball file should be removed after unpacking"
 
 
