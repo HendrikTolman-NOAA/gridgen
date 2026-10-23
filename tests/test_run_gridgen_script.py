@@ -680,4 +680,4 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
         check=False,
     )
     assert res_all.returncode == 0
-    assert "Loaded 50 active user-defined coastal polygons." in res_all.stdout
+    assert "Loaded 51 active user-defined coastal polygons." in res_all.stdout

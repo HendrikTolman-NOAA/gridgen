@@ -240,4 +240,39 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 50 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 51 active user-defined coastal polygons." in res4.stdout
+
+
+def test_caspian_sea_polygon_loading_and_masking() -> None:
+    """Test that the Caspian Sea user polygon (Polygon 51) loads and successfully masks Caspian Sea points."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
+
+    # Load all polygons using all_polygons=True
+    all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
+    assert len(all_polys) == 51
+
+    # Locate Caspian Sea polygon (west ~ 46.8, east ~ 54.5, south ~ 36.6, north ~ 47.2)
+    caspian_poly = None
+    for p in all_polys:
+        if p["west"] < 48.0 and p["east"] > 54.0 and p["south"] < 37.0 and p["north"] > 46.0:
+            caspian_poly = p
+            break
+
+    assert caspian_poly is not None, "Caspian Sea polygon must be present in loaded polygons"
+
+    # Create a grid covering the Caspian Sea (48°E - 54°E, 38°N - 46°N)
+    lon, lat = create_regular_grid(
+        NX=10,
+        NY=10,
+        LON_START=48.0,
+        LON_END=54.0,
+        LAT_START=38.0,
+        LAT_END=46.0,
+    )
+    mask = np.ones_like(lon, dtype=int)
+
+    cleaned_mask = clean_mask(lon, lat, mask, [caspian_poly])
+
+    # Center cell (51°E, 42°N) is well inside the Caspian Sea and should be masked dry (0)
+    assert cleaned_mask[5, 5] == 0
