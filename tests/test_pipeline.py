@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-26
+# @date Latest Update: 2026-10-20
 
 from __future__ import annotations
 
@@ -165,3 +165,42 @@ def test_remove_lake_keep_lakes_and_global_closure():
     assert m_closure[2, 0] == 1
     assert m_closure[2, 9] == 1
     assert m_closure[4, 4] == 0  # Lake removed
+
+
+def test_create_obstr_adjacency_zeroing():
+    """Test subgrid obstruction calculation and dry neighbor zeroing behavior."""
+    from shapely.geometry import Polygon
+
+    # 3x3 grid spanning [0, 3] degrees in lon and lat
+    lon1d = np.array([0.5, 1.5, 2.5])
+    lat1d = np.array([0.5, 1.5, 2.5])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+
+    # Polygon covering part of cell (1, 1) [lon 1.0..2.0, lat 1.0..2.0]
+    # Island polygon inside cell (1, 1) spanning lon [1.2, 1.8] and lat [1.2, 1.8]
+    poly_dict = {
+        "x": np.array([1.2, 1.8, 1.8, 1.2, 1.2]),
+        "y": np.array([1.2, 1.2, 1.8, 1.8, 1.2]),
+        "level": 1,
+        "polygon": Polygon([(1.2, 1.2), (1.8, 1.2), (1.8, 1.8), (1.2, 1.8), (1.2, 1.2)]),
+    }
+
+    # Scenario A: All cells wet (mask=1)
+    mask_all_wet = np.ones((3, 3), dtype=int)
+    ObsX, ObsY = create_obstr(lon, lat, [poly_dict], mask_all_wet)
+
+    # Cell (1, 1) intersects island polygon
+    # Height = 1.0, Width = 1.0, poly height = 0.6, poly width = 0.6 -> ratio 0.6
+    assert np.isclose(ObsX[1, 1], 0.6)
+    assert np.isclose(ObsY[1, 1], 0.6)
+
+    # Scenario B: East neighbor cell (1, 2) is dry (mask=0)
+    # ObsX[1, 1] checks horizontal neighbors (j+1, j-1) and is zeroed when East cell is dry.
+    # ObsY[1, 1] checks vertical neighbors (k+1, k-1) and is preserved when vertical neighbors are wet.
+    mask_dry_east = np.ones((3, 3), dtype=int)
+    mask_dry_east[1, 2] = 0
+
+    ObsX_b, ObsY_b = create_obstr(lon, lat, [poly_dict], mask_dry_east)
+
+    assert ObsX_b[1, 1] == 0.0
+    assert np.isclose(ObsY_b[1, 1], 0.6)

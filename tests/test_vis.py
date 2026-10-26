@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-26
+# @date Latest Update: 2026-10-20
 
 from __future__ import annotations
 
@@ -137,7 +137,7 @@ def test_vis_coards(tmp_path):
 
 
 def test_vis_obstructions_only_when_nonzero(tmp_path):
-    """Verify plot_grid renders 3 panels when obstructions are non-zero, and 1 panel when obstructions are all zero or None."""
+    """Verify plot_grid renders 2 panels when obstructions are non-zero (bathymetry & maximum obstruction), and 1 panel when obstructions are all zero or None."""
     lon, lat = np.meshgrid([10.0, 11.0], [20.0, 21.0])
     depth = np.full((2, 2), -50.0)
     mask = np.ones((2, 2), dtype=int)
@@ -169,7 +169,7 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
     main_axes_small = [ax for ax in fig_small.axes if ax.get_subplotspec() is not None]
     assert len(main_axes_small) == 1
 
-    # 3. Obstructions >= 0.01 -> 3 main subplot panels (bathymetry, ObsX, ObsY)
+    # 3. Obstructions >= 0.01 -> 2 main subplot panels (bathymetry and combined maximum obstruction)
     data_nonzero = {
         "lon": lon,
         "lat": lat,
@@ -180,11 +180,10 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
     }
     fig_nonzero = plot_grid(data_nonzero)
     main_axes_nonzero = [ax for ax in fig_nonzero.axes if ax.get_subplotspec() is not None]
-    assert len(main_axes_nonzero) == 3
-    # Verify ax2 (ObsX) and ax3 (ObsY) retain default blank facecolor (not dark green)
+    assert len(main_axes_nonzero) == 2
+    # Verify ax2 retains default blank facecolor (not dark green)
     dark_green_rgba = (0.10588235294117647, 0.2627450980392157, 0.19607843137254902, 1.0)
     assert main_axes_nonzero[1].get_facecolor() != dark_green_rgba
-    assert main_axes_nonzero[2].get_facecolor() != dark_green_rgba
 
 
 def test_vis_ascii(tmp_path):
