@@ -661,6 +661,30 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
     assert res_local.returncode == 0
     assert (out_dir / "test_local_sh_ugrid.nc").exists()
 
+    # 3. Test run_gridgen.sh with --cut-off
+    res_cutoff = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_cutoff_sh",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--cut-off",
+            "0.5",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res_cutoff.returncode == 0
+    assert (out_dir / "test_cutoff_sh_ugrid.nc").exists()
+
     # 3. Test run_gridgen.sh with --all-polygons
     res_all = subprocess.run(
         [

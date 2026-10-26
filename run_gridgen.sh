@@ -43,6 +43,7 @@ GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
+CUT_OFF="0.1"
 LAKE_MIN_POINTS="15"
 LAKE_MIN_FRACTION="0.0005"
 LEGACY=0
@@ -71,6 +72,9 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
+  --cut-off DEPTH, --cutoff-depth DEPTH
+                         Cut-off depth in meters to distinguish wet vs. dry cells
+                         (default: 0.1) [Optional]
   --lake-min-points PTS  Minimum points for a lake to be retained (default: 15) [Optional]
   --lake-min-fraction FRAC
                          Minimum grid fraction for a lake to be retained
@@ -223,6 +227,10 @@ while [[ $# -gt 0 ]]; do
     --boundary-points)
       BOUNDARY_POINTS=1
       shift 1
+      ;;
+    --cut-off|--cutoff-depth)
+      CUT_OFF="$2"
+      shift 2
       ;;
     --lake-min-points)
       LAKE_MIN_POINTS="$2"
@@ -437,6 +445,7 @@ if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
+if [ -n "$CUT_OFF" ]; then CMD_ARGS+=(--cut-off "$CUT_OFF"); fi
 if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINTS"); fi
 if [ -n "$LAKE_MIN_FRACTION" ]; then CMD_ARGS+=(--lake-min-fraction "$LAKE_MIN_FRACTION"); fi
 if [ "$LEGACY" -eq 1 ]; then CMD_ARGS+=(--legacy); fi

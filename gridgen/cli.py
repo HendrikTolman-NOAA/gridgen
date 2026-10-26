@@ -114,6 +114,14 @@ def main() -> None:
         help="Custom user polygon switch control flag file path or name (default: user_polygons.flag)",
     )
     gen_group.add_argument(
+        "--cut-off",
+        "--cutoff-depth",
+        type=float,
+        default=0.1,
+        metavar="DEPTH",
+        help="Cut-off depth in meters to distinguish wet vs. dry cells (default: 0.1)",
+    )
+    gen_group.add_argument(
         "--lake-min-points",
         type=int,
         default=15,
@@ -257,11 +265,15 @@ def main() -> None:
     # Step 2: Extract bathymetry
     print(f"[Step 2/5] Extracting bathymetry depths from '{args.bathy_source}' dataset...")
     depth = generate_grid(
-        lon, lat, ref_dir=args.ref_dir, bathy_source=args.bathy_source
+        lon,
+        lat,
+        ref_dir=args.ref_dir,
+        bathy_source=args.bathy_source,
+        cut_off=args.cut_off,
     )
 
-    wet_mask = depth <= 0.0
-    land_mask = (depth > 0.0) & (depth < 999999.0)
+    wet_mask = depth <= args.cut_off
+    land_mask = (depth > args.cut_off) & (depth < 999999.0)
 
     if np.any(wet_mask):
         min_wdepth = float(-np.max(depth[wet_mask]))
@@ -280,7 +292,7 @@ def main() -> None:
     print(f"  Water depth range: {wdepth_str}")
     print(f"  Land height range: {lheight_str}")
 
-    m = np.where(depth <= 0.0, 1, 0)
+    m = np.where(depth <= args.cut_off, 1, 0)
 
     user_bounds = []
     if not args.no_user_polygons:
