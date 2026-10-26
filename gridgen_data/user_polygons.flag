@@ -1,15 +1,15 @@
- 1 1 	 Hudson Bay
- 2 1 	 Gulf of St. Lawrence
- 3 1 	 Mediterranean Sea
- 4 1 	 Black Sea
- 5 1 	 Baltic Sea
+ 1 0 	 Hudson Bay
+ 2 0 	 Gulf of St. Lawrence
+ 3 0 	 Mediterranean Sea
+ 4 0 	 Black Sea
+ 5 0 	 Baltic Sea
  6 1 	 White Sea
- 7 1 	 Red Sea
- 8 1 	 Persian Gulf
- 9 1 	 Gulf of Aden
-10 1 	 Gulf of Oman
-11 1 	 Sea of Okhotsk
-12 1 	 Sea of Japan
+ 7 0 	 Red Sea
+ 8 0 	 Persian Gulf
+ 9 0 	 Gulf of Aden
+10 0 	 Gulf of Oman
+11 0 	 Sea of Okhotsk
+12 0 	 Sea of Japan
 13 1 	 USA East Coast - Long Island Sound
 14 1 	 USA East Coast - Delaware Bay
 15 1 	 USA East Coast - Atlantic City
@@ -47,7 +47,7 @@
 47 1 	 West Coast - Lake Ojo de Liebre (Baja California)
 48 1 	 West Coast - Laguna S. Ignacio (Baja California)
 49 1 	 West Coast - Bay of Magdalena (Baja California)
-50 1 	 West Coast - Gulf of California (Baja California)
+50 0 	 West Coast - Gulf of California (Baja California)
 51 1 	 Caspian Sea
 52 1 	 Netherlands - IJsselmeer, Markermeer and Wester Schelde
 53 1 	 Waddenzee East of the Elbe River

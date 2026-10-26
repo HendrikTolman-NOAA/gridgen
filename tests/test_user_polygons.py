@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has all 54 active polygons set to 1
-    assert len(active_polys) == 54
+    # user_polygons.flag has 42 active polygons set to 1 (polygons 1-5, 7-12, 50 disabled)
+    assert len(active_polys) == 42
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 54 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 42 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"

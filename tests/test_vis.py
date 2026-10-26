@@ -181,6 +181,10 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
     fig_nonzero = plot_grid(data_nonzero)
     main_axes_nonzero = [ax for ax in fig_nonzero.axes if ax.get_subplotspec() is not None]
     assert len(main_axes_nonzero) == 3
+    # Verify ax2 (ObsX) and ax3 (ObsY) retain default blank facecolor (not dark green)
+    dark_green_rgba = (0.10588235294117647, 0.2627450980392157, 0.19607843137254902, 1.0)
+    assert main_axes_nonzero[1].get_facecolor() != dark_green_rgba
+    assert main_axes_nonzero[2].get_facecolor() != dark_green_rgba
 
 
 def test_vis_ascii(tmp_path):

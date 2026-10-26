@@ -335,9 +335,6 @@ def plot_grid(
     dark_green = "#1b4332"  # Dark green background for land/sea mask
     if show_mask:
         ax1.set_facecolor(dark_green)
-        if has_obstr:
-            ax2.set_facecolor(dark_green)
-            ax3.set_facecolor(dark_green)
 
     depth_limit = -abs(max_depth) if max_depth is not None else -8000.0
     vmax_orog = max_orography if max_orography is not None else 10.0
