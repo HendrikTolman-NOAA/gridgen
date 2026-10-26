@@ -24,7 +24,6 @@ import os
 from typing import Any
 
 import numpy as np
-import scipy.io as sio
 from shapely.geometry import Point, Polygon, box
 from shapely.strtree import STRtree
 
@@ -673,8 +672,6 @@ def _write_plain_text_polygons(user_bound: Any, mat_path: str) -> str:
 def load_user_polygons(
     ref_dir: str = "gridgen_data",
     flag_file: str | None = None,
-    txt_filename: str = "optional_coastal_polygons.txt",
-    mat_filename: str = "optional_coastal_polygons.mat",
     data_dir: str | None = None,
     all_polygons: bool = False,
 ) -> list[dict[str, Any]]:
@@ -687,11 +684,7 @@ def load_user_polygons(
     ref_dir : str
         Directory containing optional coastal polygon datasets (default: "gridgen_data").
     flag_file : Optional[str]
-        Path to text file containing binary switches (0 = off, 1 = on) per polygon.
-    txt_filename : str
-        Filename of plain text file containing user coastal polygons.
-    mat_filename : str
-        Legacy MAT filename parameter maintained for backward compatibility.
+        Path or filename of text file containing binary switches (0 = off, 1 = on) per polygon.
     data_dir : Optional[str]
         Alias directory parameter for gridgen_data.
     all_polygons : bool
@@ -704,63 +697,43 @@ def load_user_polygons(
     """
     target_dir = data_dir if data_dir is not None else ref_dir
 
-    txt_path = os.path.join(target_dir, txt_filename)
-    mat_path = os.path.join(target_dir, mat_filename)
-    user_bound = []
+    # 1. Resolve polygon coordinate file strictly to optional_coastal_polygons.txt
+    poly_filename = "optional_coastal_polygons.txt"
+    txt_path = None
 
-    if os.path.exists(txt_path):
-        user_bound = read_plain_text_polygons(txt_path)
-    elif os.path.exists(mat_path):
-        mat_data = sio.loadmat(mat_path, squeeze_me=True, struct_as_record=False)
-        if "user_bound" in mat_data:
-            raw_bound = mat_data["user_bound"]
-            if not isinstance(raw_bound, np.ndarray):
-                raw_bound = np.array([raw_bound])
-            for bound_obj in raw_bound:
-                user_bound.append(
-                    {
-                        "name": str(getattr(bound_obj, "name", "")).strip(),
-                        "level": int(getattr(bound_obj, "level", 1)),
-                        "x": np.asarray(getattr(bound_obj, "x", []), dtype=np.float64),
-                        "y": np.asarray(getattr(bound_obj, "y", []), dtype=np.float64),
-                    }
-                )
-    elif os.path.exists(os.path.join("gridgen_data", txt_filename)):
-        user_bound = read_plain_text_polygons(
-            os.path.join("gridgen_data", txt_filename)
-        )
-    elif os.path.exists(os.path.join("gridgen_data", mat_filename)):
-        fallback_mat = os.path.join("gridgen_data", mat_filename)
-        mat_data = sio.loadmat(fallback_mat, squeeze_me=True, struct_as_record=False)
-        if "user_bound" in mat_data:
-            raw_bound = mat_data["user_bound"]
-            if not isinstance(raw_bound, np.ndarray):
-                raw_bound = np.array([raw_bound])
-            for bound_obj in raw_bound:
-                user_bound.append(
-                    {
-                        "name": str(getattr(bound_obj, "name", "")).strip(),
-                        "level": int(getattr(bound_obj, "level", 1)),
-                        "x": np.asarray(getattr(bound_obj, "x", []), dtype=np.float64),
-                        "y": np.asarray(getattr(bound_obj, "y", []), dtype=np.float64),
-                    }
-                )
+    if os.path.exists(os.path.join(target_dir, poly_filename)):
+        txt_path = os.path.join(target_dir, poly_filename)
+    elif os.path.exists(poly_filename):
+        txt_path = poly_filename
+    elif os.path.exists(os.path.join("gridgen_data", poly_filename)):
+        txt_path = os.path.join("gridgen_data", poly_filename)
 
+    if txt_path is None or not os.path.exists(txt_path):
+        return []
+
+    user_bound = read_plain_text_polygons(txt_path)
     if not user_bound:
         return []
 
+    # 2. Resolve flag file (allowing custom user-defined name or default user_polygons.flag)
     switches = []
     target_flag = None
-    if flag_file and os.path.exists(flag_file):
-        target_flag = flag_file
-    elif flag_file and os.path.exists(os.path.join(target_dir, flag_file)):
-        target_flag = os.path.join(target_dir, flag_file)
-    elif flag_file is None:
-        default_flag = os.path.join(target_dir, "user_polygons.flag")
-        if os.path.exists(default_flag):
-            target_flag = default_flag
-        elif os.path.exists(os.path.join("gridgen_data", "user_polygons.flag")):
-            target_flag = os.path.join("gridgen_data", "user_polygons.flag")
+
+    if flag_file:
+        if os.path.exists(flag_file):
+            target_flag = flag_file
+        elif os.path.exists(os.path.join(target_dir, flag_file)):
+            target_flag = os.path.join(target_dir, flag_file)
+        elif os.path.exists(os.path.join("gridgen_data", flag_file)):
+            target_flag = os.path.join("gridgen_data", flag_file)
+    else:
+        default_flag_name = "user_polygons.flag"
+        if os.path.exists(os.path.join(target_dir, default_flag_name)):
+            target_flag = os.path.join(target_dir, default_flag_name)
+        elif os.path.exists(default_flag_name):
+            target_flag = default_flag_name
+        elif os.path.exists(os.path.join("gridgen_data", default_flag_name)):
+            target_flag = os.path.join("gridgen_data", default_flag_name)
 
     if not all_polygons and target_flag and os.path.exists(target_flag):
         with open(target_flag) as f:

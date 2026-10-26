@@ -106,6 +106,14 @@ def main() -> None:
         help="Apply all coastal polygons independent of their actual flag values in user_polygons.flag",
     )
     gen_group.add_argument(
+        "--user-polygons-flag",
+        "--user-flag",
+        dest="flag_file",
+        default=None,
+        metavar="FILE",
+        help="Custom user polygon switch control flag file path or name (default: user_polygons.flag)",
+    )
+    gen_group.add_argument(
         "--lake-min-points",
         type=int,
         default=15,
@@ -259,6 +267,7 @@ def main() -> None:
         poly_dir = "." if args.local_polygons else "gridgen_data"
         user_bounds = load_user_polygons(
             ref_dir=poly_dir,
+            flag_file=args.flag_file,
             all_polygons=args.all_polygons,
         )
         if user_bounds:

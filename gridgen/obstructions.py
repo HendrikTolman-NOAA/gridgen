@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import sys
 from typing import Any
 
 import numpy as np
@@ -102,8 +103,21 @@ def create_obstr(
     if not polygons:
         return sx, sy
 
+    total_cells = Nx * Ny
+    processed = 0
+    last_pct = -1.0
+
     for j in range(Nx):
         for k in range(Ny):
+            processed += 1
+            if total_cells > 0:
+                pct = (processed / total_cells) * 100.0
+                curr_pct = round(pct, 1)
+                if curr_pct != last_pct or processed == total_cells:
+                    last_pct = curr_pct
+                    sys.stdout.write(f"\r  Calculating subgrid obstructions... {pct:5.1f}%")
+                    sys.stdout.flush()
+
             if mask[k, j] == 0:
                 continue
 
@@ -129,6 +143,10 @@ def create_obstr(
 
             sx[k, j] = min(1.0, max(0.0, sx_val))
             sy[k, j] = min(1.0, max(0.0, sy_val))
+
+    if total_cells > 0:
+        sys.stdout.write("\n")
+        sys.stdout.flush()
 
     # Zero out obstructions adjacent to dry cells to prevent spurious attenuation
     for j in range(Nx):

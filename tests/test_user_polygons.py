@@ -54,7 +54,7 @@ def test_load_user_polygons_txt(tmp_path) -> None:
         f.write("2 1\n")
 
     active_polys = load_user_polygons(
-        ref_dir=ref_dir, flag_file=flag_path, txt_filename=txt_filename
+        ref_dir=ref_dir, flag_file=flag_path
     )
 
     assert len(active_polys) == 1
@@ -78,8 +78,8 @@ def test_load_repo_gridgen_data() -> None:
     assert not os.path.exists(mat_file)
 
 
-def test_load_user_polygons_mat_fallback(tmp_path) -> None:
-    """Test MAT polygon file fallback when text file is absent."""
+def test_strict_polygon_filename_requirement(tmp_path) -> None:
+    """Test that load_user_polygons strictly requires optional_coastal_polygons.txt and disallows alternate file names/formats."""
     ref_dir = str(tmp_path)
     mat_filename = "optional_coastal_polygons.mat"
     mat_path = os.path.join(ref_dir, mat_filename)
@@ -94,11 +94,49 @@ def test_load_user_polygons_mat_fallback(tmp_path) -> None:
     with open(flag_path, "w") as f:
         f.write("1 1\n")
 
-    active_polys = load_user_polygons(
-        ref_dir=ref_dir, flag_file=flag_path, mat_filename=mat_filename
-    )
+    # .mat file should not be loaded
+    active_polys = load_user_polygons(ref_dir=ref_dir, flag_file=flag_path)
+    # Ensure none of the loaded polygons come from the .mat file (which had west == 10.0)
+    for p in active_polys:
+        assert not np.isclose(p["west"], 10.0)
+
+
+def test_custom_user_polygons_flag(tmp_path) -> None:
+    """Test loading user polygons with a custom user-defined flag file name."""
+    ref_dir = str(tmp_path)
+    txt_path = os.path.join(ref_dir, "optional_coastal_polygons.txt")
+    with open(txt_path, "w") as f:
+        f.write("# Polygon 1: Test Poly 1 (Level: 1, Points: 5)\n")
+        f.write("0.0 0.0\n10.0 0.0\n10.0 10.0\n0.0 10.0\n0.0 0.0\n\n")
+        f.write("# Polygon 2: Test Poly 2 (Level: 1, Points: 5)\n")
+        f.write("20.0 20.0\n30.0 20.0\n30.0 30.0\n20.0 30.0\n20.0 20.0\n\n")
+
+    custom_flag_path = os.path.join(ref_dir, "my_custom.flag")
+    with open(custom_flag_path, "w") as f:
+        f.write("1 0\n2 1\n")
+
+    active_polys = load_user_polygons(ref_dir=ref_dir, flag_file="my_custom.flag")
     assert len(active_polys) == 1
-    assert np.isclose(active_polys[0]["west"], 10.0)
+    assert np.isclose(active_polys[0]["west"], 20.0)
+
+
+def test_obstruction_progress_counter(capsys) -> None:
+    """Test that create_obstr writes a progress counter to stdout."""
+    from gridgen.obstructions import create_obstr
+
+    x, y = create_regular_grid(
+        NX=5, NY=5, LON_START=0.0, LON_END=4.0, LAT_START=0.0, LAT_END=4.0
+    )
+    mask = np.ones_like(x, dtype=int)
+    poly = {
+        "x": np.array([1.0, 3.0, 3.0, 1.0, 1.0]),
+        "y": np.array([1.0, 1.0, 3.0, 3.0, 1.0]),
+        "level": 1,
+    }
+
+    _sx, _sy = create_obstr(x, y, [poly], mask)
+    captured = capsys.readouterr()
+    assert "Calculating subgrid obstructions..." in captured.out
 
 
 def test_clean_mask_global_closure() -> None:
@@ -279,7 +317,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
 
 def test_netherlands_polygon_loading_and_masking() -> None:
-    """Test that the Netherlands IJsselmeer and Markermeer user polygon (Polygon 52) loads correctly and masks inland/polder points while preserving Waddenzee."""
+    """Test that the Netherlands IJsselmeer, Markermeer and Wester Schelde user polygon (Polygon 52) loads correctly and masks inland/polder and Wester Schelde points while preserving Waddenzee."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
@@ -288,7 +326,7 @@ def test_netherlands_polygon_loading_and_masking() -> None:
 
     nl_poly = None
     for p in all_polys:
-        if p["west"] <= 4.2 and p["east"] >= 5.8 and p["south"] <= 52.0 and p["north"] >= 53.0:
+        if p["west"] <= 3.5 and p["east"] >= 5.8 and p["south"] <= 51.5 and p["north"] >= 53.0:
             nl_poly = p
             break
 
@@ -301,6 +339,14 @@ def test_netherlands_polygon_loading_and_masking() -> None:
     mask_ij = np.ones_like(lon_ij, dtype=int)
     cleaned_ij = clean_mask(lon_ij, lat_ij, mask_ij, [nl_poly])
     assert cleaned_ij[2, 2] == 0
+
+    # Test Wester Schelde point (3.8°E, 51.35°N) -> inside polygon (masked 0)
+    lon_ws, lat_ws = create_regular_grid(
+        NX=3, NY=3, LON_START=3.7, LON_END=3.9, LAT_START=51.3, LAT_END=51.4
+    )
+    mask_ws = np.ones_like(lon_ws, dtype=int)
+    cleaned_ws = clean_mask(lon_ws, lat_ws, mask_ws, [nl_poly])
+    assert cleaned_ws[1, 1] == 0
 
     # Test Waddenzee point (5.1°E, 53.2°N) -> outside polygon (remains 1)
     lon_wad, lat_wad = create_regular_grid(

@@ -1056,7 +1056,7 @@
      52.000000      36.600000
      49.800000      37.500000
 
-# Polygon 52: Netherlands - IJsselmeer and Markermeer (Level: 1, Points: 12)
+# Polygon 52: Netherlands - IJsselmeer, Markermeer and Wester Schelde (Level: 1, Points: 15)
       4.100000      51.950000
       4.280000      52.110000
       4.560000      52.460000
@@ -1068,6 +1068,10 @@
       5.910000      52.560000
       6.000000      52.200000
       4.800000      51.800000
+      4.400000      51.200000
+      3.400000      51.300000
+      3.400000      51.550000
+      3.600000      51.800000
       4.100000      51.950000
 
 # Polygon 53: Waddenzee East of the Elbe River (Level: 1, Points: 11)
