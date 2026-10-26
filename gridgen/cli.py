@@ -322,8 +322,8 @@ def main() -> None:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
     # Step 4: Calculate sub-grid obstructions
-    print("[Step 4/5] Computing directional sub-grid obstruction factors (sx, sy)...")
-    sx, sy = create_obstr(lon, lat, user_bounds, m_mod)
+    print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
+    ObsX, ObsY = create_obstr(lon, lat, user_bounds, m_mod)
 
     # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
     print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 grid dataset...")
@@ -332,8 +332,8 @@ def main() -> None:
         lat,
         depth,
         m_mod,
-        sx=sx,
-        sy=sy,
+        ObsX=ObsX,
+        ObsY=ObsY,
         title=f"WW4 Grid {args.name}",
         bathy_source=args.bathy_source,
     )
@@ -349,8 +349,8 @@ def main() -> None:
         write_ww3file(f"{args.out_dir}/{args.name}.maskorig_ascii", m_mod)
         write_ww3obstr(
             f"{args.out_dir}/{args.name}.obstr_lev1",
-            np.round(sx * obstr_scale),
-            np.round(sy * obstr_scale),
+            np.round(ObsX * obstr_scale),
+            np.round(ObsY * obstr_scale),
         )
         write_ww3meta(
             f"{args.out_dir}/{args.name}",
@@ -367,8 +367,8 @@ def main() -> None:
             depth,
             f"{args.out_dir}/{args.name}_coards.nc",
             mask=m_mod,
-            sx=sx,
-            sy=sy,
+            ObsX=ObsX,
+            ObsY=ObsY,
             bathy_source=args.bathy_source,
         )
 

@@ -32,8 +32,8 @@ def nc_ww3_grdwrite(
     filename: str,
     fillval: float = np.nan,
     mask: np.ndarray | None = None,
-    sx: np.ndarray | None = None,
-    sy: np.ndarray | None = None,
+    ObsX: np.ndarray | None = None,
+    ObsY: np.ndarray | None = None,
     bathy_source: str = "etopo2",
 ) -> None:
     """Write GMT / COARDS compliant NetCDF grid file for WAVEWATCH III.
@@ -52,9 +52,9 @@ def nc_ww3_grdwrite(
         Fill value for missing data.
     mask : Optional[np.ndarray]
         2D land/sea mask array.
-    sx : Optional[np.ndarray]
+    ObsX : Optional[np.ndarray]
         2D subgrid obstruction in x direction.
-    sy : Optional[np.ndarray]
+    ObsY : Optional[np.ndarray]
         2D subgrid obstruction in y direction.
     """
     x_vec = x[0, :] if x.ndim == 2 else x
@@ -87,29 +87,29 @@ def nc_ww3_grdwrite(
             },
         )
 
-    if sx is not None:
-        data_vars["sx"] = (
+    if ObsX is not None:
+        data_vars["ObsX"] = (
             ("lat", "lon"),
-            sx.astype(np.float32),
+            ObsX.astype(np.float32),
             {
                 "long_name": "Subgrd obstr x",
                 "_FillValue": np.float32(fillval),
                 "scale_factor": 1.0,
                 "add_offset": 0.0,
-                "actual_range": [float(np.nanmin(sx)), float(np.nanmax(sx))],
+                "actual_range": [float(np.nanmin(ObsX)), float(np.nanmax(ObsX))],
             },
         )
 
-    if sy is not None:
-        data_vars["sy"] = (
+    if ObsY is not None:
+        data_vars["ObsY"] = (
             ("lat", "lon"),
-            sy.astype(np.float32),
+            ObsY.astype(np.float32),
             {
                 "long_name": "Subgrd obstr y",
                 "_FillValue": np.float32(fillval),
                 "scale_factor": 1.0,
                 "add_offset": 0.0,
-                "actual_range": [float(np.nanmin(sy)), float(np.nanmax(sy))],
+                "actual_range": [float(np.nanmin(ObsY)), float(np.nanmax(ObsY))],
             },
         )
 

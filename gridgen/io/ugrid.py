@@ -32,8 +32,8 @@ def create_ugrid_dataset(
     y: np.ndarray,
     depth: np.ndarray,
     mask: np.ndarray,
-    sx: np.ndarray | None = None,
-    sy: np.ndarray | None = None,
+    ObsX: np.ndarray | None = None,
+    ObsY: np.ndarray | None = None,
     title: str = "WAVEWATCH IV UGRID Mesh",
     start_index: int = 0,
     bathy_source: str = "etopo2",
@@ -53,9 +53,9 @@ def create_ugrid_dataset(
         2D bathymetry depth array of shape (Ny, Nx).
     mask : np.ndarray
         2D land/sea mask array of shape (Ny, Nx).
-    sx : Optional[np.ndarray]
+    ObsX : Optional[np.ndarray]
         2D subgrid x-obstruction array of shape (Ny, Nx).
-    sy : Optional[np.ndarray]
+    ObsY : Optional[np.ndarray]
         2D subgrid y-obstruction array of shape (Ny, Nx).
     title : str
         Dataset title attribute.
@@ -171,10 +171,10 @@ def create_ugrid_dataset(
         ),
     }
 
-    if sx is not None:
-        data_vars["sx"] = (
+    if ObsX is not None:
+        data_vars["ObsX"] = (
             ("nMesh2_face",),
-            sx.ravel().astype(np.float32),
+            ObsX.ravel().astype(np.float32),
             {
                 "long_name": "Subgrid obstruction factor in x direction",
                 "units": "1",
@@ -183,9 +183,9 @@ def create_ugrid_dataset(
                 "coordinates": "face_lon face_lat",
             },
         )
-        data_vars["grid_sx"] = (
+        data_vars["grid_ObsX"] = (
             ("ny", "nx"),
-            sx.astype(np.float32),
+            ObsX.astype(np.float32),
             {
                 "long_name": "2D Subgrid obstruction factor grid in x direction",
                 "units": "1",
@@ -193,10 +193,10 @@ def create_ugrid_dataset(
             },
         )
 
-    if sy is not None:
-        data_vars["sy"] = (
+    if ObsY is not None:
+        data_vars["ObsY"] = (
             ("nMesh2_face",),
-            sy.ravel().astype(np.float32),
+            ObsY.ravel().astype(np.float32),
             {
                 "long_name": "Subgrid obstruction factor in y direction",
                 "units": "1",
@@ -205,9 +205,9 @@ def create_ugrid_dataset(
                 "coordinates": "face_lon face_lat",
             },
         )
-        data_vars["grid_sy"] = (
+        data_vars["grid_ObsY"] = (
             ("ny", "nx"),
-            sy.astype(np.float32),
+            ObsY.astype(np.float32),
             {
                 "long_name": "2D Subgrid obstruction factor grid in y direction",
                 "units": "1",

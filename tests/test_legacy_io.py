@@ -73,18 +73,18 @@ def test_nc_ww3_grdwrite(tmp_path):
     lon, lat = np.meshgrid(lon1d, lat1d)
     z = np.ones((3, 3), dtype=float) * 10.0
     mask = np.ones((3, 3), dtype=float)
-    sx = np.zeros((3, 3), dtype=float)
-    sy = np.zeros((3, 3), dtype=float)
+    ObsX = np.zeros((3, 3), dtype=float)
+    ObsY = np.zeros((3, 3), dtype=float)
 
     filepath = str(tmp_path / "test_coards.nc")
-    nc_ww3_grdwrite(lon, lat, z, filepath, mask=mask, sx=sx, sy=sy)
+    nc_ww3_grdwrite(lon, lat, z, filepath, mask=mask, ObsX=ObsX, ObsY=ObsY)
 
     assert os.path.exists(filepath)
     ds = xr.open_dataset(filepath)
     assert "z" in ds
     assert "mask" in ds
-    assert "sx" in ds
-    assert "sy" in ds
+    assert "ObsX" in ds
+    assert "ObsY" in ds
     assert ds.attrs["Conventions"] == "COARDS/CF-1.0"
     ds.close()
 
@@ -95,16 +95,16 @@ def test_create_ugrid_dataset_full_grid(tmp_path):
     lon, lat = np.meshgrid(lon1d, lat1d)
     z = np.ones((3, 3), dtype=float) * 10.0
     mask = np.ones((3, 3), dtype=int)
-    sx = np.zeros((3, 3), dtype=float)
-    sy = np.zeros((3, 3), dtype=float)
+    ObsX = np.zeros((3, 3), dtype=float)
+    ObsY = np.zeros((3, 3), dtype=float)
 
-    ds = create_ugrid_dataset(lon, lat, z, mask, sx=sx, sy=sy)
+    ds = create_ugrid_dataset(lon, lat, z, mask, ObsX=ObsX, ObsY=ObsY)
     assert "grid_lon" in ds.coords
     assert "grid_lat" in ds.coords
     assert "grid_depth" in ds
     assert "grid_mask" in ds
-    assert "grid_sx" in ds
-    assert "grid_sy" in ds
+    assert "grid_ObsX" in ds
+    assert "grid_ObsY" in ds
     assert ds["grid_lon"].shape == (3, 3)
 
     filepath = str(tmp_path / "test_ugrid.nc")

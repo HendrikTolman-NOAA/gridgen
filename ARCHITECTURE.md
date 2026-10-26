@@ -64,7 +64,7 @@ flowchart TD
         N --> O[Generate Land/Sea Mask]
 
         O --> P[gridgen.obstructions.create_obstr]
-        P --> Q[Calculate Grid Obstructions sx, sy]
+        P --> Q[Calculate Grid Obstructions ObsX, ObsY]
     end
 
     subgraph Run Step 3: Multi-Format Export & Visualization
@@ -95,7 +95,7 @@ flowchart TD
   - **Grid Coordinate Generation:** Creates initial 2D longitude and latitude coordinate arrays (`create_grid_coordinates`) for the specified grid projection/layout (regular lon-lat with optional rotated pole, stereographic in km or arc degrees, or custom grid layout files).
   - **Bathymetry Extraction:** Computes target grid cell corner polygons (`compute_cellcorner`), extracts/averages sub-grid base bathymetry depths or performs bilinear interpolation, and assigns dry values (`999999.0`) to cells above cut-off depth.
   - **Masking & Lake Removal:** Constructs initial binary land/sea mask based on depth values, cleans disconnected water bodies, and applies lake tolerance rules (`remove_lake`).
-  - **Sub-grid Obstruction Calculation:** Intersects cell boundary faces with shoreline polygons to produce directional sub-grid obstruction factors `sx` and `sy` (`create_obstr`).
+  - **Sub-grid Obstruction Calculation:** Intersects cell boundary faces with shoreline polygons to produce directional sub-grid obstruction factors `ObsX` and `ObsY` (`create_obstr`).
 
 - **Run Step 3: Multi-Format Grid Export (`gridgen.io.*`)**
   - **Legacy WW3 ASCII:** `.depth_ascii`, `.maskorig_ascii`, `.obstr_lev1`, `.meta`
@@ -200,10 +200,10 @@ gridgen/
    - Extracts domain boundary contours (`compute_boundary`), splits boundaries into directional segments (`split_boundary`), and assigns input boundary cells (`define_boundary_points` / `modify_mask`).
 
 6. **`gridgen.obstructions` (Sub-Grid Obstruction Computation)**
-   - Computes directional sub-grid obstruction factors $s_x$ and $s_y$ (`create_obstr`) by calculating line-polygon intersections between grid cell edges and shoreline vector polygons (`coastal_bound_*.mat`).
+   - Computes directional sub-grid obstruction factors $\text{ObsX}$ and $\text{ObsY}$ (`create_obstr`) by calculating line-polygon intersections between grid cell edges and shoreline vector polygons (`coastal_bound_*.mat`).
 
 7. **`gridgen.vis` (Visualization & Plotting)**
-   - Provides graphical plotting routines (`plot_grid`, `main`) rendering multi-panel figures of bathymetry depth, land/sea masks, and $s_x$/$s_y$ obstruction fields.
+   - Provides graphical plotting routines (`plot_grid`, `main`) rendering multi-panel figures of bathymetry depth, land/sea masks, and $\text{ObsX}$/$\text{ObsY}$ obstruction fields.
    - Supports export to JPG, PNG, PDF, EPS, and GIF formats.
 
 8. **`gridgen.io` (Multi-Format Input/Output Subpackage)**
