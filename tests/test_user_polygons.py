@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has active polygons (e.g. Black Sea and Baltic Sea set to 1)
-    assert len(active_polys) == 2
+    # user_polygons.flag has all 54 active polygons set to 1
+    assert len(active_polys) == 54
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -134,7 +134,7 @@ def test_obstruction_progress_counter(capsys) -> None:
         "level": 1,
     }
 
-    _sx, _sy = create_obstr(x, y, [poly], mask)
+    _ObsX, _ObsY = create_obstr(x, y, [poly], mask)
     captured = capsys.readouterr()
     assert "Calculating subgrid obstructions..." in captured.out
 
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 2 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 54 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"

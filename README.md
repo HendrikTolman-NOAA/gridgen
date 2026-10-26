@@ -104,7 +104,7 @@ The reference dataset files include:
 
 Optional user-defined coastal polygon coordinates (`optional_coastal_polygons.txt`) and polygon switch control file (`user_polygons.flag`) are unique to the tool and maintained directly in the repository in `gridgen_data/`. They allow users to explicitly mask out water bodies (such as inland lakes, bays, or estuaries) that do not play a significant role in wave propagation. User polygons in `gridgen_data/` are automatically loaded by default:
 - `load_user_polygons(ref_dir="gridgen_data", flag_file=...)` loads and filters active user boundary polygons based on the control switches (`0` = off, `1` = on).
-- Active user polygons are passed into `clean_mask()` to refine land/sea mask boundaries and `create_obstr()` to calculate directional sub-grid obstruction factors ($S_x$, $S_y$).
+- Active user polygons are passed into `clean_mask()` to refine land/sea mask boundaries and `create_obstr()` to calculate directional sub-grid obstruction factors ($\text{ObsX}$, $\text{ObsY}$).
 - To use custom polygon files in the current/local directory (`.`), pass `--local-polygons`. Local polygon files appearing in the root directory of the clone (`user_polygons.flag`, `optional_coastal_polygons.txt`, `optional_coastal_polygons.mat`) are ignored by Git.
 - To disable user polygon masking completely, pass `--no-user-polygons`.
 - To apply all coastal polygons independent of their switch flag values in `user_polygons.flag`, pass `--all-polygons`.
@@ -158,7 +158,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
-A graphical display shell driver script is provided in the repository root directory to generate multi-panel plot graphics of bathymetry depth, land-sea masks, and sub-grid directional obstruction factors ($S_x$, $S_y$):
+A graphical display shell driver script is provided in the repository root directory to generate multi-panel plot graphics of bathymetry depth, land-sea masks, and sub-grid directional obstruction factors ($\text{ObsX}$, $\text{ObsY}$):
 
 ```bash
 ./plot_grid.sh [OPTIONS]

@@ -91,11 +91,11 @@ def test_vis_ugrid(tmp_path):
     lon, lat = np.meshgrid(lon1d, lat1d)
     depth = np.array([[-10.0, -20.0, -30.0], [-15.0, -25.0, -35.0], [-10.0, -10.0, -10.0]])
     mask = np.ones((3, 3), dtype=int)
-    sx = np.full((3, 3), 0.1)
-    sy = np.full((3, 3), 0.2)
+    ObsX = np.full((3, 3), 0.1)
+    ObsY = np.full((3, 3), 0.2)
 
     ds = create_ugrid_dataset(
-        lon, lat, depth, mask, sx=sx, sy=sy, title="Test Vis Grid"
+        lon, lat, depth, mask, ObsX=ObsX, ObsY=ObsY, title="Test Vis Grid"
     )
     nc_path = str(tmp_path / "test_vis_ugrid.nc")
     write_ugrid_nc(ds, nc_path)
@@ -104,8 +104,8 @@ def test_vis_ugrid(tmp_path):
     assert "lon" in data
     assert "lat" in data
     assert "depth" in data
-    assert "sx" in data
-    assert "sy" in data
+    assert "ObsX" in data
+    assert "ObsY" in data
     assert data["depth"].shape == (3, 3)
 
     for ext in ["jpg", "pdf", "eps", "gif", "png"]:
@@ -121,11 +121,11 @@ def test_vis_coards(tmp_path):
     lon, lat = np.meshgrid(lon1d, lat1d)
     depth = np.full((3, 3), 50.0)
     mask = np.ones((3, 3), dtype=int)
-    sx = np.zeros((3, 3))
-    sy = np.zeros((3, 3))
+    ObsX = np.zeros((3, 3))
+    ObsY = np.zeros((3, 3))
 
     nc_path = str(tmp_path / "test_coards.nc")
-    nc_ww3_grdwrite(lon, lat, depth, nc_path, mask=mask, sx=sx, sy=sy)
+    nc_ww3_grdwrite(lon, lat, depth, nc_path, mask=mask, ObsX=ObsX, ObsY=ObsY)
 
     data = load_grid_data(nc_path)
     assert data["depth"].shape == (3, 3)
@@ -148,22 +148,35 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
         "lat": lat,
         "depth": depth,
         "mask": mask,
-        "sx": np.zeros((2, 2)),
-        "sy": np.zeros((2, 2)),
+        "ObsX": np.zeros((2, 2)),
+        "ObsY": np.zeros((2, 2)),
     }
     fig_zero = plot_grid(data_zero)
     # Filter main grid subplot axes (excluding inset colorbar axes)
     main_axes_zero = [ax for ax in fig_zero.axes if ax.get_subplotspec() is not None]
     assert len(main_axes_zero) == 1
 
-    # 2. Non-zero obstructions -> 3 main subplot panels (bathymetry, Sx, Sy)
+    # 2. Obstructions < 0.01 -> treated as no obstruction -> 1 panel
+    data_small = {
+        "lon": lon,
+        "lat": lat,
+        "depth": depth,
+        "mask": mask,
+        "ObsX": np.array([[0.0, 0.005], [0.0, 0.0]]),
+        "ObsY": np.array([[0.0, 0.0], [0.008, 0.0]]),
+    }
+    fig_small = plot_grid(data_small)
+    main_axes_small = [ax for ax in fig_small.axes if ax.get_subplotspec() is not None]
+    assert len(main_axes_small) == 1
+
+    # 3. Obstructions >= 0.01 -> 3 main subplot panels (bathymetry, ObsX, ObsY)
     data_nonzero = {
         "lon": lon,
         "lat": lat,
         "depth": depth,
         "mask": mask,
-        "sx": np.array([[0.0, 0.5], [0.0, 0.0]]),
-        "sy": np.array([[0.0, 0.0], [0.3, 0.0]]),
+        "ObsX": np.array([[0.0, 0.5], [0.0, 0.0]]),
+        "ObsY": np.array([[0.0, 0.0], [0.3, 0.0]]),
     }
     fig_nonzero = plot_grid(data_nonzero)
     main_axes_nonzero = [ax for ax in fig_nonzero.axes if ax.get_subplotspec() is not None]
@@ -178,20 +191,20 @@ def test_vis_ascii(tmp_path):
 
     depth = np.array([[10.0, 20.0, 30.0], [15.0, 25.0, 35.0], [10.0, 10.0, 10.0]])
     mask = np.ones((Ny, Nx), dtype=int)
-    sx = np.full((Ny, Nx), 0.05)
-    sy = np.full((Ny, Nx), 0.15)
+    ObsX = np.full((Ny, Nx), 0.05)
+    ObsY = np.full((Ny, Nx), 0.15)
 
     prefix = str(tmp_path / "ww3_ascii_test")
     depth_scale = 1000.0
     obstr_scale = 100.0
     write_ww3file(f"{prefix}.depth_ascii", depth * depth_scale)
     write_ww3file(f"{prefix}.maskorig_ascii", mask)
-    write_ww3obstr(f"{prefix}.obstr_lev1", sx * obstr_scale, sy * obstr_scale)
+    write_ww3obstr(f"{prefix}.obstr_lev1", ObsX * obstr_scale, ObsY * obstr_scale)
     write_ww3meta(prefix, "RECT", lon, lat, 1.0 / depth_scale, 1.0 / obstr_scale, 1.0)
 
     data = load_grid_data(prefix)
     assert data["depth"].shape == (3, 3)
-    assert np.allclose(data["sx"], sx)
+    assert np.allclose(data["ObsX"], ObsX)
 
     out_gif = str(tmp_path / "vis_ascii.gif")
     fig = plot_grid(data, title="ASCII Vis Test", output_path=out_gif)

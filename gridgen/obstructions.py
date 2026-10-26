@@ -37,7 +37,7 @@ def create_obstr(
     offset_left: int = 1,
     offset_right: int = 1,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Generate subgrid obstruction grids sx and sy.
+    """Generate subgrid obstruction grids ObsX and ObsY.
 
     Parameters
     ----------
@@ -56,16 +56,16 @@ def create_obstr(
 
     Returns
     -------
-    sx, sy : np.ndarray
+    ObsX, ObsY : np.ndarray
         2D obstruction arrays in x and y directions of shape (Ny, Nx).
         Values range from 0.0 (no obstruction) to 1.0 (full obstruction).
     """
     Ny, Nx = x.shape
-    sx = np.zeros((Ny, Nx), dtype=np.float64)
-    sy = np.zeros((Ny, Nx), dtype=np.float64)
+    ObsX = np.zeros((Ny, Nx), dtype=np.float64)
+    ObsY = np.zeros((Ny, Nx), dtype=np.float64)
 
     if not bound_list:
-        return sx, sy
+        return ObsX, ObsY
 
     grid_x_min = float(np.min(x))
     grid_x_max = float(np.max(x))
@@ -102,7 +102,7 @@ def create_obstr(
                 polygons.append(p)
 
     if not polygons:
-        return sx, sy
+        return ObsX, ObsY
 
     total_cells = Nx * Ny
     processed = 0
@@ -126,10 +126,10 @@ def create_obstr(
             cell_poly = Polygon([c4, c1, c2, c3, c4])
 
             # Calculate intersection ratio along x and y edges
-            # sx: obstruction across x-boundary (i-index)
-            # sy: obstruction across y-boundary (j-index)
-            sx_val = 0.0
-            sy_val = 0.0
+            # ObsX: obstruction across x-boundary (i-index)
+            # ObsY: obstruction across y-boundary (j-index)
+            ObsX_val = 0.0
+            ObsY_val = 0.0
 
             for poly in polygons:
                 if cell_poly.intersects(poly):
@@ -138,12 +138,12 @@ def create_obstr(
                         # Estimate projection along height and width
                         minx, miny, maxx, maxy = inter.bounds
                         if hgt > 0:
-                            sx_val = max(sx_val, (maxy - miny) / hgt)
+                            ObsX_val = max(ObsX_val, (maxy - miny) / hgt)
                         if wdth > 0:
-                            sy_val = max(sy_val, (maxx - minx) / wdth)
+                            ObsY_val = max(ObsY_val, (maxx - minx) / wdth)
 
-            sx[k, j] = min(1.0, max(0.0, sx_val))
-            sy[k, j] = min(1.0, max(0.0, sy_val))
+            ObsX[k, j] = min(1.0, max(0.0, ObsX_val))
+            ObsY[k, j] = min(1.0, max(0.0, ObsY_val))
 
     if total_cells > 0:
         sys.stdout.write("\n")
@@ -154,12 +154,12 @@ def create_obstr(
         for k in range(Ny):
             if mask[k, j] == 1:
                 if j < Nx - 1 and mask[k, j + 1] == 0:
-                    sx[k, j] = 0.0
+                    ObsX[k, j] = 0.0
                 if j > 0 and mask[k, j - 1] == 0:
-                    sx[k, j] = 0.0
+                    ObsX[k, j] = 0.0
                 if k < Ny - 1 and mask[k + 1, j] == 0:
-                    sy[k, j] = 0.0
+                    ObsY[k, j] = 0.0
                 if k > 0 and mask[k - 1, j] == 0:
-                    sy[k, j] = 0.0
+                    ObsY[k, j] = 0.0
 
-    return sx, sy
+    return ObsX, ObsY

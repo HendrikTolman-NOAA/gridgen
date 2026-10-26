@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-06
+# @date Latest Update: 2026-10-26
 
 from __future__ import annotations
 
@@ -44,13 +44,13 @@ def test_full_grid_pipeline(tmp_path):
     mask_mod, _mask_map = remove_lake(clean_m, lake_tol=-1, igl=0)
 
     # 3. Obstructions
-    sx, sy = create_obstr(lon, lat, [], mask_mod)
-    assert sx.shape == (4, 4)
-    assert sy.shape == (4, 4)
+    ObsX, ObsY = create_obstr(lon, lat, [], mask_mod)
+    assert ObsX.shape == (4, 4)
+    assert ObsY.shape == (4, 4)
 
     # 4. UGRID export
     ds_ugrid = create_ugrid_dataset(
-        lon, lat, depth, mask_mod, sx=sx, sy=sy, title="Pipeline Test"
+        lon, lat, depth, mask_mod, ObsX=ObsX, ObsY=ObsY, title="Pipeline Test"
     )
 
     nc_out = str(tmp_path / "pipeline.nc")

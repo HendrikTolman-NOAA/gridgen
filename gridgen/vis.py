@@ -98,7 +98,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
     Returns
     -------
     dict[str, Any]
-        Dictionary containing 'lon', 'lat', 'depth', 'mask', 'sx', and 'sy' 2D numpy arrays.
+        Dictionary containing 'lon', 'lat', 'depth', 'mask', 'ObsX', and 'ObsY' 2D numpy arrays.
     """
     path = Path(filepath)
 
@@ -112,8 +112,8 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             lat = ds["grid_lat"].values
             depth = ds["grid_depth"].values if "grid_depth" in ds else (ds["depth"].values if "depth" in ds else np.zeros_like(lon))
             mask = ds["grid_mask"].values if "grid_mask" in ds else (ds["mask"].values if "mask" in ds else np.ones_like(lon))
-            sx = ds["grid_sx"].values if "grid_sx" in ds else (ds["sx"].values if "sx" in ds else None)
-            sy = ds["grid_sy"].values if "grid_sy" in ds else (ds["sy"].values if "sy" in ds else None)
+            ObsX = ds["grid_ObsX"].values if "grid_ObsX" in ds else (ds["ObsX"].values if "ObsX" in ds else (ds["grid_sx"].values if "grid_sx" in ds else (ds["sx"].values if "sx" in ds else None)))
+            ObsY = ds["grid_ObsY"].values if "grid_ObsY" in ds else (ds["ObsY"].values if "ObsY" in ds else (ds["grid_sy"].values if "grid_sy" in ds else (ds["sy"].values if "sy" in ds else None)))
 
         # UGRID 1.0 format fallback
         elif "face_lon" in ds and "face_lat" in ds:
@@ -121,8 +121,8 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             face_lat = ds["face_lat"].values
             depth_raw = ds["depth"].values if "depth" in ds else np.zeros_like(face_lon)
             mask_raw = ds["mask"].values if "mask" in ds else np.ones_like(face_lon)
-            sx_raw = ds["sx"].values if "sx" in ds else None
-            sy_raw = ds["sy"].values if "sy" in ds else None
+            ObsX_raw = ds["ObsX"].values if "ObsX" in ds else (ds["sx"].values if "sx" in ds else None)
+            ObsY_raw = ds["ObsY"].values if "ObsY" in ds else (ds["sy"].values if "sy" in ds else None)
 
             # Attempt to reconstruct 2D grid structure
             unique_lons = np.unique(face_lon)
@@ -135,15 +135,15 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
                 lat = face_lat.reshape(Ny, Nx)
                 depth = depth_raw.reshape(Ny, Nx)
                 mask = mask_raw.reshape(Ny, Nx)
-                sx = sx_raw.reshape(Ny, Nx) if sx_raw is not None else None
-                sy = sy_raw.reshape(Ny, Nx) if sy_raw is not None else None
+                ObsX = ObsX_raw.reshape(Ny, Nx) if ObsX_raw is not None else None
+                ObsY = ObsY_raw.reshape(Ny, Nx) if ObsY_raw is not None else None
             else:
                 lon = face_lon
                 lat = face_lat
                 depth = depth_raw
                 mask = mask_raw
-                sx = sx_raw
-                sy = sy_raw
+                ObsX = ObsX_raw
+                ObsY = ObsY_raw
 
         # COARDS NetCDF format
         elif "lon" in ds and "lat" in ds:
@@ -156,8 +156,8 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
 
             depth = ds["z"].values if "z" in ds else np.zeros_like(lon)
             mask = ds["mask"].values if "mask" in ds else np.ones_like(lon)
-            sx = ds["sx"].values if "sx" in ds else None
-            sy = ds["sy"].values if "sy" in ds else None
+            ObsX = ds["ObsX"].values if "ObsX" in ds else (ds["sx"].values if "sx" in ds else None)
+            ObsY = ds["ObsY"].values if "ObsY" in ds else (ds["sy"].values if "sy" in ds else None)
 
         bathy_src = str(ds.attrs.get("bathy_source", ds.attrs.get("source", "etopo2")))
         ds.close()
@@ -166,8 +166,8 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "lat": lat,
             "depth": depth,
             "mask": mask,
-            "sx": sx,
-            "sy": sy,
+            "ObsX": ObsX,
+            "ObsY": ObsY,
             "filename": path.name,
             "bathy_source": bathy_src,
         }
@@ -195,19 +195,19 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
         )
 
         if Path(obstr_file).exists():
-            sx_raw, sy_raw = read_ww3obstr(obstr_file, Ny, Nx)
-            sx = sx_raw * obstr_scale
-            sy = sy_raw * obstr_scale
+            ObsX_raw, ObsY_raw = read_ww3obstr(obstr_file, Ny, Nx)
+            ObsX = ObsX_raw * obstr_scale
+            ObsY = ObsY_raw * obstr_scale
         else:
-            sx, sy = None, None
+            ObsX, ObsY = None, None
 
         return {
             "lon": lon,
             "lat": lat,
             "depth": depth,
             "mask": mask,
-            "sx": sx,
-            "sy": sy,
+            "ObsX": ObsX,
+            "ObsY": ObsY,
             "filename": path.name,
             "bathy_source": "etopo2",
         }
@@ -290,7 +290,7 @@ def plot_grid(
     Parameters
     ----------
     data : dict[str, Any]
-        Dictionary containing grid data ('lon', 'lat', 'depth', 'mask', 'sx', 'sy').
+        Dictionary containing grid data ('lon', 'lat', 'depth', 'mask', 'ObsX', 'ObsY').
     title : str, optional
         Main figure title string (default: input dataset filename). Can be set to empty string to disable.
     subtitle : str, optional
@@ -317,13 +317,13 @@ def plot_grid(
     lat = data["lat"]
     depth = data["depth"].copy()
     mask = data["mask"]
-    sx = data.get("sx", None)
-    sy = data.get("sy", None)
+    ObsX = data.get("ObsX", data.get("sx", None))
+    ObsY = data.get("ObsY", data.get("sy", None))
 
     has_obstr = (
-        sx is not None
-        and sy is not None
-        and (bool(np.any(sx != 0)) or bool(np.any(sy != 0)))
+        ObsX is not None
+        and ObsY is not None
+        and (bool(np.any(ObsX >= 0.01)) or bool(np.any(ObsY >= 0.01)))
     )
 
     if has_obstr:
@@ -496,26 +496,30 @@ def plot_grid(
 
     if has_obstr:
         if is_global:
-            if sx.ndim == 2:
-                sx_plot = np.hstack([sx, sx, sx, sx, sx])
-                sy_plot = np.hstack([sy, sy, sy, sy, sy])
+            if ObsX.ndim == 2:
+                ObsX_plot = np.hstack([ObsX, ObsX, ObsX, ObsX, ObsX])
+                ObsY_plot = np.hstack([ObsY, ObsY, ObsY, ObsY, ObsY])
             else:
-                sx_plot = np.concatenate([sx, sx, sx, sx, sx])
-                sy_plot = np.concatenate([sy, sy, sy, sy, sy])
+                ObsX_plot = np.concatenate([ObsX, ObsX, ObsX, ObsX, ObsX])
+                ObsY_plot = np.concatenate([ObsY, ObsY, ObsY, ObsY, ObsY])
         else:
-            sx_plot = sx
-            sy_plot = sy
+            ObsX_plot = ObsX
+            ObsY_plot = ObsY
+
+        # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
+        ObsX_plot = np.where(ObsX_plot >= 0.01, ObsX_plot, np.nan)
+        ObsY_plot = np.where(ObsY_plot >= 0.01, ObsY_plot, np.nan)
 
         if lon_plot.ndim == 2:
-            pcm_sx = ax2.pcolormesh(
-                lon_plot, lat_plot, sx_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            pcm_ObsX = ax2.pcolormesh(
+                lon_plot, lat_plot, ObsX_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
             )
-            pcm_sy = ax3.pcolormesh(
-                lon_plot, lat_plot, sy_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            pcm_ObsY = ax3.pcolormesh(
+                lon_plot, lat_plot, ObsY_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
             )
         else:
-            pcm_sx = ax2.scatter(lon_plot, lat_plot, c=sx_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
-            pcm_sy = ax3.scatter(lon_plot, lat_plot, c=sy_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+            pcm_ObsX = ax2.scatter(lon_plot, lat_plot, c=ObsX_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+            pcm_ObsY = ax3.scatter(lon_plot, lat_plot, c=ObsY_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
 
         ax2.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
         ax2.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
@@ -525,10 +529,10 @@ def plot_grid(
         ax2.grid(True, linestyle="--", alpha=0.5)
         ax3.grid(True, linestyle="--", alpha=0.5)
 
-        ax2.set_title("Sub-grid Obstructions S_x (X-direction)", fontsize=10, pad=4)
-        ax3.set_title("Sub-grid Obstructions S_y (Y-direction)", fontsize=10, pad=4)
+        ax2.set_title("Sub-grid Obstructions ObsX (X-direction)", fontsize=10, pad=4)
+        ax3.set_title("Sub-grid Obstructions ObsY (Y-direction)", fontsize=10, pad=4)
 
-        cax_sx = inset_axes(
+        cax_ObsX = inset_axes(
             ax2,
             width="3.5%",
             height="90%",
@@ -537,7 +541,7 @@ def plot_grid(
             bbox_transform=ax2.transAxes,
             borderpad=0,
         )
-        cax_sy = inset_axes(
+        cax_ObsY = inset_axes(
             ax3,
             width="3.5%",
             height="90%",
@@ -547,13 +551,13 @@ def plot_grid(
             borderpad=0,
         )
 
-        cb_sx = fig.colorbar(pcm_sx, cax=cax_sx, label="S_x Factor")
-        cb_sx.ax.tick_params(labelsize=5)
-        cb_sx.ax.yaxis.label.set_fontsize(6)
+        cb_ObsX = fig.colorbar(pcm_ObsX, cax=cax_ObsX, label="ObsX Factor")
+        cb_ObsX.ax.tick_params(labelsize=5)
+        cb_ObsX.ax.yaxis.label.set_fontsize(6)
 
-        cb_sy = fig.colorbar(pcm_sy, cax=cax_sy, label="S_y Factor")
-        cb_sy.ax.tick_params(labelsize=5)
-        cb_sy.ax.yaxis.label.set_fontsize(6)
+        cb_ObsY = fig.colorbar(pcm_ObsY, cax=cax_ObsY, label="ObsY Factor")
+        cb_ObsY.ax.tick_params(labelsize=5)
+        cb_ObsY.ax.yaxis.label.set_fontsize(6)
 
     fig.tight_layout()
 
