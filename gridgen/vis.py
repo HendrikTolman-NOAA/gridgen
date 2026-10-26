@@ -320,7 +320,11 @@ def plot_grid(
     sx = data.get("sx", None)
     sy = data.get("sy", None)
 
-    has_obstr = sx is not None and sy is not None
+    has_obstr = (
+        sx is not None
+        and sy is not None
+        and (bool(np.any(sx != 0)) or bool(np.any(sy != 0)))
+    )
 
     if has_obstr:
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 11), sharex=True, sharey=True)
