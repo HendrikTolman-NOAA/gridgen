@@ -149,19 +149,17 @@ def create_obstr(
         sys.stdout.write("\n")
         sys.stdout.flush()
 
-    # Zero out obstructions across cell faces bordering dry cells to prevent spurious attenuation.
-    # ObsX[k, j] is defined at the East face (i-boundary between (k, j) and (k, j+1)).
-    # ObsY[k, j] is defined at the North face (j-boundary between (k, j) and (k+1, j)).
-    dx = float(abs(x[0, 1] - x[0, 0])) if x.ndim == 2 and x.shape[1] > 1 else 1.0
-    is_global_lon = (Nx * dx >= 355.0) or (float(np.max(x) - np.min(x)) >= 355.0)
-
+    # Zero out obstructions adjacent to dry cells to prevent spurious attenuation
     for j in range(Nx):
         for k in range(Ny):
             if mask[k, j] == 1:
-                next_j = (j + 1) % Nx if (j == Nx - 1 and is_global_lon) else j + 1
-                if next_j < Nx and mask[k, next_j] == 0:
+                if j < Nx - 1 and mask[k, j + 1] == 0:
+                    ObsX[k, j] = 0.0
+                if j > 0 and mask[k, j - 1] == 0:
                     ObsX[k, j] = 0.0
                 if k < Ny - 1 and mask[k + 1, j] == 0:
+                    ObsY[k, j] = 0.0
+                if k > 0 and mask[k - 1, j] == 0:
                     ObsY[k, j] = 0.0
 
     return ObsX, ObsY

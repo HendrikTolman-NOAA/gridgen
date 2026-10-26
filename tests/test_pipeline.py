@@ -167,8 +167,8 @@ def test_remove_lake_keep_lakes_and_global_closure():
     assert m_closure[4, 4] == 0  # Lake removed
 
 
-def test_create_obstr_face_adjacency_and_preservation():
-    """Test subgrid obstruction calculation and face-specific zeroing behavior."""
+def test_create_obstr_adjacency_zeroing():
+    """Test subgrid obstruction calculation and dry neighbor zeroing behavior."""
     from shapely.geometry import Polygon
 
     # 3x3 grid spanning [0, 3] degrees in lon and lat
@@ -195,11 +195,12 @@ def test_create_obstr_face_adjacency_and_preservation():
     assert np.isclose(ObsY[1, 1], 0.6)
 
     # Scenario B: East neighbor cell (1, 2) is dry (mask=0)
-    # ObsX[1, 1] (East face) must be zeroed, but ObsY[1, 1] (North face) must be preserved because North neighbor (2, 1) is wet.
+    # ObsX[1, 1] checks horizontal neighbors (j+1, j-1) and is zeroed when East cell is dry.
+    # ObsY[1, 1] checks vertical neighbors (k+1, k-1) and is preserved when vertical neighbors are wet.
     mask_dry_east = np.ones((3, 3), dtype=int)
     mask_dry_east[1, 2] = 0
 
     ObsX_b, ObsY_b = create_obstr(lon, lat, [poly_dict], mask_dry_east)
 
-    assert ObsX_b[1, 1] == 0.0  # East neighbor dry -> East face zeroed
-    assert np.isclose(ObsY_b[1, 1], 0.6)  # North neighbor wet -> North face preserved
+    assert ObsX_b[1, 1] == 0.0
+    assert np.isclose(ObsY_b[1, 1], 0.6)
