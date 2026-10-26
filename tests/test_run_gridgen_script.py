@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-09
+# @date Latest Update: 2026-10-26
 
 """Unit tests for Python grid generation runner script (run_gridgen.sh)."""
 
@@ -627,13 +627,13 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
     assert res_no_poly.returncode == 0
     assert "active user-defined coastal polygons" not in res_no_poly.stdout
 
-    # 2. Test run_gridgen.sh with --local-polygons
+    # 2. Test run_gridgen.sh with --local-polygons and --user-polygons-flag
     local_dir = tmp_path / "local_sh_run"
     local_dir.mkdir(parents=True, exist_ok=True)
     with open(local_dir / "optional_coastal_polygons.txt", "w") as f:
         f.write("# Polygon 1: Local Poly (Level: 1, Points: 5)\n")
         f.write("10.0 20.0\n12.0 20.0\n12.0 22.0\n10.0 22.0\n10.0 20.0\n\n")
-    with open(local_dir / "user_polygons.flag", "w") as f:
+    with open(local_dir / "custom_test.flag", "w") as f:
         f.write("1 1\n")
 
     res_local = subprocess.run(
@@ -650,6 +650,8 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
             "--ny",
             "10",
             "--local-polygons",
+            "--user-polygons-flag",
+            "custom_test.flag",
         ],
         cwd=str(local_dir),
         capture_output=True,
@@ -658,6 +660,30 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
     )
     assert res_local.returncode == 0
     assert (out_dir / "test_local_sh_ugrid.nc").exists()
+
+    # 3. Test run_gridgen.sh with --cut-off
+    res_cutoff = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "test_cutoff_sh",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--cut-off",
+            "0.5",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res_cutoff.returncode == 0
+    assert (out_dir / "test_cutoff_sh_ugrid.nc").exists()
 
     # 3. Test run_gridgen.sh with --all-polygons
     res_all = subprocess.run(

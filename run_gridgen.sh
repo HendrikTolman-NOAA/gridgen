@@ -43,12 +43,14 @@ GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
+CUT_OFF="0.1"
 LAKE_MIN_POINTS="15"
 LAKE_MIN_FRACTION="0.0005"
 LEGACY=0
 LOCAL_POLYGONS=0
 NO_USER_POLYGONS=0
 ALL_POLYGONS=0
+USER_POLYGONS_FLAG=""
 OUT_DIR="."
 REF_DIR="${SCRIPT_DIR}/reference_data"
 CLEANUP=0
@@ -70,6 +72,9 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
+  --cut-off DEPTH, --cutoff-depth DEPTH
+                         Cut-off depth in meters to distinguish wet vs. dry cells
+                         (default: 0.1) [Optional]
   --lake-min-points PTS  Minimum points for a lake to be retained (default: 15) [Optional]
   --lake-min-fraction FRAC
                          Minimum grid fraction for a lake to be retained
@@ -79,6 +84,9 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          instead of gridgen_data [Optional]
   --no-user-polygons     Disable loading user coastal polygons [Optional]
   --all-polygons         Apply all coastal polygons independent of switch values [Optional]
+  --user-polygons-flag FILE, --user-flag FILE, --flag-file FILE
+                         Custom user polygon switch control flag file path or name
+                         (default: user_polygons.flag) [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
                          [Optional]
@@ -220,6 +228,10 @@ while [[ $# -gt 0 ]]; do
       BOUNDARY_POINTS=1
       shift 1
       ;;
+    --cut-off|--cutoff-depth)
+      CUT_OFF="$2"
+      shift 2
+      ;;
     --lake-min-points)
       LAKE_MIN_POINTS="$2"
       shift 2
@@ -243,6 +255,10 @@ while [[ $# -gt 0 ]]; do
     --all-polygons|--all-user-polygons)
       ALL_POLYGONS=1
       shift 1
+      ;;
+    --user-polygons-flag|--user-flag|--flag-file)
+      USER_POLYGONS_FLAG="$2"
+      shift 2
       ;;
     -c|--clean|--cleanup)
       CLEANUP=1
@@ -429,12 +445,14 @@ if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
+if [ -n "$CUT_OFF" ]; then CMD_ARGS+=(--cut-off "$CUT_OFF"); fi
 if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINTS"); fi
 if [ -n "$LAKE_MIN_FRACTION" ]; then CMD_ARGS+=(--lake-min-fraction "$LAKE_MIN_FRACTION"); fi
 if [ "$LEGACY" -eq 1 ]; then CMD_ARGS+=(--legacy); fi
 if [ "$LOCAL_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--local-polygons); fi
 if [ "$NO_USER_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--no-user-polygons); fi
 if [ "$ALL_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--all-polygons); fi
+if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"
 

@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-23
+# @date Latest Update: 2026-10-26
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -104,6 +104,22 @@ def main() -> None:
         dest="all_polygons",
         action="store_true",
         help="Apply all coastal polygons independent of their actual flag values in user_polygons.flag",
+    )
+    gen_group.add_argument(
+        "--user-polygons-flag",
+        "--user-flag",
+        dest="flag_file",
+        default=None,
+        metavar="FILE",
+        help="Custom user polygon switch control flag file path or name (default: user_polygons.flag)",
+    )
+    gen_group.add_argument(
+        "--cut-off",
+        "--cutoff-depth",
+        type=float,
+        default=0.1,
+        metavar="DEPTH",
+        help="Cut-off depth in meters to distinguish wet vs. dry cells (default: 0.1)",
     )
     gen_group.add_argument(
         "--lake-min-points",
@@ -249,16 +265,41 @@ def main() -> None:
     # Step 2: Extract bathymetry
     print(f"[Step 2/5] Extracting bathymetry depths from '{args.bathy_source}' dataset...")
     depth = generate_grid(
-        lon, lat, ref_dir=args.ref_dir, bathy_source=args.bathy_source
+        lon,
+        lat,
+        ref_dir=args.ref_dir,
+        bathy_source=args.bathy_source,
+        cut_off=args.cut_off,
     )
-    m = np.ones_like(depth, dtype=int)
-    m[depth == 999999.0] = 0
+
+    wet_mask = depth <= args.cut_off
+    land_mask = (depth > args.cut_off) & (depth < 999999.0)
+
+    if np.any(wet_mask):
+        min_wdepth = float(-np.max(depth[wet_mask]))
+        max_wdepth = float(-np.min(depth[wet_mask]))
+        wdepth_str = f"{min_wdepth:.1f} m to {max_wdepth:.1f} m"
+    else:
+        wdepth_str = "None (no water cells)"
+
+    if np.any(land_mask):
+        min_lheight = float(np.min(depth[land_mask]))
+        max_lheight = float(np.max(depth[land_mask]))
+        lheight_str = f"{min_lheight:.1f} m to {max_lheight:.1f} m"
+    else:
+        lheight_str = "None (no land height data)"
+
+    print(f"  Water depth range: {wdepth_str}")
+    print(f"  Land height range: {lheight_str}")
+
+    m = np.where(depth <= args.cut_off, 1, 0)
 
     user_bounds = []
     if not args.no_user_polygons:
         poly_dir = "." if args.local_polygons else "gridgen_data"
         user_bounds = load_user_polygons(
             ref_dir=poly_dir,
+            flag_file=args.flag_file,
             all_polygons=args.all_polygons,
         )
         if user_bounds:
