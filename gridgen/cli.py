@@ -106,7 +106,6 @@ def main() -> None:
         help="Apply all coastal polygons independent of their actual flag values in user_polygons.flag",
     )
     gen_group.add_argument(
-        "--user-polygons-flag",
         "--user-flag",
         dest="flag_file",
         default=None,

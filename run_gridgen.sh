@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-23
+# @date Latest Update: 2026-10-26
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -84,8 +84,7 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          instead of gridgen_data [Optional]
   --no-user-polygons     Disable loading user coastal polygons [Optional]
   --all-polygons         Apply all coastal polygons independent of switch values [Optional]
-  --user-polygons-flag FILE, --user-flag FILE, --flag-file FILE
-                         Custom user polygon switch control flag file path or name
+  --user-flag FILE       Custom user polygon switch control flag file path or name
                          (default: user_polygons.flag) [Optional]
   -o, --out-dir DIR      Output directory for grid files (default: .) [Optional]
   -r, --ref-dir DIR      Reference data directory (default: ./reference_data)
@@ -256,7 +255,7 @@ while [[ $# -gt 0 ]]; do
       ALL_POLYGONS=1
       shift 1
       ;;
-    --user-polygons-flag|--user-flag|--flag-file)
+    --user-flag)
       USER_POLYGONS_FLAG="$2"
       shift 2
       ;;
@@ -452,7 +451,7 @@ if [ "$LEGACY" -eq 1 ]; then CMD_ARGS+=(--legacy); fi
 if [ "$LOCAL_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--local-polygons); fi
 if [ "$NO_USER_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--no-user-polygons); fi
 if [ "$ALL_POLYGONS" -eq 1 ]; then CMD_ARGS+=(--all-polygons); fi
-if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-polygons-flag "$USER_POLYGONS_FLAG"); fi
+if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-flag "$USER_POLYGONS_FLAG"); fi
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"
 

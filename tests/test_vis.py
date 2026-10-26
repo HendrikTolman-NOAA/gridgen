@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-22
+# @date Latest Update: 2026-10-26
 
 from __future__ import annotations
 
@@ -134,6 +134,40 @@ def test_vis_coards(tmp_path):
     fig = plot_grid(data, title="COARDS Vis Test", output_path=out_gif)
     assert os.path.exists(out_gif)
     assert fig is not None
+
+
+def test_vis_obstructions_only_when_nonzero(tmp_path):
+    """Verify plot_grid renders 3 panels when obstructions are non-zero, and 1 panel when obstructions are all zero or None."""
+    lon, lat = np.meshgrid([10.0, 11.0], [20.0, 21.0])
+    depth = np.full((2, 2), -50.0)
+    mask = np.ones((2, 2), dtype=int)
+
+    # 1. All-zero obstructions -> 1 panel (bathymetry/orography)
+    data_zero = {
+        "lon": lon,
+        "lat": lat,
+        "depth": depth,
+        "mask": mask,
+        "sx": np.zeros((2, 2)),
+        "sy": np.zeros((2, 2)),
+    }
+    fig_zero = plot_grid(data_zero)
+    # Filter main grid subplot axes (excluding inset colorbar axes)
+    main_axes_zero = [ax for ax in fig_zero.axes if ax.get_subplotspec() is not None]
+    assert len(main_axes_zero) == 1
+
+    # 2. Non-zero obstructions -> 3 main subplot panels (bathymetry, Sx, Sy)
+    data_nonzero = {
+        "lon": lon,
+        "lat": lat,
+        "depth": depth,
+        "mask": mask,
+        "sx": np.array([[0.0, 0.5], [0.0, 0.0]]),
+        "sy": np.array([[0.0, 0.0], [0.3, 0.0]]),
+    }
+    fig_nonzero = plot_grid(data_nonzero)
+    main_axes_nonzero = [ax for ax in fig_nonzero.axes if ax.get_subplotspec() is not None]
+    assert len(main_axes_nonzero) == 3
 
 
 def test_vis_ascii(tmp_path):
