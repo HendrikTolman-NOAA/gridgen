@@ -165,3 +165,41 @@ def test_remove_lake_keep_lakes_and_global_closure():
     assert m_closure[2, 0] == 1
     assert m_closure[2, 9] == 1
     assert m_closure[4, 4] == 0  # Lake removed
+
+
+def test_create_obstr_face_adjacency_and_preservation():
+    """Test subgrid obstruction calculation and face-specific zeroing behavior."""
+    from shapely.geometry import Polygon
+
+    # 3x3 grid spanning [0, 3] degrees in lon and lat
+    lon1d = np.array([0.5, 1.5, 2.5])
+    lat1d = np.array([0.5, 1.5, 2.5])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+
+    # Polygon covering part of cell (1, 1) [lon 1.0..2.0, lat 1.0..2.0]
+    # Island polygon inside cell (1, 1) spanning lon [1.2, 1.8] and lat [1.2, 1.8]
+    poly_dict = {
+        "x": np.array([1.2, 1.8, 1.8, 1.2, 1.2]),
+        "y": np.array([1.2, 1.2, 1.8, 1.8, 1.2]),
+        "level": 1,
+        "polygon": Polygon([(1.2, 1.2), (1.8, 1.2), (1.8, 1.8), (1.2, 1.8), (1.2, 1.2)]),
+    }
+
+    # Scenario A: All cells wet (mask=1)
+    mask_all_wet = np.ones((3, 3), dtype=int)
+    ObsX, ObsY = create_obstr(lon, lat, [poly_dict], mask_all_wet)
+
+    # Cell (1, 1) intersects island polygon
+    # Height = 1.0, Width = 1.0, poly height = 0.6, poly width = 0.6 -> ratio 0.6
+    assert np.isclose(ObsX[1, 1], 0.6)
+    assert np.isclose(ObsY[1, 1], 0.6)
+
+    # Scenario B: East neighbor cell (1, 2) is dry (mask=0)
+    # ObsX[1, 1] (East face) must be zeroed, but ObsY[1, 1] (North face) must be preserved because North neighbor (2, 1) is wet.
+    mask_dry_east = np.ones((3, 3), dtype=int)
+    mask_dry_east[1, 2] = 0
+
+    ObsX_b, ObsY_b = create_obstr(lon, lat, [poly_dict], mask_dry_east)
+
+    assert ObsX_b[1, 1] == 0.0  # East neighbor dry -> East face zeroed
+    assert np.isclose(ObsY_b[1, 1], 0.6)  # North neighbor wet -> North face preserved
