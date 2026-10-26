@@ -10,6 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-26
 #
 # Code Heritage:
 # Converted from generate_grid.m originally authored by NOAA/NCEP
@@ -251,7 +252,7 @@ def generate_grid(
                         + a22 * dy1 * dx1
                     ) / den
 
-                depth_sub[k, j] = depth_val if depth_val <= cut_off else dry
+                depth_sub[k, j] = depth_val
             else:
                 # Cell averaging
                 cell_poly_q = cell_poly.copy()

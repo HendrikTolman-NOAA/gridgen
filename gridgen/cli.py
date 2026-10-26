@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-23
+# @date Latest Update: 2026-10-26
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -259,8 +259,28 @@ def main() -> None:
     depth = generate_grid(
         lon, lat, ref_dir=args.ref_dir, bathy_source=args.bathy_source
     )
-    m = np.ones_like(depth, dtype=int)
-    m[depth == 999999.0] = 0
+
+    wet_mask = depth <= 0.0
+    land_mask = (depth > 0.0) & (depth < 999999.0)
+
+    if np.any(wet_mask):
+        min_wdepth = float(-np.max(depth[wet_mask]))
+        max_wdepth = float(-np.min(depth[wet_mask]))
+        wdepth_str = f"{min_wdepth:.1f} m to {max_wdepth:.1f} m"
+    else:
+        wdepth_str = "None (no water cells)"
+
+    if np.any(land_mask):
+        min_lheight = float(np.min(depth[land_mask]))
+        max_lheight = float(np.max(depth[land_mask]))
+        lheight_str = f"{min_lheight:.1f} m to {max_lheight:.1f} m"
+    else:
+        lheight_str = "None (no land height data)"
+
+    print(f"  Water depth range: {wdepth_str}")
+    print(f"  Land height range: {lheight_str}")
+
+    m = np.where(depth <= 0.0, 1, 0)
 
     user_bounds = []
     if not args.no_user_polygons:
