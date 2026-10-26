@@ -627,7 +627,7 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
     assert res_no_poly.returncode == 0
     assert "active user-defined coastal polygons" not in res_no_poly.stdout
 
-    # 2. Test run_gridgen.sh with --local-polygons and --user-polygons-flag
+    # 2. Test run_gridgen.sh with --local-polygons and --user-flag
     local_dir = tmp_path / "local_sh_run"
     local_dir.mkdir(parents=True, exist_ok=True)
     with open(local_dir / "optional_coastal_polygons.txt", "w") as f:
@@ -650,7 +650,7 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
             "--ny",
             "10",
             "--local-polygons",
-            "--user-polygons-flag",
+            "--user-flag",
             "custom_test.flag",
         ],
         cwd=str(local_dir),

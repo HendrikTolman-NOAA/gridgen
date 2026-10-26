@@ -317,12 +317,23 @@ def plot_grid(
     lat = data["lat"]
     depth = data["depth"].copy()
     mask = data["mask"]
+    sx = data.get("sx", None)
+    sy = data.get("sy", None)
 
-    fig, ax1 = plt.subplots(figsize=(8, 5))
+    has_obstr = sx is not None and sy is not None
+
+    if has_obstr:
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 11), sharex=True, sharey=True)
+    else:
+        fig, ax1 = plt.subplots(figsize=(8, 5))
+        ax2 = ax3 = None
 
     dark_green = "#1b4332"  # Dark green background for land/sea mask
     if show_mask:
         ax1.set_facecolor(dark_green)
+        if has_obstr:
+            ax2.set_facecolor(dark_green)
+            ax3.set_facecolor(dark_green)
 
     depth_limit = -abs(max_depth) if max_depth is not None else -8000.0
     vmax_orog = max_orography if max_orography is not None else 10.0
@@ -393,11 +404,20 @@ def plot_grid(
             sub_text = subtitle
 
     if zoom_parsed is not None and zoom_parsed[2] > 1.0:
-        ax1.set_xlabel("Longitude (zoom)")
-        ax1.set_ylabel("Latitude (zoom)")
+        xlabel_str = "Longitude (zoom)"
+        ylabel_str = "Latitude (zoom)"
     else:
-        ax1.set_xlabel("Longitude")
-        ax1.set_ylabel("Latitude")
+        xlabel_str = "Longitude"
+        ylabel_str = "Latitude"
+
+    if has_obstr:
+        ax3.set_xlabel(xlabel_str)
+        ax1.set_ylabel(ylabel_str)
+        ax2.set_ylabel(ylabel_str)
+        ax3.set_ylabel(ylabel_str)
+    else:
+        ax1.set_xlabel(xlabel_str)
+        ax1.set_ylabel(ylabel_str)
 
     ax1.grid(True, linestyle="--", alpha=0.5)
 
@@ -462,10 +482,75 @@ def plot_grid(
         ax1.set_ylim(ylim)
         aspect = 1.0 / max(np.cos(np.radians(central_lat)), 0.01)
         ax1.set_aspect(aspect)
+        if has_obstr:
+            ax2.set_aspect(aspect)
+            ax3.set_aspect(aspect)
         print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
     elif is_global:
         ax1.set_xlim(lon_min, lon_max)
         ax1.set_ylim(lat_min, lat_max)
+
+    if has_obstr:
+        if is_global:
+            if sx.ndim == 2:
+                sx_plot = np.hstack([sx, sx, sx, sx, sx])
+                sy_plot = np.hstack([sy, sy, sy, sy, sy])
+            else:
+                sx_plot = np.concatenate([sx, sx, sx, sx, sx])
+                sy_plot = np.concatenate([sy, sy, sy, sy, sy])
+        else:
+            sx_plot = sx
+            sy_plot = sy
+
+        if lon_plot.ndim == 2:
+            pcm_sx = ax2.pcolormesh(
+                lon_plot, lat_plot, sx_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            )
+            pcm_sy = ax3.pcolormesh(
+                lon_plot, lat_plot, sy_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            )
+        else:
+            pcm_sx = ax2.scatter(lon_plot, lat_plot, c=sx_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+            pcm_sy = ax3.scatter(lon_plot, lat_plot, c=sy_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+
+        ax2.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
+        ax2.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
+        ax3.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
+        ax3.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
+
+        ax2.grid(True, linestyle="--", alpha=0.5)
+        ax3.grid(True, linestyle="--", alpha=0.5)
+
+        ax2.set_title("Sub-grid Obstructions S_x (X-direction)", fontsize=10, pad=4)
+        ax3.set_title("Sub-grid Obstructions S_y (Y-direction)", fontsize=10, pad=4)
+
+        cax_sx = inset_axes(
+            ax2,
+            width="3.5%",
+            height="90%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.05, 1, 0.9),
+            bbox_transform=ax2.transAxes,
+            borderpad=0,
+        )
+        cax_sy = inset_axes(
+            ax3,
+            width="3.5%",
+            height="90%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.05, 1, 0.9),
+            bbox_transform=ax3.transAxes,
+            borderpad=0,
+        )
+
+        cb_sx = fig.colorbar(pcm_sx, cax=cax_sx, label="S_x Factor")
+        cb_sx.ax.tick_params(labelsize=5)
+        cb_sx.ax.yaxis.label.set_fontsize(6)
+
+        cb_sy = fig.colorbar(pcm_sy, cax=cax_sy, label="S_y Factor")
+        cb_sy.ax.tick_params(labelsize=5)
+        cb_sy.ax.yaxis.label.set_fontsize(6)
+
     fig.tight_layout()
 
     # Orography colorbar (top-right, placed above Bathymetry colorbar)
