@@ -455,5 +455,24 @@ if [ -n "$USER_POLYGONS_FLAG" ]; then CMD_ARGS+=(--user-flag "$USER_POLYGONS_FLA
 
 python3 -m gridgen.cli "${CMD_ARGS[@]}"
 
+# Display maximum obstruction summary from exported NetCDF UGRID file
+UGRID_FILE="${OUT_DIR}/${NAME}_ugrid.nc"
+if [ -f "$UGRID_FILE" ]; then
+  python3 -c "
+import xarray as xr, numpy as np
+try:
+    ds = xr.open_dataset('${UGRID_FILE}')
+    obsx = ds['grid_ObsX'].values if 'grid_ObsX' in ds else (ds['ObsX'].values if 'ObsX' in ds else None)
+    obsy = ds['grid_ObsY'].values if 'grid_ObsY' in ds else (ds['ObsY'].values if 'ObsY' in ds else None)
+    if obsx is not None and obsy is not None:
+        max_x = float(np.nanmax(obsx))
+        max_y = float(np.nanmax(obsy))
+        print(f'Maximum Sub-grid Obstructions: ObsX = {max_x:.4f}, ObsY = {max_y:.4f}')
+    ds.close()
+except Exception:
+    pass
+"
+fi
+
 echo ""
 echo "Execution finished successfully."

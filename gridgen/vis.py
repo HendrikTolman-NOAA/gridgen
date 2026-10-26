@@ -320,17 +320,21 @@ def plot_grid(
     ObsX = data.get("ObsX", data.get("sx", None))
     ObsY = data.get("ObsY", data.get("sy", None))
 
+    # Compute combined maximum obstruction map: Obs = max(ObsX, ObsY)
+    Obs_max = None
+    if ObsX is not None and ObsY is not None:
+        Obs_max = np.maximum(ObsX, ObsY)
+
     has_obstr = (
-        ObsX is not None
-        and ObsY is not None
-        and (bool(np.any(ObsX >= 0.01)) or bool(np.any(ObsY >= 0.01)))
+        Obs_max is not None
+        and bool(np.any(Obs_max >= 0.01))
     )
 
     if has_obstr:
-        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 11), sharex=True, sharey=True)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9), sharex=True, sharey=True)
     else:
         fig, ax1 = plt.subplots(figsize=(8, 5))
-        ax2 = ax3 = None
+        ax2 = None
 
     dark_green = "#1b4332"  # Dark green background for land/sea mask
     if show_mask:
@@ -412,10 +416,9 @@ def plot_grid(
         ylabel_str = "Latitude"
 
     if has_obstr:
-        ax3.set_xlabel(xlabel_str)
+        ax2.set_xlabel(xlabel_str)
         ax1.set_ylabel(ylabel_str)
         ax2.set_ylabel(ylabel_str)
-        ax3.set_ylabel(ylabel_str)
     else:
         ax1.set_xlabel(xlabel_str)
         ax1.set_ylabel(ylabel_str)
@@ -485,7 +488,6 @@ def plot_grid(
         ax1.set_aspect(aspect)
         if has_obstr:
             ax2.set_aspect(aspect)
-            ax3.set_aspect(aspect)
         print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
     elif is_global:
         ax1.set_xlim(lon_min, lon_max)
@@ -493,43 +495,31 @@ def plot_grid(
 
     if has_obstr:
         if is_global:
-            if ObsX.ndim == 2:
-                ObsX_plot = np.hstack([ObsX, ObsX, ObsX, ObsX, ObsX])
-                ObsY_plot = np.hstack([ObsY, ObsY, ObsY, ObsY, ObsY])
+            if Obs_max.ndim == 2:
+                Obs_plot = np.hstack([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
             else:
-                ObsX_plot = np.concatenate([ObsX, ObsX, ObsX, ObsX, ObsX])
-                ObsY_plot = np.concatenate([ObsY, ObsY, ObsY, ObsY, ObsY])
+                Obs_plot = np.concatenate([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
         else:
-            ObsX_plot = ObsX
-            ObsY_plot = ObsY
+            Obs_plot = Obs_max
 
         # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
-        ObsX_plot = np.where(ObsX_plot >= 0.01, ObsX_plot, np.nan)
-        ObsY_plot = np.where(ObsY_plot >= 0.01, ObsY_plot, np.nan)
+        Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
 
         if lon_plot.ndim == 2:
-            pcm_ObsX = ax2.pcolormesh(
-                lon_plot, lat_plot, ObsX_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
-            )
-            pcm_ObsY = ax3.pcolormesh(
-                lon_plot, lat_plot, ObsY_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            pcm_Obs = ax2.pcolormesh(
+                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
             )
         else:
-            pcm_ObsX = ax2.scatter(lon_plot, lat_plot, c=ObsX_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
-            pcm_ObsY = ax3.scatter(lon_plot, lat_plot, c=ObsY_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+            pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
 
         ax2.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
         ax2.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
-        ax3.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
-        ax3.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
 
         ax2.grid(True, linestyle="--", alpha=0.5)
-        ax3.grid(True, linestyle="--", alpha=0.5)
 
-        ax2.set_title("Sub-grid Obstructions ObsX (X-direction)", fontsize=10, pad=4)
-        ax3.set_title("Sub-grid Obstructions ObsY (Y-direction)", fontsize=10, pad=4)
+        ax2.set_title("Sub-grid Obstructions (Maximum of ObsX & ObsY)", fontsize=10, pad=4)
 
-        cax_ObsX = inset_axes(
+        cax_Obs = inset_axes(
             ax2,
             width="3.5%",
             height="90%",
@@ -538,23 +528,10 @@ def plot_grid(
             bbox_transform=ax2.transAxes,
             borderpad=0,
         )
-        cax_ObsY = inset_axes(
-            ax3,
-            width="3.5%",
-            height="90%",
-            loc="lower left",
-            bbox_to_anchor=(1.03, 0.05, 1, 0.9),
-            bbox_transform=ax3.transAxes,
-            borderpad=0,
-        )
 
-        cb_ObsX = fig.colorbar(pcm_ObsX, cax=cax_ObsX, label="ObsX Factor")
-        cb_ObsX.ax.tick_params(labelsize=5)
-        cb_ObsX.ax.yaxis.label.set_fontsize(6)
-
-        cb_ObsY = fig.colorbar(pcm_ObsY, cax=cax_ObsY, label="ObsY Factor")
-        cb_ObsY.ax.tick_params(labelsize=5)
-        cb_ObsY.ax.yaxis.label.set_fontsize(6)
+        cb_Obs = fig.colorbar(pcm_Obs, cax=cax_Obs, label="Obstruction Factor")
+        cb_Obs.ax.tick_params(labelsize=5)
+        cb_Obs.ax.yaxis.label.set_fontsize(6)
 
     fig.tight_layout()
 
