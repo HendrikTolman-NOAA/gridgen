@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # WAVEWATCH IV NetCDF-UGRID 1.0 format exporter module.
@@ -37,6 +37,7 @@ def create_ugrid_dataset(
     title: str = "WAVEWATCH IV UGRID Mesh",
     start_index: int = 0,
     bathy_source: str = "etopo2",
+    bound_source: str | None = None,
 ) -> xr.Dataset:
     """Create an xarray Dataset compliant with the NetCDF-UGRID 1.0 conventions.
 
@@ -278,6 +279,7 @@ def create_ugrid_dataset(
             "title": title,
             "source": "WAVEWATCH IV Gridgen Package",
             "bathy_source": bathy_source,
+            "bound_source": bound_source or "",
             "history": f"Created {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
         },
     )

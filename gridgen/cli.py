@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -375,6 +375,7 @@ def main() -> None:
         ObsY=ObsY,
         title=f"WW4 Grid {args.name}",
         bathy_source=args.bathy_source,
+        bound_source=args.bound_file,
     )
     nc_path = f"{args.out_dir}/{args.name}_ugrid.nc"
     write_ugrid_nc(ds_ugrid, nc_path)
@@ -409,6 +410,7 @@ def main() -> None:
             ObsX=ObsX,
             ObsY=ObsY,
             bathy_source=args.bathy_source,
+            bound_source=args.bound_file,
         )
 
     print("Successfully generated WW4 NetCDF-UGRID grid output!")

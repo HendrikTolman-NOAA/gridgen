@@ -379,6 +379,35 @@ def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
     assert (tmp_path / out_jpg).exists()
 
 
+def test_coastline_subtitle_formatting(tmp_path):
+    """Verify subtitle formatting appends bathymetry source and coastline resolution description."""
+    lon1d = np.array([10.0, 20.0])
+    lat1d = np.array([10.0, 18.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": np.full((2, 2), -10.0),
+        "mask": np.ones((2, 2), dtype=int),
+        "filename": "test_grid_ugrid.nc",
+        "bathy_source": "etopo2",
+        "bound_source": "coastal_bound_low.mat",
+    }
+
+    fig = plot_grid(data)
+    ax = fig.axes[0]
+    assert ax.get_title() == "Bathymetry, Orography, and Obstructions (etopo2, low res coastline)"
+
+    # Test high res coastline
+    fig_high = plot_grid(data, bound_source="coastal_bound_high.mat")
+    assert fig_high.axes[0].get_title() == "Bathymetry, Orography, and Obstructions (etopo2, high res coastline)"
+
+    # Test disabled coastline ('none')
+    fig_none = plot_grid(data, bound_source="none")
+    assert fig_none.axes[0].get_title() == "Bathymetry, Orography, and Obstructions (etopo2)"
+
+
 def test_default_title_and_subtitle(tmp_path):
     """Verify default title uses input dataset filename and subtitle includes bathymetry source."""
     lon1d = np.array([10.0, 20.0])

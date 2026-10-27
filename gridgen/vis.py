@@ -160,6 +160,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             ObsY = ds["ObsY"].values if "ObsY" in ds else (ds["sy"].values if "sy" in ds else None)
 
         bathy_src = str(ds.attrs.get("bathy_source", ds.attrs.get("source", "etopo2")))
+        bound_src = str(ds.attrs.get("bound_source", ds.attrs.get("bound_file", ds.attrs.get("coast_file", ""))))
         ds.close()
         return {
             "lon": lon,
@@ -170,6 +171,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "ObsY": ObsY,
             "filename": path.name,
             "bathy_source": bathy_src,
+            "bound_source": bound_src,
         }
 
     # 2. Legacy WW3 ASCII files
@@ -210,6 +212,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "ObsY": ObsY,
             "filename": path.name,
             "bathy_source": "etopo2",
+            "bound_source": "coastal_bound_low.mat",
         }
 
     raise FileNotFoundError(
@@ -231,6 +234,37 @@ def _parse_coord_token(s: str) -> float:
         token = token[:-1]
     token = token.replace("°", "").strip()
     return float(token) * mult
+
+
+def format_coastline_desc(bound_source: str | None) -> str | None:
+    """Format boundary polygon filename or identifier into coastline description string.
+
+    Parameters
+    ----------
+    bound_source : str or None
+        Path, filename, or name of boundary polygon file (e.g. 'coastal_bound_low.mat').
+
+    Returns
+    -------
+    str or None
+        Human-readable coastline description string (e.g. 'low res coastline') or None if disabled/unspecified.
+    """
+    if not bound_source or str(bound_source).lower() in ("none", ""):
+        return None
+    name = Path(bound_source).name.lower()
+    if "coarse" in name:
+        return "coarse res coastline"
+    elif "low" in name:
+        return "low res coastline"
+    elif "inter" in name:
+        return "intermediate res coastline"
+    elif "high" in name:
+        return "high res coastline"
+    elif "full" in name:
+        return "full res coastline"
+    else:
+        clean = Path(bound_source).stem
+        return f"{clean} coastline"
 
 
 def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
@@ -284,6 +318,7 @@ def plot_grid(
     max_orography: float | None = 10.0,
     zoom: tuple[float, float, float] | list[float] | str | None = None,
     bathy_source: str | None = None,
+    bound_source: str | None = None,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry, orography, and obstructions plot.
 
@@ -419,8 +454,16 @@ def plot_grid(
     sub_text = ""
     if subtitle:
         bsource = bathy_source or data.get("bathy_source", "etopo2")
-        if bsource and f"({bsource})" not in subtitle:
-            sub_text = f"{subtitle} ({bsource})"
+        bound_src = bound_source or data.get("bound_source", None)
+        c_desc = format_coastline_desc(bound_src)
+
+        details = [d for d in [bsource, c_desc] if d]
+        if details:
+            detail_str = ", ".join(details)
+            if f"({detail_str})" not in subtitle:
+                sub_text = f"{subtitle} ({detail_str})"
+            else:
+                sub_text = subtitle
         else:
             sub_text = subtitle
 
@@ -715,6 +758,14 @@ def main() -> None:
         help="Bathymetry reference dataset identifier for subtitle (default: auto from dataset metadata)",
     )
     parser.add_argument(
+        "--bound-source",
+        "--bound-file",
+        dest="bound_source",
+        type=str,
+        default=None,
+        help="Shoreline boundary dataset file path or name for subtitle (default: auto from dataset metadata)",
+    )
+    parser.add_argument(
         "--no-mask",
         dest="mask",
         action="store_false",
@@ -786,6 +837,7 @@ def main() -> None:
         max_orography=args.max_orography,
         zoom=args.zoom,
         bathy_source=args.bathy_source,
+        bound_source=args.bound_source,
     )
 
 

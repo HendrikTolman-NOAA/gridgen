@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # Converted from nc_ww3_grdwrite.m originally authored by Kelsey Jordahl
@@ -36,6 +36,7 @@ def nc_ww3_grdwrite(
     ObsX: np.ndarray | None = None,
     ObsY: np.ndarray | None = None,
     bathy_source: str = "etopo2",
+    bound_source: str | None = None,
 ) -> None:
     """Write GMT / COARDS compliant NetCDF grid file for WAVEWATCH III.
 
@@ -141,6 +142,7 @@ def nc_ww3_grdwrite(
             "title": filename,
             "source": "WAVEWATCH IV Gridgen Package",
             "bathy_source": bathy_source,
+            "bound_source": bound_source or "",
             "history": "File written by WAVEWATCH IV Python gridgen package",
             "description": f"Created {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
             "GMT_version": "4.x",
