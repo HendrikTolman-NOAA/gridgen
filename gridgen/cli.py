@@ -342,8 +342,6 @@ def main() -> None:
     if user_bounds:
         m = clean_mask(lon, lat, m, user_bounds)
 
-    combined_bounds = mat_bounds + user_bounds
-
     # Step 3: Land/Sea Masking & Lake Removal
     print("[Step 3/5] Generating land/sea mask and applying lake removal...")
     print(
@@ -360,9 +358,9 @@ def main() -> None:
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
-    # Step 4: Calculate sub-grid obstructions
+    # Step 4: Calculate sub-grid obstructions (using shoreline MAT bounds only; user polygons reserved for mask generation)
     print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
-    ObsX, ObsY = create_obstr(lon, lat, combined_bounds, m_mod)
+    ObsX, ObsY = create_obstr(lon, lat, mat_bounds, m_mod)
 
     # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
     print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 grid dataset...")

@@ -73,8 +73,12 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
-  --bound-file FILE      MAT boundary polygon file path or name for obstructions and
-                         masking (default: coastal_bound_full.mat) [Optional]
+  --bound-file FILE      MAT boundary polygon file path or name used for computing
+                         subgrid obstructions (default: coastal_bound_full.mat).
+                         To specify an alternative resolution dataset (e.g.,
+                         coastal_bound_high.mat, coastal_bound_inter.mat,
+                         coastal_bound_low.mat, coastal_bound_coarse.mat),
+                         pass the filename or full path using this flag. [Optional]
   --cut-off DEPTH, --cutoff-depth DEPTH
                          Cut-off depth in meters to distinguish wet vs. dry cells
                          (default: 0.1) [Optional]
