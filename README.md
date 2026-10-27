@@ -158,7 +158,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
-A graphical display shell driver script is provided in the repository root directory to generate multi-panel plot graphics of bathymetry depth, land-sea masks, and sub-grid directional obstruction factors ($\text{ObsX}$, $\text{ObsY}$):
+A graphical display shell driver script is provided in the repository root directory to generate plot graphics of bathymetry depth and land-sea masks overlaid with sub-grid directional obstruction factors ($\text{ObsX}$, $\text{ObsY}$) and three colorbar legends:
 
 ```bash
 ./plot_grid.sh [OPTIONS]
@@ -180,7 +180,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `-f, --format FORMAT` | Output graphic format: `jpg`, `png`, `pdf`, `eps`, or `gif`. Default: `jpg`. |
 | `--title TITLE` | Custom main figure title (default: input dataset filename). |
 | `--no-title` | Disable main figure title. |
-| `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry and Orography`). |
+| `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry, Orography, and Obstructions`). |
 | `--no-subtitle` | Disable figure subtitle. |
 | `--no-mask` | Disable land-sea mask display. |
 | `--zoom LON LAT FACTOR` | Zoom view centered at central longitude and latitude with zoom factor (e.g. `--zoom -70 40 2`). |
