@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 
 from __future__ import annotations
 
@@ -137,12 +137,12 @@ def test_vis_coards(tmp_path):
 
 
 def test_vis_obstructions_only_when_nonzero(tmp_path):
-    """Verify plot_grid renders 2 panels when obstructions are non-zero (bathymetry & maximum obstruction), and 1 panel when obstructions are all zero or None."""
+    """Verify plot_grid overlays obstructions on single plot panel and displays subgrid obstruction colorbar legend when non-zero obstructions exist."""
     lon, lat = np.meshgrid([10.0, 11.0], [20.0, 21.0])
     depth = np.full((2, 2), -50.0)
     mask = np.ones((2, 2), dtype=int)
 
-    # 1. All-zero obstructions -> 1 panel (bathymetry/orography)
+    # 1. All-zero obstructions -> 1 main panel, obstruction colorbar shows 'Grid contains no obstructions'
     data_zero = {
         "lon": lon,
         "lat": lat,
@@ -152,11 +152,12 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
         "ObsY": np.zeros((2, 2)),
     }
     fig_zero = plot_grid(data_zero)
-    # Filter main grid subplot axes (excluding inset colorbar axes)
     main_axes_zero = [ax for ax in fig_zero.axes if ax.get_subplotspec() is not None]
     assert len(main_axes_zero) == 1
+    texts_zero = [t.get_text() for ax in fig_zero.axes for t in ax.texts]
+    assert "Grid contains no obstructions" in texts_zero
 
-    # 2. Obstructions < 0.01 -> treated as no obstruction -> 1 panel
+    # 2. Obstructions < 0.01 -> treated as no obstruction -> 'Grid contains no obstructions'
     data_small = {
         "lon": lon,
         "lat": lat,
@@ -168,8 +169,10 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
     fig_small = plot_grid(data_small)
     main_axes_small = [ax for ax in fig_small.axes if ax.get_subplotspec() is not None]
     assert len(main_axes_small) == 1
+    texts_small = [t.get_text() for ax in fig_small.axes for t in ax.texts]
+    assert "Grid contains no obstructions" in texts_small
 
-    # 3. Obstructions >= 0.01 -> 2 main subplot panels (bathymetry and combined maximum obstruction)
+    # 3. Obstructions >= 0.01 -> overlaid on single main panel with Subgrid Obstruction Factor colorbar legend
     data_nonzero = {
         "lon": lon,
         "lat": lat,
@@ -180,10 +183,9 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
     }
     fig_nonzero = plot_grid(data_nonzero)
     main_axes_nonzero = [ax for ax in fig_nonzero.axes if ax.get_subplotspec() is not None]
-    assert len(main_axes_nonzero) == 2
-    # Verify ax2 retains default blank facecolor (not dark green)
-    dark_green_rgba = (0.10588235294117647, 0.2627450980392157, 0.19607843137254902, 1.0)
-    assert main_axes_nonzero[1].get_facecolor() != dark_green_rgba
+    assert len(main_axes_nonzero) == 1
+    labels = [ax.get_ylabel() for ax in fig_nonzero.axes if hasattr(ax, "get_ylabel")]
+    assert "Subgrid Obstruction Factor" in labels
 
 
 def test_vis_ascii(tmp_path):

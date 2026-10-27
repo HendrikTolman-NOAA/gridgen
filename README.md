@@ -158,7 +158,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
-A graphical display shell driver script is provided in the repository root directory to generate multi-panel plot graphics of bathymetry depth, land-sea masks, and sub-grid directional obstruction factors ($\text{ObsX}$, $\text{ObsY}$):
+A graphical display shell driver script is provided in the repository root directory to generate plot graphics of bathymetry depth and land-sea masks overlaid with sub-grid directional obstruction factors ($\text{ObsX}$, $\text{ObsY}$) and three colorbar legends:
 
 ```bash
 ./plot_grid.sh [OPTIONS]

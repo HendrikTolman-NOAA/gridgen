@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -330,11 +330,7 @@ def plot_grid(
         and bool(np.any(Obs_max >= 0.01))
     )
 
-    if has_obstr:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9), sharex=True, sharey=True)
-    else:
-        fig, ax1 = plt.subplots(figsize=(8, 5))
-        ax2 = None
+    fig, ax1 = plt.subplots(figsize=(8, 5))
 
     dark_green = "#1b4332"  # Dark green background for land/sea mask
     if show_mask:
@@ -391,6 +387,26 @@ def plot_grid(
         pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
         pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
 
+    pcm_Obs = None
+    if has_obstr:
+        if is_global:
+            if Obs_max.ndim == 2:
+                Obs_plot = np.hstack([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+            else:
+                Obs_plot = np.concatenate([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+        else:
+            Obs_plot = Obs_max
+
+        # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
+        Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
+
+        if lon_plot.ndim == 2:
+            pcm_Obs = ax1.pcolormesh(
+                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            )
+        else:
+            pcm_Obs = ax1.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
 
@@ -415,13 +431,8 @@ def plot_grid(
         xlabel_str = "Longitude"
         ylabel_str = "Latitude"
 
-    if has_obstr:
-        ax2.set_xlabel(xlabel_str)
-        ax1.set_ylabel(ylabel_str)
-        ax2.set_ylabel(ylabel_str)
-    else:
-        ax1.set_xlabel(xlabel_str)
-        ax1.set_ylabel(ylabel_str)
+    ax1.set_xlabel(xlabel_str)
+    ax1.set_ylabel(ylabel_str)
 
     ax1.grid(True, linestyle="--", alpha=0.5)
 
@@ -486,75 +497,60 @@ def plot_grid(
         ax1.set_ylim(ylim)
         aspect = 1.0 / max(np.cos(np.radians(central_lat)), 0.01)
         ax1.set_aspect(aspect)
-        if has_obstr:
-            ax2.set_aspect(aspect)
         print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
     elif is_global:
         ax1.set_xlim(lon_min, lon_max)
         ax1.set_ylim(lat_min, lat_max)
 
-    if has_obstr:
-        if is_global:
-            if Obs_max.ndim == 2:
-                Obs_plot = np.hstack([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
-            else:
-                Obs_plot = np.concatenate([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
-        else:
-            Obs_plot = Obs_max
-
-        # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
-        Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
-
-        if lon_plot.ndim == 2:
-            pcm_Obs = ax2.pcolormesh(
-                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
-            )
-        else:
-            pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
-
-        ax2.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
-        ax2.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
-
-        ax2.grid(True, linestyle="--", alpha=0.5)
-
-        ax2.set_title("Sub-grid Obstructions (Maximum of ObsX & ObsY)", fontsize=10, pad=4)
-
-        cax_Obs = inset_axes(
-            ax2,
-            width="3.5%",
-            height="90%",
-            loc="lower left",
-            bbox_to_anchor=(1.03, 0.05, 1, 0.9),
-            bbox_transform=ax2.transAxes,
-            borderpad=0,
-        )
-
-        cb_Obs = fig.colorbar(pcm_Obs, cax=cax_Obs, label="Obstruction Factor")
-        cb_Obs.ax.tick_params(labelsize=5)
-        cb_Obs.ax.yaxis.label.set_fontsize(6)
-
     fig.tight_layout()
 
-    # Orography colorbar (top-right, placed above Bathymetry colorbar)
+    # Subgrid Obstruction Factor colorbar (top-right)
+    cax_obstr = inset_axes(
+        ax1,
+        width="3.5%",
+        height="28%",
+        loc="upper left",
+        bbox_to_anchor=(1.03, 0.68, 1, 0.32),
+        bbox_transform=ax1.transAxes,
+        borderpad=0,
+    )
+    # Orography colorbar (middle-right)
     cax_orog = inset_axes(
         ax1,
         width="3.5%",
-        height="45%",
+        height="28%",
         loc="upper left",
-        bbox_to_anchor=(1.03, 0.05, 1, 0.95),
+        bbox_to_anchor=(1.03, 0.34, 1, 0.32),
         bbox_transform=ax1.transAxes,
         borderpad=0,
     )
-    # Bathymetry colorbar (bottom-right, placed below Orography colorbar)
+    # Bathymetry colorbar (bottom-right)
     cax_bathy = inset_axes(
         ax1,
         width="3.5%",
-        height="45%",
+        height="28%",
         loc="lower left",
-        bbox_to_anchor=(1.03, 0.0, 1, 0.95),
+        bbox_to_anchor=(1.03, 0.0, 1, 0.32),
         bbox_transform=ax1.transAxes,
         borderpad=0,
     )
+
+    if has_obstr and pcm_Obs is not None:
+        cb_obstr = fig.colorbar(pcm_Obs, cax=cax_obstr, label="Subgrid Obstruction Factor")
+        cb_obstr.ax.tick_params(labelsize=5)
+        cb_obstr.ax.yaxis.label.set_fontsize(6)
+    else:
+        cax_obstr.axis("off")
+        cax_obstr.text(
+            0.5,
+            0.5,
+            "Grid contains no obstructions",
+            ha="center",
+            va="center",
+            rotation=90,
+            fontsize=6,
+            color="black",
+        )
 
     has_orography = bool(np.any(~np.isnan(depth_orog)))
 
