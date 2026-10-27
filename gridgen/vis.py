@@ -505,12 +505,17 @@ def plot_grid(
         # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
         Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
 
+        # Use an orange-to-red colormap for subgrid obstructions
+        cmap_obs = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "OrangeToRed", ["#ff8c00", "#cc0000"]
+        )
+
         if lon_plot.ndim == 2:
             pcm_Obs = ax2.pcolormesh(
-                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+                lon_plot, lat_plot, Obs_plot, cmap=cmap_obs, vmin=0.0, vmax=1.0, shading="nearest"
             )
         else:
-            pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+            pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap=cmap_obs, vmin=0.0, vmax=1.0)
 
         ax2.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
         ax2.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
