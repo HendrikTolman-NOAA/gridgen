@@ -416,11 +416,11 @@ def plot_grid(
             lon_plot, lat_plot, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
         )
         pcm2 = ax1.pcolormesh(
-            lon_plot, lat_plot, depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
+            lon_plot, lat_plot, depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog, shading="nearest"
         )
     else:
         pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
-        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
+        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
 
     pcm_Obs = None
     if has_obstr:
