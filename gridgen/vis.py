@@ -511,8 +511,31 @@ def plot_grid(
         )
 
         if lon_plot.ndim == 2:
+            Ny_p, Nx_p = lon_plot.shape
+            lon_edges = np.zeros((Ny_p + 1, Nx_p + 1), dtype=np.float64)
+            lat_edges = np.zeros((Ny_p + 1, Nx_p + 1), dtype=np.float64)
+
+            lon_edges[1:-1, 1:-1] = 0.25 * (
+                lon_plot[:-1, :-1] + lon_plot[:-1, 1:] + lon_plot[1:, :-1] + lon_plot[1:, 1:]
+            )
+            lat_edges[1:-1, 1:-1] = 0.25 * (
+                lat_plot[:-1, :-1] + lat_plot[:-1, 1:] + lat_plot[1:, :-1] + lat_plot[1:, 1:]
+            )
+
+            lon_edges[0, 1:-1] = lon_edges[1, 1:-1] - (lon_edges[2, 1:-1] - lon_edges[1, 1:-1])
+            lat_edges[0, 1:-1] = lat_edges[1, 1:-1] - (lat_edges[2, 1:-1] - lat_edges[1, 1:-1])
+
+            lon_edges[-1, 1:-1] = lon_edges[-2, 1:-1] + (lon_edges[-2, 1:-1] - lon_edges[-3, 1:-1])
+            lat_edges[-1, 1:-1] = lat_edges[-2, 1:-1] + (lat_edges[-2, 1:-1] - lat_edges[-3, 1:-1])
+
+            lon_edges[:, 0] = lon_edges[:, 1] - (lon_edges[:, 2] - lon_edges[:, 1])
+            lat_edges[:, 0] = lat_edges[:, 1] - (lat_edges[:, 2] - lat_edges[:, 1])
+
+            lon_edges[:, -1] = lon_edges[:, -2] + (lon_edges[:, -2] - lon_edges[:, -3])
+            lat_edges[:, -1] = lat_edges[:, -2] + (lat_edges[:, -2] - lat_edges[:, -3])
+
             pcm_Obs = ax2.pcolormesh(
-                lon_plot, lat_plot, Obs_plot, cmap=cmap_obs, vmin=0.0, vmax=1.0, shading="nearest"
+                lon_edges, lat_edges, Obs_plot, cmap=cmap_obs, vmin=0.0, vmax=1.0
             )
         else:
             pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap=cmap_obs, vmin=0.0, vmax=1.0)
