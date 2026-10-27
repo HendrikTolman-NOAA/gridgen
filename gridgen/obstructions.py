@@ -123,9 +123,19 @@ def create_obstr(
         # Spatial query: find pairs of (wet_cell_idx, polygon_idx) that intersect
         cell_idxs, poly_idxs = tree.query(wet_cell_polys, predicate="intersects")
 
-        if len(cell_idxs) > 0:
+        total_u = len(cell_idxs)
+        if total_u > 0:
             unique_cells = np.unique(cell_idxs)
-            for u_idx in unique_cells:
+            num_u = len(unique_cells)
+            last_pct = -1.0
+            for idx_i, u_idx in enumerate(unique_cells):
+                pct = ((idx_i + 1) / num_u) * 100.0
+                curr_pct = round(pct, 1)
+                if curr_pct != last_pct or idx_i == num_u - 1:
+                    last_pct = curr_pct
+                    sys.stdout.write(f"\r  Calculating subgrid obstructions... {pct:5.1f}%")
+                    sys.stdout.flush()
+
                 k = wet_k[u_idx]
                 j = wet_j[u_idx]
                 cell_poly = wet_cell_polys[u_idx]
