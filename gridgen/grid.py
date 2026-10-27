@@ -167,6 +167,10 @@ def generate_grid(
     lat_base = np.asarray(ds_base[var_y].values, dtype=np.float64)
     z_base = np.asarray(ds_base[var_z].values, dtype=np.float64)
 
+    # Transpose 2D z_base if shape is (n_lon, n_lat) instead of (n_lat, n_lon)
+    if z_base.ndim == 2 and z_base.shape == (len(lon_base), len(lat_base)) and len(lon_base) != len(lat_base):
+        z_base = z_base.T
+
     if len(lon_base) > 1 and lon_base[1] < lon_base[0]:
         lon_order = np.argsort(lon_base)
         lon_base = lon_base[lon_order]
@@ -354,8 +358,11 @@ def generate_grid(
                 pts_z = sub_z[inside]
                 wet_mask = pts_z <= cut_off
                 wet_pts = pts_z[wet_mask]
+                dry_pts = pts_z[~wet_mask]
                 if (len(wet_pts) / total_pts) >= limit:
                     depth_sub[k, j] = float(np.mean(wet_pts))
+                elif len(dry_pts) > 0:
+                    depth_sub[k, j] = float(np.mean(dry_pts))
                 else:
                     depth_sub[k, j] = dry
             else:

@@ -416,11 +416,11 @@ def plot_grid(
             lon_plot, lat_plot, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
         )
         pcm2 = ax1.pcolormesh(
-            lon_plot, lat_plot, depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
+            lon_plot, lat_plot, depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog, shading="nearest"
         )
     else:
         pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
-        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
+        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
 
     pcm_Obs = None
     if has_obstr:
@@ -453,9 +453,11 @@ def plot_grid(
 
     sub_text = ""
     if subtitle:
-        bsource = bathy_source or data.get("bathy_source", "etopo2")
-        bound_src = bound_source or data.get("bound_source", None)
-        c_desc = format_coastline_desc(bound_src)
+        bsource = bathy_source or data.get("bathy_source") or "etopo2"
+        raw_bound_src = bound_source if bound_source is not None else data.get("bound_source")
+        if raw_bound_src is None or raw_bound_src == "":
+            raw_bound_src = "coastal_bound_low.mat"
+        c_desc = format_coastline_desc(raw_bound_src)
 
         details = [d for d in [bsource, c_desc] if d]
         if details:
