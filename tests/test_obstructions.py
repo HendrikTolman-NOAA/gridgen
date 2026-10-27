@@ -80,6 +80,33 @@ def test_create_obstr_caribbean_region():
     assert np.max(ObsY) > 0.0
 
 
+def test_create_obstr_multiple_intersecting_polygons():
+    """Verify that create_obstr accurately calculates combined obstructions across multiple overlapping/intersecting polygons."""
+    lon1d = np.array([0.0, 1.0])
+    lat1d = np.array([0.0, 1.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    mask = np.ones_like(lon, dtype=int)
+
+    # Two overlapping polygons inside cell [0,0] (span: [0, 1] x [0, 1])
+    poly1_x = np.array([0.1, 0.4, 0.4, 0.1, 0.1])
+    poly1_y = np.array([0.1, 0.1, 0.4, 0.4, 0.1])
+
+    poly2_x = np.array([0.3, 0.6, 0.6, 0.3, 0.3])
+    poly2_y = np.array([0.1, 0.1, 0.4, 0.4, 0.1])
+
+    bound_list = [
+        {"x": poly1_x, "y": poly1_y, "level": 1},
+        {"x": poly2_x, "y": poly2_y, "level": 1},
+    ]
+
+    ObsX, ObsY = create_obstr(lon, lat, bound_list, mask)
+
+    # Combined union inside cell [0,0] (x-bounds [-0.5, 0.5], y-bounds [-0.5, 0.5]):
+    # x-span is [0.1, 0.5] (width = 0.4 -> ObsY = 0.4) and y-span is [0.1, 0.4] (height = 0.3 -> ObsX = 0.3)
+    assert np.isclose(ObsX[0, 0], 0.3)
+    assert np.isclose(ObsY[0, 0], 0.4)
+
+
 def test_load_mat_polygons_nonexistent():
     """Verify load_mat_polygons returns an empty list for nonexistent file paths."""
     polys = load_mat_polygons("nonexistent_file.mat")

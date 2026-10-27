@@ -409,7 +409,7 @@ def test_coastline_subtitle_formatting(tmp_path):
 
 
 def test_default_title_and_subtitle(tmp_path):
-    """Verify default title uses input dataset filename and subtitle includes bathymetry source."""
+    """Verify default title uses input dataset filename and subtitle includes bathymetry and coastline sources."""
     lon1d = np.array([10.0, 20.0])
     lat1d = np.array([10.0, 18.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -424,7 +424,7 @@ def test_default_title_and_subtitle(tmp_path):
 
     fig = plot_grid(data)
     ax = fig.axes[0]
-    assert ax.get_title() == "Bathymetry, Orography, and Obstructions (etopo2)"
+    assert ax.get_title() == "Bathymetry, Orography, and Obstructions (etopo2, low res coastline)"
     texts = [t.get_text() for t in ax.texts]
     assert "WAVEWATCH IV grid my_ww4_grid_ugrid.nc" in texts
 
@@ -446,7 +446,7 @@ def test_custom_and_disabled_title_subtitle(tmp_path):
     # Custom title, subtitle, and bathy source
     fig = plot_grid(data, title="Custom Main Title", subtitle="Custom Subtitle", bathy_source="gebco_2024")
     ax = fig.axes[0]
-    assert ax.get_title() == "Custom Subtitle (gebco_2024)"
+    assert ax.get_title() == "Custom Subtitle (gebco_2024, low res coastline)"
     texts = [t.get_text() for t in ax.texts]
     assert "Custom Main Title" in texts
 

@@ -152,15 +152,19 @@ def create_obstr(
                     ObsX_val = 0.0
                     ObsY_val = 0.0
 
-                    for p_idx in matched_poly_idxs:
-                        poly = polygons[p_idx]
-                        inter = cell_poly.intersection(poly)
-                        if not inter.is_empty:
-                            minx, miny, maxx, maxy = inter.bounds
-                            if hgt > 0:
-                                ObsX_val = max(ObsX_val, (maxy - miny) / hgt)
-                            if wdth > 0:
-                                ObsY_val = max(ObsY_val, (maxx - minx) / wdth)
+                    intersecting_polys = [polygons[p_idx] for p_idx in matched_poly_idxs]
+                    if len(intersecting_polys) == 1:
+                        union_inter = cell_poly.intersection(intersecting_polys[0])
+                    else:
+                        poly_union = shapely.unary_union(intersecting_polys)
+                        union_inter = cell_poly.intersection(poly_union)
+
+                    if not union_inter.is_empty:
+                        minx, miny, maxx, maxy = union_inter.bounds
+                        if hgt > 0:
+                            ObsX_val = (maxy - miny) / hgt
+                        if wdth > 0:
+                            ObsY_val = (maxx - minx) / wdth
 
                     ObsX[k, j] = min(1.0, max(0.0, ObsX_val))
                     ObsY[k, j] = min(1.0, max(0.0, ObsY_val))
