@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-22
+# @date Latest Update: 2026-10-27
 #
 # Shell driver script to generate graphical grid bathymetry plots.
 
@@ -31,6 +31,7 @@ MASK_FLAG=""
 MAX_DEPTH="-8000"
 MAX_OROGRAPHY="10"
 ZOOM_ARGS=()
+BOUND_SOURCE=""
 
 INPUT_FILE_SPECIFIED=0
 OUTPUT_FILE_SPECIFIED=0
@@ -120,6 +121,10 @@ while [[ $# -gt 0 ]]; do
       MAX_OROGRAPHY="$2"
       shift 2
       ;;
+    --bound-source|--bound-file)
+      BOUND_SOURCE="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -202,6 +207,10 @@ fi
 
 if [ -n "$MAX_OROGRAPHY" ]; then
   CMD_ARGS+=(--max-orography "$MAX_OROGRAPHY")
+fi
+
+if [ -n "$BOUND_SOURCE" ]; then
+  CMD_ARGS+=(--bound-source "$BOUND_SOURCE")
 fi
 
 if [ -n "$OUTPUT_FILE" ]; then

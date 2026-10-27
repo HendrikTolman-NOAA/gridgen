@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # Converted from create_obstr.m originally authored by NOAA/NCEP
@@ -24,9 +24,11 @@ import sys
 from typing import Any
 
 import numpy as np
+import shapely
+from shapely import STRtree
 from shapely.geometry import Polygon
 
-from .geometry import compute_cellcorner
+from .geometry import compute_all_corners
 
 
 def create_obstr(
@@ -75,8 +77,8 @@ def create_obstr(
 
     polygons = []
     for b in bound_list:
-        bx = np.asarray(b["x"], dtype=np.float64)
-        by = np.asarray(b["y"], dtype=np.float64)
+        bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
+        by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
         if len(bx) < 3:
             continue
 
@@ -105,61 +107,81 @@ def create_obstr(
         return ObsX, ObsY
 
     total_cells = Nx * Ny
-    processed = 0
-    last_pct = -1.0
+    if total_cells > 0:
+        sys.stdout.write("\r  Calculating subgrid obstructions...   0.0%")
+        sys.stdout.flush()
 
-    for j in range(Nx):
-        for k in range(Ny):
-            processed += 1
-            if total_cells > 0:
-                pct = (processed / total_cells) * 100.0
-                curr_pct = round(pct, 1)
-                if curr_pct != last_pct or processed == total_cells:
-                    last_pct = curr_pct
-                    sys.stdout.write(f"\r  Calculating subgrid obstructions... {pct:5.1f}%")
-                    sys.stdout.flush()
+    # Build STRtree spatial index for fast candidate polygon lookups
+    tree = STRtree(polygons)
 
-            if mask[k, j] == 0:
-                continue
+    # Compute cell corners, widths, and heights for all cells
+    polygons_cell, widths, heights = compute_all_corners(x, y)
 
-            c1, c2, c3, c4, wdth, hgt = compute_cellcorner(x, y, j, k)
-            cell_poly = Polygon([c4, c1, c2, c3, c4])
+    # Identify wet cells
+    wet_k, wet_j = np.where(mask != 0)
+    num_wet = len(wet_k)
 
-            # Calculate intersection ratio along x and y edges
-            # ObsX: obstruction across x-boundary (i-index)
-            # ObsY: obstruction across y-boundary (j-index)
-            ObsX_val = 0.0
-            ObsY_val = 0.0
+    if num_wet > 0:
+        wet_coords = polygons_cell[wet_k, wet_j]
 
-            for poly in polygons:
-                if cell_poly.intersects(poly):
-                    inter = cell_poly.intersection(poly)
-                    if not inter.is_empty:
-                        # Estimate projection along height and width
-                        minx, miny, maxx, maxy = inter.bounds
-                        if hgt > 0:
-                            ObsX_val = max(ObsX_val, (maxy - miny) / hgt)
-                        if wdth > 0:
-                            ObsY_val = max(ObsY_val, (maxx - minx) / wdth)
+        batch_size = max(1000, total_cells // 50)
+        num_batches = (num_wet + batch_size - 1) // batch_size
+        processed = 0
+        last_pct = -1.0
 
-            ObsX[k, j] = min(1.0, max(0.0, ObsX_val))
-            ObsY[k, j] = min(1.0, max(0.0, ObsY_val))
+        for b in range(num_batches):
+            b_start = b * batch_size
+            b_end = min(num_wet, (b + 1) * batch_size)
+            batch_coords = wet_coords[b_start:b_end]
+            batch_cell_polys = shapely.polygons(batch_coords)
+
+            cell_idxs, poly_idxs = tree.query(batch_cell_polys, predicate="intersects")
+
+            if len(cell_idxs) > 0:
+                unique_batch_cells = np.unique(cell_idxs)
+                for u_idx in unique_batch_cells:
+                    global_u_idx = b_start + u_idx
+                    k = wet_k[global_u_idx]
+                    j = wet_j[global_u_idx]
+                    cell_poly = batch_cell_polys[u_idx]
+                    hgt = heights[k, j]
+                    wdth = widths[k, j]
+
+                    matched_poly_idxs = poly_idxs[cell_idxs == u_idx]
+
+                    ObsX_val = 0.0
+                    ObsY_val = 0.0
+
+                    for p_idx in matched_poly_idxs:
+                        poly = polygons[p_idx]
+                        inter = cell_poly.intersection(poly)
+                        if not inter.is_empty:
+                            minx, miny, maxx, maxy = inter.bounds
+                            if hgt > 0:
+                                ObsX_val = max(ObsX_val, (maxy - miny) / hgt)
+                            if wdth > 0:
+                                ObsY_val = max(ObsY_val, (maxx - minx) / wdth)
+
+                    ObsX[k, j] = min(1.0, max(0.0, ObsX_val))
+                    ObsY[k, j] = min(1.0, max(0.0, ObsY_val))
+
+            processed += (b_end - b_start)
+            pct = (processed / total_cells) * 100.0
+            curr_pct = round(pct, 1)
+            if curr_pct != last_pct:
+                last_pct = curr_pct
+                sys.stdout.write(f"\r  Calculating subgrid obstructions... {pct:5.1f}%")
+                sys.stdout.flush()
 
     if total_cells > 0:
-        sys.stdout.write("\n")
+        sys.stdout.write("\r  Calculating subgrid obstructions... 100.0%\n")
         sys.stdout.flush()
 
     # Zero out obstructions adjacent to dry cells to prevent spurious attenuation
-    for j in range(Nx):
-        for k in range(Ny):
-            if mask[k, j] == 1:
-                if j < Nx - 1 and mask[k, j + 1] == 0:
-                    ObsX[k, j] = 0.0
-                if j > 0 and mask[k, j - 1] == 0:
-                    ObsX[k, j] = 0.0
-                if k < Ny - 1 and mask[k + 1, j] == 0:
-                    ObsY[k, j] = 0.0
-                if k > 0 and mask[k - 1, j] == 0:
-                    ObsY[k, j] = 0.0
+    dry = (mask == 0)
+    ObsX[:, :-1][dry[:, 1:]] = 0.0
+    ObsX[:, 1:][dry[:, :-1]] = 0.0
+    ObsY[:-1, :][dry[1:, :]] = 0.0
+    ObsY[1:, :][dry[:-1, :]] = 0.0
 
     return ObsX, ObsY

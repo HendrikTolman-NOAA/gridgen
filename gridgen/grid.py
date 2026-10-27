@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # Converted from generate_grid.m originally authored by NOAA/NCEP
@@ -35,7 +35,7 @@ from .coordinates import (
     create_stereographic_grid,
     validate_grid_parameters,
 )
-from .geometry import compute_cellcorner
+from .geometry import compute_all_corners
 
 __all__ = [
     "create_grid_coordinates",
@@ -190,149 +190,180 @@ def generate_grid(
     lon_span_b = lon_max_b - lon_min_b
 
     # 2. Iterate cells and interpolate/average
+    polygons_cell, widths, heights = compute_all_corners(x, y)
+
+    ndx_all = np.round(widths / dx_base) if dx_base > 0 else np.zeros((Ny, Nx))
+    ndy_all = np.round(heights / dy_base) if dy_base > 0 else np.zeros((Ny, Nx))
+
+    fine_mask = (ndx_all <= 1) & (ndy_all <= 1)
+
+    target_x = x.copy()
+    target_y = y.copy()
+
+    if lon_span_b >= 350.0:
+        if lon_min_b >= -1.0 and lon_max_b <= 360.1:
+            target_x = (target_x - lon_min_b) % 360.0 + lon_min_b
+        elif lon_min_b >= -180.1 and lon_max_b <= 180.1:
+            target_x = (target_x + 180.0) % 360.0 - 180.0
+
     total_cells = Nx * Ny
+    if total_cells > 0:
+        sys.stdout.write("\r  Extracting bathymetry depths...   0.0%")
+        sys.stdout.flush()
+
     processed = 0
     last_pct = -1.0
 
-    for j in range(Nx):
-        for k in range(Ny):
+    # Bilinear interpolation for fine cells
+    if np.any(fine_mask):
+        fine_k, fine_j = np.where(fine_mask)
+        num_fine = len(fine_k)
+        batch_size = max(1000, total_cells // 50)
+        num_batches = (num_fine + batch_size - 1) // batch_size
+
+        for b in range(num_batches):
+            b_start = b * batch_size
+            b_end = min(num_fine, (b + 1) * batch_size)
+
+            b_fine_k = fine_k[b_start:b_end]
+            b_fine_j = fine_j[b_start:b_end]
+
+            fine_tx = target_x[b_fine_k, b_fine_j]
+            fine_ty = target_y[b_fine_k, b_fine_j]
+
+            lon_idx = np.searchsorted(lon_base, fine_tx) - 1
+            lat_idx = np.searchsorted(lat_base, fine_ty) - 1
+
+            lon_idx = np.clip(lon_idx, 0, len(lon_base) - 2)
+            lat_idx = np.clip(lat_idx, 0, len(lat_base) - 2)
+
+            x1, x2 = lon_base[lon_idx], lon_base[lon_idx + 1]
+            y1, y2 = lat_base[lat_idx], lat_base[lat_idx + 1]
+
+            den = (x2 - x1) * (y2 - y1)
+            zero_den = (den == 0)
+
+            dx1 = fine_tx - x1
+            dx2 = x2 - fine_tx
+            dy1 = fine_ty - y1
+            dy2 = y2 - fine_ty
+
+            a11 = z_base[lat_idx, lon_idx]
+            a12 = z_base[lat_idx, lon_idx + 1]
+            a21 = z_base[lat_idx + 1, lon_idx]
+            a22 = z_base[lat_idx + 1, lon_idx + 1]
+
+            depth_vals = (
+                a11 * dy2 * dx2
+                + a12 * dy2 * dx1
+                + a21 * dy1 * dx2
+                + a22 * dy1 * dx1
+            ) / np.where(zero_den, 1.0, den)
+            depth_vals[zero_den] = a11[zero_den]
+
+            depth_sub[b_fine_k, b_fine_j] = depth_vals
+
+            processed += (b_end - b_start)
+            pct = (processed / total_cells) * 100.0
+            curr_pct = round(pct, 1)
+            if curr_pct != last_pct:
+                last_pct = curr_pct
+                sys.stdout.write(f"\r  Extracting bathymetry depths... {pct:5.1f}%")
+                sys.stdout.flush()
+
+    # Cell averaging for coarse cells
+    coarse_k, coarse_j = np.where(~fine_mask)
+    num_coarse = len(coarse_k)
+
+    if num_coarse > 0:
+        for idx, (k, j) in enumerate(zip(coarse_k, coarse_j)):
             processed += 1
-            if total_cells > 0:
-                pct = (processed / total_cells) * 100.0
-                curr_pct = round(pct, 1)
-                if curr_pct != last_pct or processed == total_cells:
-                    last_pct = curr_pct
-                    sys.stdout.write(f"\r  Extracting bathymetry depths... {pct:5.1f}%")
-                    sys.stdout.flush()
+            pct = (processed / total_cells) * 100.0
+            curr_pct = round(pct, 1)
+            if curr_pct != last_pct or idx == num_coarse - 1:
+                last_pct = curr_pct
+                sys.stdout.write(f"\r  Extracting bathymetry depths... {pct:5.1f}%")
+                sys.stdout.flush()
 
-            c1, c2, c3, c4, wdth, hgt = compute_cellcorner(x, y, j, k)
-            cell_poly = np.array([c4, c1, c2, c3, c4], dtype=np.float64)
-
-            ndx = round(wdth / dx_base) if dx_base > 0 else 0
-            ndy = round(hgt / dy_base) if dy_base > 0 else 0
-
-            target_x = float(x[k, j])
-            target_y = float(y[k, j])
+            cell_poly = polygons_cell[k, j]
+            cell_poly_q = cell_poly.copy()
+            cell_tx = target_x[k, j]
 
             if lon_span_b >= 350.0:
-                if lon_min_b >= -1.0 and lon_max_b <= 360.1:
-                    target_x = (target_x - lon_min_b) % 360.0 + lon_min_b
-                elif lon_min_b >= -180.1 and lon_max_b <= 180.1:
-                    target_x = (target_x + 180.0) % 360.0 - 180.0
+                rel_lons = cell_poly_q[:, 0] - cell_tx
+                rel_lons = (rel_lons + 180.0) % 360.0 - 180.0
+                cell_poly_q[:, 0] = cell_tx + rel_lons
 
-            if ndx <= 1 and ndy <= 1:
-                # Bilinear interpolation
-                lon_idx = np.searchsorted(lon_base, target_x) - 1
-                lat_idx = np.searchsorted(lat_base, target_y) - 1
+            px = cell_poly_q[:, 0]
+            py = cell_poly_q[:, 1]
+            min_x, max_x = px.min(), px.max()
+            min_y, max_y = py.min(), py.max()
+            if min_x > max_x:
+                min_x, max_x = max_x, min_x
+            if min_y > max_y:
+                min_y, max_y = max_y, min_y
 
-                lon_idx = np.clip(lon_idx, 0, len(lon_base) - 2)
-                lat_idx = np.clip(lat_idx, 0, len(lat_base) - 2)
+            j_start = max(0, np.searchsorted(lat_base, min_y) - 1)
+            j_end = min(len(lat_base), np.searchsorted(lat_base, max_y) + 1)
+            sub_lats = lat_base[j_start:j_end]
 
-                x1, x2 = lon_base[lon_idx], lon_base[lon_idx + 1]
-                y1, y2 = lat_base[lat_idx], lat_base[lat_idx + 1]
+            if lon_span_b >= 350.0 and (min_x < lon_min_b or max_x > lon_max_b):
+                sub_lons_list = []
+                sub_z_list = []
 
-                den = (x2 - x1) * (y2 - y1)
-                if den == 0:
-                    depth_val = float(z_base[lat_idx, lon_idx])
+                x_ranges = []
+                if min_x < lon_min_b:
+                    x_ranges.append((min_x + 360.0, lon_max_b, -360.0))
+                    x_ranges.append((lon_min_b, max_x, 0.0))
+                elif max_x > lon_max_b:
+                    x_ranges.append((min_x, lon_max_b, 0.0))
+                    x_ranges.append((lon_min_b, max_x - 360.0, 360.0))
                 else:
-                    dx1 = target_x - x1
-                    dx2 = x2 - target_x
-                    dy1 = target_y - y1
-                    dy2 = y2 - target_y
+                    x_ranges.append((min_x, max_x, 0.0))
 
-                    a11 = z_base[lat_idx, lon_idx]
-                    a12 = z_base[lat_idx, lon_idx + 1]
-                    a21 = z_base[lat_idx + 1, lon_idx]
-                    a22 = z_base[lat_idx + 1, lon_idx + 1]
+                for r_min, r_max, offset in x_ranges:
+                    if r_min <= r_max:
+                        i_s = max(0, np.searchsorted(lon_base, r_min) - 1)
+                        i_e = min(len(lon_base), np.searchsorted(lon_base, r_max) + 1)
+                        if i_e > i_s:
+                            sub_lons_list.append(lon_base[i_s:i_e] + offset)
+                            sub_z_list.append(z_base[j_start:j_end, i_s:i_e])
 
-                    depth_val = (
-                        a11 * dy2 * dx2
-                        + a12 * dy2 * dx1
-                        + a21 * dy1 * dx2
-                        + a22 * dy1 * dx1
-                    ) / den
-
-                depth_sub[k, j] = depth_val
+                if sub_lons_list and sub_z_list:
+                    sub_lons = np.concatenate(sub_lons_list)
+                    sub_z = np.hstack(sub_z_list)
+                else:
+                    sub_lons = np.array([], dtype=np.float64)
+                    sub_z = np.empty((len(sub_lats), 0), dtype=np.float64)
             else:
-                # Cell averaging
-                cell_poly_q = cell_poly.copy()
-                # Unwrap cell polygon vertex longitudes relative to target_x
-                # so the polygon spans a continuous range around target_x
-                if lon_span_b >= 350.0:
-                    rel_lons = cell_poly_q[:, 0] - target_x
-                    rel_lons = (rel_lons + 180.0) % 360.0 - 180.0
-                    cell_poly_q[:, 0] = target_x + rel_lons
+                i_start = max(0, np.searchsorted(lon_base, min_x) - 1)
+                i_end = min(len(lon_base), np.searchsorted(lon_base, max_x) + 1)
+                sub_lons = lon_base[i_start:i_end]
+                sub_z = z_base[j_start:j_end, i_start:i_end]
 
-                px = cell_poly_q[:, 0]
-                py = cell_poly_q[:, 1]
-                min_x, max_x = px.min(), px.max()
-                min_y, max_y = py.min(), py.max()
-                if min_x > max_x:
-                    min_x, max_x = max_x, min_x
-                if min_y > max_y:
-                    min_y, max_y = max_y, min_y
+            if sub_z.size == 0 or len(sub_lats) == 0 or len(sub_lons) == 0:
+                depth_sub[k, j] = dry
+                continue
 
-                j_start = max(0, np.searchsorted(lat_base, min_y) - 1)
-                j_end = min(len(lat_base), np.searchsorted(lat_base, max_y) + 1)
-                sub_lats = lat_base[j_start:j_end]
+            poly_shape = Polygon(cell_poly_q)
+            grid_x, grid_y = np.meshgrid(sub_lons, sub_lats)
+            inside = shapely.contains_xy(poly_shape, grid_x, grid_y)
 
-                if lon_span_b >= 350.0 and (min_x < lon_min_b or max_x > lon_max_b):
-                    # Bounding box straddles base dataset longitude limits
-                    sub_lons_list = []
-                    sub_z_list = []
-
-                    x_ranges = []
-                    if min_x < lon_min_b:
-                        x_ranges.append((min_x + 360.0, lon_max_b, -360.0))
-                        x_ranges.append((lon_min_b, max_x, 0.0))
-                    elif max_x > lon_max_b:
-                        x_ranges.append((min_x, lon_max_b, 0.0))
-                        x_ranges.append((lon_min_b, max_x - 360.0, 360.0))
-                    else:
-                        x_ranges.append((min_x, max_x, 0.0))
-
-                    for r_min, r_max, offset in x_ranges:
-                        if r_min <= r_max:
-                            i_s = max(0, np.searchsorted(lon_base, r_min) - 1)
-                            i_e = min(len(lon_base), np.searchsorted(lon_base, r_max) + 1)
-                            if i_e > i_s:
-                                sub_lons_list.append(lon_base[i_s:i_e] + offset)
-                                sub_z_list.append(z_base[j_start:j_end, i_s:i_e])
-
-                    if sub_lons_list and sub_z_list:
-                        sub_lons = np.concatenate(sub_lons_list)
-                        sub_z = np.hstack(sub_z_list)
-                    else:
-                        sub_lons = np.array([], dtype=np.float64)
-                        sub_z = np.empty((len(sub_lats), 0), dtype=np.float64)
-                else:
-                    i_start = max(0, np.searchsorted(lon_base, min_x) - 1)
-                    i_end = min(len(lon_base), np.searchsorted(lon_base, max_x) + 1)
-                    sub_lons = lon_base[i_start:i_end]
-                    sub_z = z_base[j_start:j_end, i_start:i_end]
-
-                if sub_z.size == 0 or len(sub_lats) == 0 or len(sub_lons) == 0:
-                    depth_sub[k, j] = dry
-                    continue
-
-                poly_shape = Polygon(cell_poly_q)
-                grid_x, grid_y = np.meshgrid(sub_lons, sub_lats)
-                inside = shapely.contains_xy(poly_shape, grid_x, grid_y)
-
-                total_pts = int(np.sum(inside))
-                if total_pts > 0:
-                    pts_z = sub_z[inside]
-                    wet_mask = pts_z <= cut_off
-                    wet_pts = pts_z[wet_mask]
-                    if (len(wet_pts) / total_pts) >= limit:
-                        depth_sub[k, j] = float(np.mean(wet_pts))
-                    else:
-                        depth_sub[k, j] = dry
+            total_pts = int(np.sum(inside))
+            if total_pts > 0:
+                pts_z = sub_z[inside]
+                wet_mask = pts_z <= cut_off
+                wet_pts = pts_z[wet_mask]
+                if (len(wet_pts) / total_pts) >= limit:
+                    depth_sub[k, j] = float(np.mean(wet_pts))
                 else:
                     depth_sub[k, j] = dry
+            else:
+                depth_sub[k, j] = dry
 
+    total_cells = Nx * Ny
     if total_cells > 0:
-        sys.stdout.write("\n")
+        sys.stdout.write("\r  Extracting bathymetry depths... 100.0%\n")
         sys.stdout.flush()
 
     if not isinstance(bathy_source, xr.Dataset) and "ds_base" in locals():
