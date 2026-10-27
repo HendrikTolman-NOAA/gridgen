@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 
 import numpy as np
 
@@ -28,8 +29,6 @@ from .grid import generate_grid
 from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from .io.coards import nc_ww3_grdwrite
 from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
-import os
-
 from .masking import (
     clean_mask,
     define_boundary_points,

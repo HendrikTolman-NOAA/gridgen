@@ -812,7 +812,7 @@ def load_mat_polygons(mat_path: str) -> list[dict[str, Any]]:
         from scipy.io import loadmat
 
         mat = loadmat(mat_path)
-    except Exception:
+    except (OSError, ValueError, TypeError, KeyError):
         return []
 
     if "bound" not in mat:
