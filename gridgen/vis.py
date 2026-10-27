@@ -507,13 +507,13 @@ def plot_grid(
     has_orography = bool(np.any(~np.isnan(depth_orog)))
 
     if has_orography:
-        # 3 colorbars: Subgrid Obstruction Factor (top 1/3), Orography (middle 1/3), Bathymetry Depth (bottom 1/3)
+        # 3 colorbars with nominal spacing (gap = 3%): Subgrid Obstruction Factor (top), Orography (middle), Bathymetry Depth (bottom)
         cax_obstr = inset_axes(
             ax1,
             width="3.5%",
             height="100%",
             loc="lower left",
-            bbox_to_anchor=(1.03, 0.6667, 1, 0.3333),
+            bbox_to_anchor=(1.03, 0.6867, 1, 0.3133),
             bbox_transform=ax1.transAxes,
             borderpad=0,
         )
@@ -522,7 +522,7 @@ def plot_grid(
             width="3.5%",
             height="100%",
             loc="lower left",
-            bbox_to_anchor=(1.03, 0.3333, 1, 0.3333),
+            bbox_to_anchor=(1.03, 0.3433, 1, 0.3133),
             bbox_transform=ax1.transAxes,
             borderpad=0,
         )
@@ -531,7 +531,7 @@ def plot_grid(
             width="3.5%",
             height="100%",
             loc="lower left",
-            bbox_to_anchor=(1.03, 0.0, 1, 0.3333),
+            bbox_to_anchor=(1.03, 0.0, 1, 0.3133),
             bbox_transform=ax1.transAxes,
             borderpad=0,
         )
@@ -540,13 +540,13 @@ def plot_grid(
         cb_orog.ax.tick_params(labelsize=5)
         cb_orog.ax.yaxis.label.set_fontsize(6)
     else:
-        # 2 colorbars: Subgrid Obstruction Factor (top 1/2), Bathymetry Depth (bottom 1/2)
+        # 2 colorbars with nominal spacing (gap = 3%): Subgrid Obstruction Factor (top), Bathymetry Depth (bottom)
         cax_obstr = inset_axes(
             ax1,
             width="3.5%",
             height="100%",
             loc="lower left",
-            bbox_to_anchor=(1.03, 0.5, 1, 0.5),
+            bbox_to_anchor=(1.03, 0.515, 1, 0.485),
             bbox_transform=ax1.transAxes,
             borderpad=0,
         )
@@ -555,7 +555,7 @@ def plot_grid(
             width="3.5%",
             height="100%",
             loc="lower left",
-            bbox_to_anchor=(1.03, 0.0, 1, 0.5),
+            bbox_to_anchor=(1.03, 0.0, 1, 0.485),
             bbox_transform=ax1.transAxes,
             borderpad=0,
         )
