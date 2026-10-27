@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-10-20
 #
 # Code Heritage:
 # Converted from create_obstr.m originally authored by NOAA/NCEP
@@ -75,10 +75,9 @@ def create_obstr(
 
     polygons = []
     for b in bound_list:
-        bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
-        by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
-
-        if bx.ndim == 0 or len(bx) < 3:
+        bx = np.asarray(b["x"], dtype=np.float64)
+        by = np.asarray(b["y"], dtype=np.float64)
+        if len(bx) < 3:
             continue
 
         p_west, p_east = float(np.min(bx)), float(np.max(bx))

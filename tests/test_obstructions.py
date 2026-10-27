@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from gridgen.masking import load_mat_polygons
 from gridgen.obstructions import create_obstr
 
 
@@ -77,3 +78,9 @@ def test_create_obstr_caribbean_region():
 
     assert np.max(ObsX) > 0.0
     assert np.max(ObsY) > 0.0
+
+
+def test_load_mat_polygons_nonexistent():
+    """Verify load_mat_polygons returns an empty list for nonexistent file paths."""
+    polys = load_mat_polygons("nonexistent_file.mat")
+    assert polys == []

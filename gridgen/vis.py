@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-10-20
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -505,40 +505,12 @@ def plot_grid(
         # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
         Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
 
-        # Use an orange-to-red colormap for subgrid obstructions
-        cmap_obs = matplotlib.colors.LinearSegmentedColormap.from_list(
-            "OrangeToRed", ["#ff8c00", "#cc0000"]
-        )
-
         if lon_plot.ndim == 2:
-            Ny_p, Nx_p = lon_plot.shape
-            lon_edges = np.zeros((Ny_p + 1, Nx_p + 1), dtype=np.float64)
-            lat_edges = np.zeros((Ny_p + 1, Nx_p + 1), dtype=np.float64)
-
-            lon_edges[1:-1, 1:-1] = 0.25 * (
-                lon_plot[:-1, :-1] + lon_plot[:-1, 1:] + lon_plot[1:, :-1] + lon_plot[1:, 1:]
-            )
-            lat_edges[1:-1, 1:-1] = 0.25 * (
-                lat_plot[:-1, :-1] + lat_plot[:-1, 1:] + lat_plot[1:, :-1] + lat_plot[1:, 1:]
-            )
-
-            lon_edges[0, 1:-1] = lon_edges[1, 1:-1] - (lon_edges[2, 1:-1] - lon_edges[1, 1:-1])
-            lat_edges[0, 1:-1] = lat_edges[1, 1:-1] - (lat_edges[2, 1:-1] - lat_edges[1, 1:-1])
-
-            lon_edges[-1, 1:-1] = lon_edges[-2, 1:-1] + (lon_edges[-2, 1:-1] - lon_edges[-3, 1:-1])
-            lat_edges[-1, 1:-1] = lat_edges[-2, 1:-1] + (lat_edges[-2, 1:-1] - lat_edges[-3, 1:-1])
-
-            lon_edges[:, 0] = lon_edges[:, 1] - (lon_edges[:, 2] - lon_edges[:, 1])
-            lat_edges[:, 0] = lat_edges[:, 1] - (lat_edges[:, 2] - lat_edges[:, 1])
-
-            lon_edges[:, -1] = lon_edges[:, -2] + (lon_edges[:, -2] - lon_edges[:, -3])
-            lat_edges[:, -1] = lat_edges[:, -2] + (lat_edges[:, -2] - lat_edges[:, -3])
-
             pcm_Obs = ax2.pcolormesh(
-                lon_edges, lat_edges, Obs_plot, cmap=cmap_obs, vmin=0.0, vmax=1.0
+                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
             )
         else:
-            pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap=cmap_obs, vmin=0.0, vmax=1.0)
+            pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
 
         ax2.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
         ax2.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))

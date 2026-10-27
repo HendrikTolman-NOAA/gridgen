@@ -28,7 +28,15 @@ from .grid import generate_grid
 from .io.ascii import write_ww3file, write_ww3meta, write_ww3obstr
 from .io.coards import nc_ww3_grdwrite
 from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
-from .masking import clean_mask, define_boundary_points, load_user_polygons, remove_lake
+import os
+
+from .masking import (
+    clean_mask,
+    define_boundary_points,
+    load_mat_polygons,
+    load_user_polygons,
+    remove_lake,
+)
 from .obstructions import create_obstr
 
 
@@ -87,6 +95,14 @@ def main() -> None:
         "--boundary-points",
         action="store_true",
         help="Define input boundary points (mask value 2) along regional grid boundaries",
+    )
+    gen_group.add_argument(
+        "--bound-file",
+        dest="bound_file",
+        type=str,
+        default="coastal_bound_full.mat",
+        metavar="FILE",
+        help="MAT boundary polygon file path or name for obstructions and masking (default: coastal_bound_full.mat)",
     )
     gen_group.add_argument(
         "--local-polygons",
@@ -293,6 +309,26 @@ def main() -> None:
 
     m = np.where(depth <= args.cut_off, 1, 0)
 
+    # Resolve boundary MAT file (default: coastal_bound_full.mat)
+    mat_bounds = []
+    target_bound_file = None
+    if args.bound_file:
+        candidates = [
+            args.bound_file,
+            os.path.join(args.ref_dir, args.bound_file),
+            os.path.join(".", args.bound_file),
+            os.path.join("reference_data", args.bound_file),
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                target_bound_file = c
+                break
+
+    if target_bound_file and os.path.exists(target_bound_file):
+        mat_bounds = load_mat_polygons(target_bound_file)
+        if mat_bounds:
+            print(f"Loaded {len(mat_bounds)} boundary polygons from '{target_bound_file}'.")
+
     user_bounds = []
     if not args.no_user_polygons:
         poly_dir = "." if args.local_polygons else "gridgen_data"
@@ -303,7 +339,11 @@ def main() -> None:
         )
         if user_bounds:
             print(f"Loaded {len(user_bounds)} active user-defined coastal polygons.")
-            m = clean_mask(lon, lat, m, user_bounds)
+
+    if user_bounds:
+        m = clean_mask(lon, lat, m, user_bounds)
+
+    combined_bounds = mat_bounds + user_bounds
 
     # Step 3: Land/Sea Masking & Lake Removal
     print("[Step 3/5] Generating land/sea mask and applying lake removal...")
@@ -323,7 +363,7 @@ def main() -> None:
 
     # Step 4: Calculate sub-grid obstructions
     print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
-    ObsX, ObsY = create_obstr(lon, lat, user_bounds, m_mod)
+    ObsX, ObsY = create_obstr(lon, lat, combined_bounds, m_mod)
 
     # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
     print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 grid dataset...")

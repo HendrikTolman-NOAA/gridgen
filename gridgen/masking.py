@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-10-20
 #
 # Code Heritage:
 # Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m,
@@ -63,8 +63,8 @@ def compute_boundary(
         if level != bflg:
             continue
 
-        bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
-        by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
+        bx = np.asarray(b["x"], dtype=np.float64)
+        by = np.asarray(b["y"], dtype=np.float64)
 
         if len(bx) < 3:
             continue
@@ -146,10 +146,8 @@ def split_boundary(
     """
     result = []
     for b in bound_list:
-        bx_sub = np.squeeze(np.asarray(b["x"], dtype=np.float64))
-        by_sub = np.squeeze(np.asarray(b["y"], dtype=np.float64))
-        w = b.get("width", float(np.max(bx_sub) - np.min(bx_sub)))
-        h = b.get("height", float(np.max(by_sub) - np.min(by_sub)))
+        w = b.get("width", float(np.max(b["x"]) - np.min(b["x"])))
+        h = b.get("height", float(np.max(b["y"]) - np.min(b["y"])))
 
         if w > lim or h > lim:
             west = float(b["west"])
@@ -220,8 +218,8 @@ def clean_mask(
 
     polygons = []
     for b in bound_ingrid:
-        bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
-        by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
+        bx = np.asarray(b["x"], dtype=np.float64)
+        by = np.asarray(b["y"], dtype=np.float64)
         if len(bx) < 3:
             continue
 
@@ -792,6 +790,72 @@ def load_user_polygons(
         )
 
     return active_polygons
+
+
+def load_mat_polygons(mat_path: str) -> list[dict[str, Any]]:
+    """Load shoreline boundary polygons from a MATLAB MAT file (e.g., coastal_bound_*.mat).
+
+    Parameters
+    ----------
+    mat_path : str
+        Path to the MATLAB .mat boundary file.
+
+    Returns
+    -------
+    polygons : List[Dict[str, Any]]
+        List of boundary polygon dictionaries containing 'x', 'y', 'level', etc.
+    """
+    if not os.path.exists(mat_path):
+        return []
+
+    try:
+        from scipy.io import loadmat
+
+        mat = loadmat(mat_path)
+    except Exception:
+        return []
+
+    if "bound" not in mat:
+        return []
+
+    cb = mat["bound"]
+    if hasattr(cb, "flat"):
+        cb_list = cb.flat
+    else:
+        cb_list = cb
+
+    polygons = []
+    for b in cb_list:
+        try:
+            bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
+            by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
+            if bx.ndim == 0 or len(bx) < 3:
+                continue
+
+            level = int(np.squeeze(b["level"])) if "level" in b.dtype.names else 1
+            west = float(np.squeeze(b["west"])) if "west" in b.dtype.names else float(np.min(bx))
+            east = float(np.squeeze(b["east"])) if "east" in b.dtype.names else float(np.max(bx))
+            south = float(np.squeeze(b["south"])) if "south" in b.dtype.names else float(np.min(by))
+            north = float(np.squeeze(b["north"])) if "north" in b.dtype.names else float(np.max(by))
+
+            polygons.append(
+                {
+                    "x": bx,
+                    "y": by,
+                    "n": len(bx),
+                    "west": west,
+                    "east": east,
+                    "south": south,
+                    "north": north,
+                    "width": east - west,
+                    "height": north - south,
+                    "level": level,
+                }
+            )
+        except (KeyError, ValueError, IndexError, TypeError):
+            continue
+
+    return polygons
 
 
 # Backward compatibility alias
