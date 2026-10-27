@@ -106,6 +106,11 @@ def create_obstr(
     if not polygons:
         return ObsX, ObsY
 
+    total_cells = Nx * Ny
+    if total_cells > 0:
+        sys.stdout.write("\r  Calculating subgrid obstructions...   0.0%")
+        sys.stdout.flush()
+
     # Build STRtree spatial index for fast candidate polygon lookups
     tree = STRtree(polygons)
 
@@ -118,49 +123,56 @@ def create_obstr(
 
     if num_wet > 0:
         wet_coords = polygons_cell[wet_k, wet_j]
-        wet_cell_polys = shapely.polygons(wet_coords)
 
-        # Spatial query: find pairs of (wet_cell_idx, polygon_idx) that intersect
-        cell_idxs, poly_idxs = tree.query(wet_cell_polys, predicate="intersects")
+        batch_size = max(1000, total_cells // 50)
+        num_batches = (num_wet + batch_size - 1) // batch_size
+        processed = 0
+        last_pct = -1.0
 
-        total_u = len(cell_idxs)
-        if total_u > 0:
-            unique_cells = np.unique(cell_idxs)
-            num_u = len(unique_cells)
-            last_pct = -1.0
-            for idx_i, u_idx in enumerate(unique_cells):
-                pct = ((idx_i + 1) / num_u) * 100.0
-                curr_pct = round(pct, 1)
-                if curr_pct != last_pct or idx_i == num_u - 1:
-                    last_pct = curr_pct
-                    sys.stdout.write(f"\r  Calculating subgrid obstructions... {pct:5.1f}%")
-                    sys.stdout.flush()
+        for b in range(num_batches):
+            b_start = b * batch_size
+            b_end = min(num_wet, (b + 1) * batch_size)
+            batch_coords = wet_coords[b_start:b_end]
+            batch_cell_polys = shapely.polygons(batch_coords)
 
-                k = wet_k[u_idx]
-                j = wet_j[u_idx]
-                cell_poly = wet_cell_polys[u_idx]
-                hgt = heights[k, j]
-                wdth = widths[k, j]
+            cell_idxs, poly_idxs = tree.query(batch_cell_polys, predicate="intersects")
 
-                matched_poly_idxs = poly_idxs[cell_idxs == u_idx]
+            if len(cell_idxs) > 0:
+                unique_batch_cells = np.unique(cell_idxs)
+                for u_idx in unique_batch_cells:
+                    global_u_idx = b_start + u_idx
+                    k = wet_k[global_u_idx]
+                    j = wet_j[global_u_idx]
+                    cell_poly = batch_cell_polys[u_idx]
+                    hgt = heights[k, j]
+                    wdth = widths[k, j]
 
-                ObsX_val = 0.0
-                ObsY_val = 0.0
+                    matched_poly_idxs = poly_idxs[cell_idxs == u_idx]
 
-                for p_idx in matched_poly_idxs:
-                    poly = polygons[p_idx]
-                    inter = cell_poly.intersection(poly)
-                    if not inter.is_empty:
-                        minx, miny, maxx, maxy = inter.bounds
-                        if hgt > 0:
-                            ObsX_val = max(ObsX_val, (maxy - miny) / hgt)
-                        if wdth > 0:
-                            ObsY_val = max(ObsY_val, (maxx - minx) / wdth)
+                    ObsX_val = 0.0
+                    ObsY_val = 0.0
 
-                ObsX[k, j] = min(1.0, max(0.0, ObsX_val))
-                ObsY[k, j] = min(1.0, max(0.0, ObsY_val))
+                    for p_idx in matched_poly_idxs:
+                        poly = polygons[p_idx]
+                        inter = cell_poly.intersection(poly)
+                        if not inter.is_empty:
+                            minx, miny, maxx, maxy = inter.bounds
+                            if hgt > 0:
+                                ObsX_val = max(ObsX_val, (maxy - miny) / hgt)
+                            if wdth > 0:
+                                ObsY_val = max(ObsY_val, (maxx - minx) / wdth)
 
-    total_cells = Nx * Ny
+                    ObsX[k, j] = min(1.0, max(0.0, ObsX_val))
+                    ObsY[k, j] = min(1.0, max(0.0, ObsY_val))
+
+            processed += (b_end - b_start)
+            pct = (processed / total_cells) * 100.0
+            curr_pct = round(pct, 1)
+            if curr_pct != last_pct:
+                last_pct = curr_pct
+                sys.stdout.write(f"\r  Calculating subgrid obstructions... {pct:5.1f}%")
+                sys.stdout.flush()
+
     if total_cells > 0:
         sys.stdout.write("\r  Calculating subgrid obstructions... 100.0%\n")
         sys.stdout.flush()

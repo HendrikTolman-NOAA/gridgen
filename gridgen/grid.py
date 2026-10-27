@@ -206,51 +206,79 @@ def generate_grid(
         elif lon_min_b >= -180.1 and lon_max_b <= 180.1:
             target_x = (target_x + 180.0) % 360.0 - 180.0
 
+    total_cells = Nx * Ny
+    if total_cells > 0:
+        sys.stdout.write("\r  Extracting bathymetry depths...   0.0%")
+        sys.stdout.flush()
+
+    processed = 0
+    last_pct = -1.0
+
     # Bilinear interpolation for fine cells
     if np.any(fine_mask):
-        fine_tx = target_x[fine_mask]
-        fine_ty = target_y[fine_mask]
+        fine_k, fine_j = np.where(fine_mask)
+        num_fine = len(fine_k)
+        batch_size = max(1000, total_cells // 50)
+        num_batches = (num_fine + batch_size - 1) // batch_size
 
-        lon_idx = np.searchsorted(lon_base, fine_tx) - 1
-        lat_idx = np.searchsorted(lat_base, fine_ty) - 1
+        for b in range(num_batches):
+            b_start = b * batch_size
+            b_end = min(num_fine, (b + 1) * batch_size)
 
-        lon_idx = np.clip(lon_idx, 0, len(lon_base) - 2)
-        lat_idx = np.clip(lat_idx, 0, len(lat_base) - 2)
+            b_fine_k = fine_k[b_start:b_end]
+            b_fine_j = fine_j[b_start:b_end]
 
-        x1, x2 = lon_base[lon_idx], lon_base[lon_idx + 1]
-        y1, y2 = lat_base[lat_idx], lat_base[lat_idx + 1]
+            fine_tx = target_x[b_fine_k, b_fine_j]
+            fine_ty = target_y[b_fine_k, b_fine_j]
 
-        den = (x2 - x1) * (y2 - y1)
-        zero_den = (den == 0)
+            lon_idx = np.searchsorted(lon_base, fine_tx) - 1
+            lat_idx = np.searchsorted(lat_base, fine_ty) - 1
 
-        dx1 = fine_tx - x1
-        dx2 = x2 - fine_tx
-        dy1 = fine_ty - y1
-        dy2 = y2 - fine_ty
+            lon_idx = np.clip(lon_idx, 0, len(lon_base) - 2)
+            lat_idx = np.clip(lat_idx, 0, len(lat_base) - 2)
 
-        a11 = z_base[lat_idx, lon_idx]
-        a12 = z_base[lat_idx, lon_idx + 1]
-        a21 = z_base[lat_idx + 1, lon_idx]
-        a22 = z_base[lat_idx + 1, lon_idx + 1]
+            x1, x2 = lon_base[lon_idx], lon_base[lon_idx + 1]
+            y1, y2 = lat_base[lat_idx], lat_base[lat_idx + 1]
 
-        depth_vals = (
-            a11 * dy2 * dx2
-            + a12 * dy2 * dx1
-            + a21 * dy1 * dx2
-            + a22 * dy1 * dx1
-        ) / np.where(zero_den, 1.0, den)
-        depth_vals[zero_den] = a11[zero_den]
+            den = (x2 - x1) * (y2 - y1)
+            zero_den = (den == 0)
 
-        depth_sub[fine_mask] = depth_vals
+            dx1 = fine_tx - x1
+            dx2 = x2 - fine_tx
+            dy1 = fine_ty - y1
+            dy2 = y2 - fine_ty
+
+            a11 = z_base[lat_idx, lon_idx]
+            a12 = z_base[lat_idx, lon_idx + 1]
+            a21 = z_base[lat_idx + 1, lon_idx]
+            a22 = z_base[lat_idx + 1, lon_idx + 1]
+
+            depth_vals = (
+                a11 * dy2 * dx2
+                + a12 * dy2 * dx1
+                + a21 * dy1 * dx2
+                + a22 * dy1 * dx1
+            ) / np.where(zero_den, 1.0, den)
+            depth_vals[zero_den] = a11[zero_den]
+
+            depth_sub[b_fine_k, b_fine_j] = depth_vals
+
+            processed += (b_end - b_start)
+            pct = (processed / total_cells) * 100.0
+            curr_pct = round(pct, 1)
+            if curr_pct != last_pct:
+                last_pct = curr_pct
+                sys.stdout.write(f"\r  Extracting bathymetry depths... {pct:5.1f}%")
+                sys.stdout.flush()
 
     # Cell averaging for coarse cells
     coarse_k, coarse_j = np.where(~fine_mask)
     num_coarse = len(coarse_k)
 
     if num_coarse > 0:
-        last_pct = -1.0
         for idx, (k, j) in enumerate(zip(coarse_k, coarse_j)):
-            pct = ((idx + 1) / num_coarse) * 100.0
+            processed += 1
+            pct = (processed / total_cells) * 100.0
             curr_pct = round(pct, 1)
             if curr_pct != last_pct or idx == num_coarse - 1:
                 last_pct = curr_pct
