@@ -20,3 +20,12 @@ dist/
 /optional_coastal_polygons.txt
 /optional_coastal_polygons.mat
 /optional_coastal_polygons.dat
+
+# NetCDF and graphics output files in repo root
+/*.nc
+/*.jpg
+/*.jpeg
+/*.png
+/*.pdf
+/*.eps
+/*.gif
