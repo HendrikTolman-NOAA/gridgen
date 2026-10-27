@@ -24,7 +24,7 @@ INPUT_FILE="ww4_grid_ugrid.nc"
 OUTPUT_FILE=""
 FORMAT="jpg"
 TITLE=""
-SUBTITLE="Bathymetry and Orography"
+SUBTITLE="Bathymetry, Orography, and Obstructions"
 NO_TITLE=0
 NO_SUBTITLE=0
 MASK_FLAG=""
@@ -47,7 +47,7 @@ Options:
   -f, --format FORMAT    Output graphic format: jpg, png, pdf, eps, or gif (default: jpg)
   --title TITLE          Custom main figure title (default: input dataset filename)
   --no-title             Disable main figure title
-  --subtitle SUBTITLE    Custom figure subtitle (default: Bathymetry and Orography)
+  --subtitle SUBTITLE    Custom figure subtitle (default: Bathymetry, Orography, and Obstructions)
   --no-subtitle          Disable figure subtitle
   --no-mask              Disable land-sea mask
   --zoom LON LAT FACTOR  Zoom view centered at central longitude and latitude with zoom factor

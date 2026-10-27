@@ -276,7 +276,7 @@ def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
 def plot_grid(
     data: dict[str, Any],
     title: str | None = None,
-    subtitle: str | None = "Bathymetry and Orography",
+    subtitle: str | None = "Bathymetry, Orography, and Obstructions",
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
@@ -285,7 +285,7 @@ def plot_grid(
     zoom: tuple[float, float, float] | list[float] | str | None = None,
     bathy_source: str | None = None,
 ) -> matplotlib.figure.Figure:
-    """Graphically display resulting grid bathymetry and orography plot.
+    """Graphically display resulting grid bathymetry, orography, and obstructions plot.
 
     Parameters
     ----------
@@ -294,7 +294,7 @@ def plot_grid(
     title : str, optional
         Main figure title string (default: input dataset filename). Can be set to empty string to disable.
     subtitle : str, optional
-        Figure subtitle string (default: "Bathymetry and Orography"). Can be set to empty string to disable.
+        Figure subtitle string (default: "Bathymetry, Orography, and Obstructions"). Can be set to empty string to disable.
     output_path : str or Path, optional
         File path where the resulting plot figure should be saved.
     show : bool
@@ -504,36 +504,61 @@ def plot_grid(
 
     fig.tight_layout()
 
-    # Subgrid Obstruction Factor colorbar (top-right, top 1/3 of plot height)
-    cax_obstr = inset_axes(
-        ax1,
-        width="3.5%",
-        height="100%",
-        loc="lower left",
-        bbox_to_anchor=(1.03, 0.6667, 1, 0.3333),
-        bbox_transform=ax1.transAxes,
-        borderpad=0,
-    )
-    # Orography colorbar (middle-right, middle 1/3 of plot height)
-    cax_orog = inset_axes(
-        ax1,
-        width="3.5%",
-        height="100%",
-        loc="lower left",
-        bbox_to_anchor=(1.03, 0.3333, 1, 0.3333),
-        bbox_transform=ax1.transAxes,
-        borderpad=0,
-    )
-    # Bathymetry colorbar (bottom-right, bottom 1/3 of plot height)
-    cax_bathy = inset_axes(
-        ax1,
-        width="3.5%",
-        height="100%",
-        loc="lower left",
-        bbox_to_anchor=(1.03, 0.0, 1, 0.3333),
-        bbox_transform=ax1.transAxes,
-        borderpad=0,
-    )
+    has_orography = bool(np.any(~np.isnan(depth_orog)))
+
+    if has_orography:
+        # 3 colorbars: Subgrid Obstruction Factor (top 1/3), Orography (middle 1/3), Bathymetry Depth (bottom 1/3)
+        cax_obstr = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.6667, 1, 0.3333),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+        cax_orog = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.3333, 1, 0.3333),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+        cax_bathy = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.0, 1, 0.3333),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+
+        cb_orog = fig.colorbar(pcm2, cax=cax_orog, label="Orography (m)")
+        cb_orog.ax.tick_params(labelsize=5)
+        cb_orog.ax.yaxis.label.set_fontsize(6)
+    else:
+        # 2 colorbars: Subgrid Obstruction Factor (top 1/2), Bathymetry Depth (bottom 1/2)
+        cax_obstr = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.5, 1, 0.5),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+        cax_bathy = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.0, 1, 0.5),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
 
     if has_obstr and pcm_Obs is not None:
         cb_obstr = fig.colorbar(pcm_Obs, cax=cax_obstr, label="Subgrid Obstruction Factor")
@@ -545,25 +570,6 @@ def plot_grid(
             0.5,
             0.5,
             "Grid contains no obstructions",
-            ha="center",
-            va="center",
-            rotation=90,
-            fontsize=6,
-            color="black",
-        )
-
-    has_orography = bool(np.any(~np.isnan(depth_orog)))
-
-    if has_orography:
-        cb_orog = fig.colorbar(pcm2, cax=cax_orog, label="Orography (m)")
-        cb_orog.ax.tick_params(labelsize=5)
-        cb_orog.ax.yaxis.label.set_fontsize(6)
-    else:
-        cax_orog.axis("off")
-        cax_orog.text(
-            0.5,
-            0.5,
-            "Grid contains no orography",
             ha="center",
             va="center",
             rotation=90,
@@ -692,8 +698,8 @@ def main() -> None:
     parser.add_argument(
         "--subtitle",
         type=str,
-        default="Bathymetry and Orography",
-        help="Figure subtitle (default: Bathymetry and Orography)",
+        default="Bathymetry, Orography, and Obstructions",
+        help="Figure subtitle (default: Bathymetry, Orography, and Obstructions)",
     )
     parser.add_argument(
         "--no-subtitle",

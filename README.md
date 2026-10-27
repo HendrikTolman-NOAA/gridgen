@@ -180,7 +180,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `-f, --format FORMAT` | Output graphic format: `jpg`, `png`, `pdf`, `eps`, or `gif`. Default: `jpg`. |
 | `--title TITLE` | Custom main figure title (default: input dataset filename). |
 | `--no-title` | Disable main figure title. |
-| `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry and Orography`). |
+| `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry, Orography, and Obstructions`). |
 | `--no-subtitle` | Disable figure subtitle. |
 | `--no-mask` | Disable land-sea mask display. |
 | `--zoom LON LAT FACTOR` | Zoom view centered at central longitude and latitude with zoom factor (e.g. `--zoom -70 40 2`). |

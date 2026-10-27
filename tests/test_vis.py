@@ -69,7 +69,7 @@ def test_vis_orography_and_mask(tmp_path):
 
 
 def test_vis_orography_scale_when_no_orography(tmp_path):
-    """Verify plot_grid displays 'Grid contains no orography' statement when no land points exist."""
+    """Verify plot_grid omits orography legend and renders remaining 2 legends taking 50% plot height each when no land points exist."""
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -81,8 +81,10 @@ def test_vis_orography_scale_when_no_orography(tmp_path):
 
     fig = plot_grid(data, title="Purely Underwater Grid", output_path=out_file, max_orography=10.0)
     assert fig is not None
-    texts = [t.get_text() for ax in fig.axes for t in ax.texts]
-    assert "Grid contains no orography" in texts
+    # Figure should only contain main axes, obstruction cax, and bathymetry cax (no orography cax)
+    labels = [ax.get_ylabel() for ax in fig.axes if hasattr(ax, "get_ylabel")]
+    assert "Bathymetry Depth (m)" in labels
+    assert "Orography (m)" not in labels
 
 
 def test_vis_ugrid(tmp_path):
@@ -393,7 +395,7 @@ def test_default_title_and_subtitle(tmp_path):
 
     fig = plot_grid(data)
     ax = fig.axes[0]
-    assert ax.get_title() == "Bathymetry and Orography (etopo2)"
+    assert ax.get_title() == "Bathymetry, Orography, and Obstructions (etopo2)"
     texts = [t.get_text() for t in ax.texts]
     assert "WAVEWATCH IV grid my_ww4_grid_ugrid.nc" in texts
 
