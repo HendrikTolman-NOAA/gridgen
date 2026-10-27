@@ -99,9 +99,9 @@ def main() -> None:
         "--bound-file",
         dest="bound_file",
         type=str,
-        default="coastal_bound_full.mat",
+        default="coastal_bound_low.mat",
         metavar="FILE",
-        help="MAT boundary polygon file path or name for obstructions and masking (default: coastal_bound_full.mat)",
+        help="MAT boundary polygon file path or name for subgrid obstructions, or 'none' to disable obstructions (default: coastal_bound_low.mat)",
     )
     gen_group.add_argument(
         "--local-polygons",
@@ -308,25 +308,27 @@ def main() -> None:
 
     m = np.where(depth <= args.cut_off, 1, 0)
 
-    # Resolve boundary MAT file (default: coastal_bound_full.mat)
+    # Resolve boundary MAT file (default: coastal_bound_low.mat; 'none' disables obstructions)
     mat_bounds = []
-    target_bound_file = None
-    if args.bound_file:
+    if args.bound_file and args.bound_file.lower() != "none":
         candidates = [
             args.bound_file,
             os.path.join(args.ref_dir, args.bound_file),
             os.path.join(".", args.bound_file),
             os.path.join("reference_data", args.bound_file),
         ]
+        target_bound_file = None
         for c in candidates:
             if os.path.exists(c):
                 target_bound_file = c
                 break
 
-    if target_bound_file and os.path.exists(target_bound_file):
-        mat_bounds = load_mat_polygons(target_bound_file)
-        if mat_bounds:
-            print(f"Loaded {len(mat_bounds)} boundary polygons from '{target_bound_file}'.")
+        if target_bound_file and os.path.exists(target_bound_file):
+            mat_bounds = load_mat_polygons(target_bound_file)
+            if mat_bounds:
+                print(f"Loaded {len(mat_bounds)} boundary polygons from '{target_bound_file}'.")
+    else:
+        print("Subgrid obstruction generation disabled (--bound-file set to 'none').")
 
     user_bounds = []
     if not args.no_user_polygons:
