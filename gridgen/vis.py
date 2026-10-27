@@ -504,33 +504,33 @@ def plot_grid(
 
     fig.tight_layout()
 
-    # Subgrid Obstruction Factor colorbar (top-right)
+    # Subgrid Obstruction Factor colorbar (top-right, top 1/3 of plot height)
     cax_obstr = inset_axes(
         ax1,
         width="3.5%",
-        height="28%",
-        loc="upper left",
-        bbox_to_anchor=(1.03, 0.68, 1, 0.32),
+        height="100%",
+        loc="lower left",
+        bbox_to_anchor=(1.03, 0.6667, 1, 0.3333),
         bbox_transform=ax1.transAxes,
         borderpad=0,
     )
-    # Orography colorbar (middle-right)
+    # Orography colorbar (middle-right, middle 1/3 of plot height)
     cax_orog = inset_axes(
         ax1,
         width="3.5%",
-        height="28%",
-        loc="upper left",
-        bbox_to_anchor=(1.03, 0.34, 1, 0.32),
+        height="100%",
+        loc="lower left",
+        bbox_to_anchor=(1.03, 0.3333, 1, 0.3333),
         bbox_transform=ax1.transAxes,
         borderpad=0,
     )
-    # Bathymetry colorbar (bottom-right)
+    # Bathymetry colorbar (bottom-right, bottom 1/3 of plot height)
     cax_bathy = inset_axes(
         ax1,
         width="3.5%",
-        height="28%",
+        height="100%",
         loc="lower left",
-        bbox_to_anchor=(1.03, 0.0, 1, 0.32),
+        bbox_to_anchor=(1.03, 0.0, 1, 0.3333),
         bbox_transform=ax1.transAxes,
         borderpad=0,
     )
