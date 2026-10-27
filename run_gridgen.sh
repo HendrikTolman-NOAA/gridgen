@@ -43,6 +43,7 @@ GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
+BOUND_FILE="coastal_bound_low.mat"
 CUT_OFF="0.1"
 LAKE_MIN_POINTS="15"
 LAKE_MIN_FRACTION="0.0005"
@@ -72,6 +73,13 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
+  --bound-file FILE      MAT boundary polygon file path or name used for computing
+                         subgrid obstructions (default: coastal_bound_low.mat).
+                         Specify 'none' to disable obstruction calculations entirely.
+                         To specify an alternative resolution dataset (e.g.,
+                         coastal_bound_full.mat, coastal_bound_high.mat,
+                         coastal_bound_inter.mat, coastal_bound_coarse.mat),
+                         pass the filename or full path using this flag. [Optional]
   --cut-off DEPTH, --cutoff-depth DEPTH
                          Cut-off depth in meters to distinguish wet vs. dry cells
                          (default: 0.1) [Optional]
@@ -226,6 +234,10 @@ while [[ $# -gt 0 ]]; do
     --boundary-points)
       BOUNDARY_POINTS=1
       shift 1
+      ;;
+    --bound-file)
+      BOUND_FILE="$2"
+      shift 2
       ;;
     --cut-off|--cutoff-depth)
       CUT_OFF="$2"
@@ -444,6 +456,7 @@ if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
+if [ -n "$BOUND_FILE" ]; then CMD_ARGS+=(--bound-file "$BOUND_FILE"); fi
 if [ -n "$CUT_OFF" ]; then CMD_ARGS+=(--cut-off "$CUT_OFF"); fi
 if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINTS"); fi
 if [ -n "$LAKE_MIN_FRACTION" ]; then CMD_ARGS+=(--lake-min-fraction "$LAKE_MIN_FRACTION"); fi
