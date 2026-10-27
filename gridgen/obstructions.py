@@ -75,9 +75,10 @@ def create_obstr(
 
     polygons = []
     for b in bound_list:
-        bx = np.asarray(b["x"], dtype=np.float64)
-        by = np.asarray(b["y"], dtype=np.float64)
-        if len(bx) < 3:
+        bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
+        by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
+
+        if bx.ndim == 0 or len(bx) < 3:
             continue
 
         p_west, p_east = float(np.min(bx)), float(np.max(bx))

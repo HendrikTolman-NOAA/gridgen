@@ -63,8 +63,8 @@ def compute_boundary(
         if level != bflg:
             continue
 
-        bx = np.asarray(b["x"], dtype=np.float64)
-        by = np.asarray(b["y"], dtype=np.float64)
+        bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
+        by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
 
         if len(bx) < 3:
             continue
@@ -146,8 +146,10 @@ def split_boundary(
     """
     result = []
     for b in bound_list:
-        w = b.get("width", float(np.max(b["x"]) - np.min(b["x"])))
-        h = b.get("height", float(np.max(b["y"]) - np.min(b["y"])))
+        bx_sub = np.squeeze(np.asarray(b["x"], dtype=np.float64))
+        by_sub = np.squeeze(np.asarray(b["y"], dtype=np.float64))
+        w = b.get("width", float(np.max(bx_sub) - np.min(bx_sub)))
+        h = b.get("height", float(np.max(by_sub) - np.min(by_sub)))
 
         if w > lim or h > lim:
             west = float(b["west"])
@@ -218,8 +220,8 @@ def clean_mask(
 
     polygons = []
     for b in bound_ingrid:
-        bx = np.asarray(b["x"], dtype=np.float64)
-        by = np.asarray(b["y"], dtype=np.float64)
+        bx = np.squeeze(np.asarray(b["x"], dtype=np.float64))
+        by = np.squeeze(np.asarray(b["y"], dtype=np.float64))
         if len(bx) < 3:
             continue
 
