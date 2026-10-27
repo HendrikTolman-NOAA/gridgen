@@ -1,0 +1,235 @@
+// WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+//
+// Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+// NWS often uses Generative AI (GenAI) for code development and refactoring.
+// Whenever GenAI is used, NWS requires a full human review of code before it
+// is added to its repositories.
+//
+// @file ugrid_reader.cpp
+// @brief NetCDF-UGRID 1.0 grid file reader using netcdf-c for WAVEWATCH IV.
+// @author Aldgisl (Agentic AI), Hendrik Tolman
+// @author Jules (Agentic AI) (contributor)
+// @date Initial: 2026-10-27
+// @date Latest Update: 2026-10-27
+
+#include "ww4/ugrid_reader.hpp"
+
+#include <netcdf.h>
+
+#include <cstdint>
+#include <filesystem>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+namespace ww4::io {
+
+namespace {
+
+/**
+ * @brief RAII wrapper for NetCDF file handle `ncid`.
+ */
+class NcHandle {
+public:
+    explicit NcHandle(const int id) noexcept : ncid_(id) {}
+
+    ~NcHandle() {
+        if (ncid_ >= 0) {
+            nc_close(ncid_);
+        }
+    }
+
+    NcHandle(const NcHandle&) = delete;
+    NcHandle& operator=(const NcHandle&) = delete;
+
+    NcHandle(NcHandle&& other) noexcept : ncid_(other.ncid_) {
+        other.ncid_ = -1;
+    }
+
+    NcHandle& operator=(NcHandle&& other) noexcept {
+        if (this != &other) {
+            if (ncid_ >= 0) {
+                nc_close(ncid_);
+            }
+            ncid_ = other.ncid_;
+            other.ncid_ = -1;
+        }
+        return *this;
+    }
+
+    [[nodiscard]] int get() const noexcept { return ncid_; }
+
+private:
+    int ncid_{-1};
+};
+
+/**
+ * @brief Utility function to check NetCDF error status.
+ */
+void check_nc_err(const int status, const std::string& msg) {
+    if (status != NC_NOERR) {
+        throw std::runtime_error(msg + ": " + nc_strerror(status));
+    }
+}
+
+/**
+ * @brief Utility function to read a global string attribute.
+ */
+[[nodiscard]] std::string read_global_attribute(const int ncid, const char* attname) {
+    std::size_t len = 0;
+    if (nc_inq_attlen(ncid, NC_GLOBAL, attname, &len) == NC_NOERR) {
+        std::string val(len, '\0');
+        if (nc_get_att_text(ncid, NC_GLOBAL, attname, val.data()) == NC_NOERR) {
+            while (!val.empty() && (val.back() == '\0' || val.back() == ' ')) {
+                val.pop_back();
+            }
+            return val;
+        }
+    }
+    return "";
+}
+
+/**
+ * @brief Reads data from a NetCDF variable into a std::vector.
+ */
+template <typename T>
+bool read_variable(const int ncid, const char* varname, std::vector<T>& vec, const bool required = true) {
+    int varid = -1;
+    const int status = nc_inq_varid(ncid, varname, &varid);
+    if (status != NC_NOERR) {
+        if (required) {
+            throw std::runtime_error("Missing required variable '" + std::string(varname) + "': " + nc_strerror(status));
+        }
+        return false;
+    }
+
+    nc_type xtype = NC_NAT;
+    check_nc_err(nc_inq_vartype(ncid, varid, &xtype), "Failed inquiring variable type for '" + std::string(varname) + "'");
+
+    if constexpr (std::is_same_v<T, double>) {
+        check_nc_err(nc_get_var_double(ncid, varid, vec.data()), "Failed reading double variable '" + std::string(varname) + "'");
+    } else if constexpr (std::is_same_v<T, float>) {
+        check_nc_err(nc_get_var_float(ncid, varid, vec.data()), "Failed reading float variable '" + std::string(varname) + "'");
+    } else if constexpr (std::is_same_v<T, int32_t>) {
+        if (xtype == NC_INT64) {
+            std::vector<long long> tmp_64(vec.size());
+            check_nc_err(nc_get_var_longlong(ncid, varid, tmp_64.data()), "Failed reading int64 variable '" + std::string(varname) + "'");
+            for (std::size_t i = 0; i < vec.size(); ++i) {
+                vec[i] = static_cast<int32_t>(tmp_64[i]);
+            }
+        } else {
+            check_nc_err(nc_get_var_int(ncid, varid, reinterpret_cast<int*>(vec.data())), "Failed reading int variable '" + std::string(varname) + "'");
+        }
+    }
+
+    return true;
+}
+
+} // namespace
+
+UgridGrid read_ugrid_nc(const std::filesystem::path& filepath) {
+    if (!std::filesystem::exists(filepath)) {
+        throw std::runtime_error("File does not exist: " + filepath.string());
+    }
+
+    int raw_ncid = -1;
+    check_nc_err(nc_open(filepath.string().c_str(), NC_NOWRITE, &raw_ncid), "Failed opening file " + filepath.string());
+    const NcHandle nc_handle(raw_ncid);
+    const int ncid = nc_handle.get();
+
+    UgridGrid grid;
+
+    // Helper lambda for dimension inquiry
+    auto read_dim_len = [ncid](const char* dimname) -> std::size_t {
+        int dimid = -1;
+        const int status = nc_inq_dimid(ncid, dimname, &dimid);
+        if (status != NC_NOERR) {
+            throw std::runtime_error("Missing required dimension '" + std::string(dimname) + "': " + nc_strerror(status));
+        }
+        std::size_t len = 0;
+        check_nc_err(nc_inq_dimlen(ncid, dimid, &len), "Failed reading dimension length for '" + std::string(dimname) + "'");
+        return len;
+    };
+
+    // Read mandatory dimensions
+    grid.ny = read_dim_len("ny");
+    grid.nx = read_dim_len("nx");
+    grid.n_faces = read_dim_len("nMesh2_face");
+    grid.n_nodes = read_dim_len("nMesh2_node");
+    grid.max_face_nodes = read_dim_len("nMaxMesh2_face_nodes");
+
+    // Read global attributes
+    grid.title = read_global_attribute(ncid, "title");
+    grid.source = read_global_attribute(ncid, "source");
+    grid.bathy_source = read_global_attribute(ncid, "bathy_source");
+    grid.conventions = read_global_attribute(ncid, "Conventions");
+
+    const std::size_t num_2d = grid.ny * grid.nx;
+    const std::size_t num_faces = grid.n_faces;
+    const std::size_t num_nodes = grid.n_nodes;
+    const std::size_t num_conn = grid.n_faces * grid.max_face_nodes;
+
+    // Allocate 2D grid vectors
+    grid.grid_lon.resize(num_2d);
+    grid.grid_lat.resize(num_2d);
+    grid.grid_depth.resize(num_2d);
+    grid.grid_mask.resize(num_2d);
+
+    // Read 2D grid variables
+    read_variable(ncid, "grid_lon", grid.grid_lon, true);
+    read_variable(ncid, "grid_lat", grid.grid_lat, true);
+    read_variable(ncid, "grid_depth", grid.grid_depth, true);
+    read_variable(ncid, "grid_mask", grid.grid_mask, true);
+
+    // Allocate 1D face vectors
+    grid.face_lon.resize(num_faces);
+    grid.face_lat.resize(num_faces);
+    grid.depth.resize(num_faces);
+    grid.mask.resize(num_faces);
+
+    // Read 1D face variables
+    read_variable(ncid, "face_lon", grid.face_lon, true);
+    read_variable(ncid, "face_lat", grid.face_lat, true);
+    read_variable(ncid, "depth", grid.depth, true);
+    read_variable(ncid, "mask", grid.mask, true);
+
+    // Allocate 1D node vectors
+    grid.node_lon.resize(num_nodes);
+    grid.node_lat.resize(num_nodes);
+
+    // Read 1D node coordinates
+    read_variable(ncid, "node_lon", grid.node_lon, true);
+    read_variable(ncid, "node_lat", grid.node_lat, true);
+
+    // Read connectivity
+    grid.face_node_connectivity.resize(num_conn);
+    read_variable(ncid, "face_node_connectivity", grid.face_node_connectivity, true);
+
+    // Read optional subgrid obstruction factors
+    grid.grid_ObsX.resize(num_2d);
+    grid.ObsX.resize(num_faces);
+    if (read_variable(ncid, "grid_ObsX", grid.grid_ObsX, false) &&
+        read_variable(ncid, "ObsX", grid.ObsX, false)) {
+        grid.has_obsx = true;
+    } else {
+        grid.grid_ObsX.clear();
+        grid.ObsX.clear();
+        grid.has_obsx = false;
+    }
+
+    grid.grid_ObsY.resize(num_2d);
+    grid.ObsY.resize(num_faces);
+    if (read_variable(ncid, "grid_ObsY", grid.grid_ObsY, false) &&
+        read_variable(ncid, "ObsY", grid.ObsY, false)) {
+        grid.has_obsy = true;
+    } else {
+        grid.grid_ObsY.clear();
+        grid.ObsY.clear();
+        grid.has_obsy = false;
+    }
+
+    return grid;
+}
+
+} // namespace ww4::io
