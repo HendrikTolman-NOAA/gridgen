@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-23
+# @date Latest Update: 2026-10-28
 -->
 
 <p align="center">
@@ -37,15 +37,27 @@ The package requires Python 3.9+ and the following scientific Python libraries:
 - `shapely` (>= 2.0)
 - `matplotlib` (>= 3.5)
 
+For building the optional C++ reader library (`ww4_ugrid_reader`) and metadata inspection tools (`ww4_read_grid`), the following system packages are required:
+- C++20 compliant compiler (`GCC 11+` or `Clang 13+`)
+- `CMake` (>= 3.20)
+- `libnetcdf-dev` (NetCDF C development library)
+- `libgtest-dev` (GoogleTest development headers and library)
+
 ## Installation
 
 It is assumed that basic Python (v3.9 or higher) is installed already on your system.
 
-To create a local clone of the repository:
+To create a local clone of the repository and initialize submodules:
 
 ```bash
-git clone https://github.com/NOAA-EMC/gridgen
+git clone --recursive https://github.com/NOAA-EMC/gridgen
 cd gridgen
+```
+
+If you cloned without `--recursive`, you can initialize the submodules at any time:
+
+```bash
+git submodule update --init --recursive
 ```
 
 It may be handy to add the root `gridgen` directory to your Python search path (`PYTHONPATH`):
@@ -58,6 +70,55 @@ Additionally, to execute utility scripts and binaries directly from any director
 
 ```bash
 export PATH="${PATH}:$(pwd):$(pwd)/bin"
+```
+
+## Building and Compiling C++ Tools
+
+The repository contains a C++20 NetCDF-UGRID reader library (`ww4_ugrid_reader`) and a grid metadata printer utility program (`ww4_read_grid`).
+
+### Prerequisites (Ubuntu / Debian)
+
+Ensure the C++ toolchain and NetCDF/GoogleTest development packages are installed:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential cmake libnetcdf-dev libgtest-dev
+```
+
+### Build Instructions
+
+Build the C++ static library, metadata utility binary, and unit test runner using CMake:
+
+```bash
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+This compiles the following targets in the `build/` directory:
+- `libww4_ugrid_reader.a`: C++ static library providing `ww4::io::read_ugrid_nc()`.
+- `ww4_read_grid`: Executable metadata inspection program.
+- `test_ugrid_reader`: C++ GoogleTest suite.
+
+### Running C++ Metadata Printer Utility (`ww4_read_grid`)
+
+To inspect global metadata attributes, grid dimensions, bathymetry depth ranges, land/sea cell counts, and obstruction availability of any NetCDF-UGRID grid file:
+
+```bash
+./build/ww4_read_grid <path_to_grid_file.nc>
+```
+
+Example usage:
+
+```bash
+./build/ww4_read_grid ww4_grid_ugrid.nc
+```
+
+### Running C++ Unit Tests
+
+Execute the C++ test suite using CTest:
+
+```bash
+ctest --test-dir build --output-on-failure
 ```
 
 ### Reference Data Population
@@ -188,7 +249,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 
 ---
 
-**Last updated:** October 23, 2026
+**Last updated:** October 28, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">
