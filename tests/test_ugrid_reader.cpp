@@ -10,7 +10,7 @@
 // @author Aldgisl (Agentic AI), Hendrik Tolman
 // @author Jules (Agentic AI) (contributor)
 // @date Initial: 2026-10-27
-// @date Latest Update: 2026-10-27
+// @date Latest Update: 2026-10-28
 
 #include "ww4/ugrid_reader.hpp"
 

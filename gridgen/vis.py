@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -160,6 +160,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             ObsY = ds["ObsY"].values if "ObsY" in ds else (ds["sy"].values if "sy" in ds else None)
 
         bathy_src = str(ds.attrs.get("bathy_source", ds.attrs.get("source", "etopo2")))
+        bound_src = str(ds.attrs.get("bound_source", ds.attrs.get("bound_file", ds.attrs.get("coast_file", ""))))
         ds.close()
         return {
             "lon": lon,
@@ -170,6 +171,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "ObsY": ObsY,
             "filename": path.name,
             "bathy_source": bathy_src,
+            "bound_source": bound_src,
         }
 
     # 2. Legacy WW3 ASCII files
@@ -210,6 +212,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "ObsY": ObsY,
             "filename": path.name,
             "bathy_source": "etopo2",
+            "bound_source": "coastal_bound_low.mat",
         }
 
     raise FileNotFoundError(
@@ -231,6 +234,37 @@ def _parse_coord_token(s: str) -> float:
         token = token[:-1]
     token = token.replace("°", "").strip()
     return float(token) * mult
+
+
+def format_coastline_desc(bound_source: str | None) -> str | None:
+    """Format boundary polygon filename or identifier into coastline description string.
+
+    Parameters
+    ----------
+    bound_source : str or None
+        Path, filename, or name of boundary polygon file (e.g. 'coastal_bound_low.mat').
+
+    Returns
+    -------
+    str or None
+        Human-readable coastline description string (e.g. 'low res coastline') or None if disabled/unspecified.
+    """
+    if not bound_source or str(bound_source).lower() in ("none", ""):
+        return None
+    name = Path(bound_source).name.lower()
+    if "coarse" in name:
+        return "coarse res coastline"
+    elif "low" in name:
+        return "low res coastline"
+    elif "inter" in name:
+        return "intermediate res coastline"
+    elif "high" in name:
+        return "high res coastline"
+    elif "full" in name:
+        return "full res coastline"
+    else:
+        clean = Path(bound_source).stem
+        return f"{clean} coastline"
 
 
 def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
@@ -276,7 +310,7 @@ def parse_zoom_args(zoom_input: Any) -> tuple[float, float, float] | None:
 def plot_grid(
     data: dict[str, Any],
     title: str | None = None,
-    subtitle: str | None = "Bathymetry and Orography",
+    subtitle: str | None = "Bathymetry, Orography, and Obstructions",
     output_path: str | Path | None = None,
     show: bool = False,
     show_mask: bool = True,
@@ -284,8 +318,9 @@ def plot_grid(
     max_orography: float | None = 10.0,
     zoom: tuple[float, float, float] | list[float] | str | None = None,
     bathy_source: str | None = None,
+    bound_source: str | None = None,
 ) -> matplotlib.figure.Figure:
-    """Graphically display resulting grid bathymetry and orography plot.
+    """Graphically display resulting grid bathymetry, orography, and obstructions plot.
 
     Parameters
     ----------
@@ -294,7 +329,7 @@ def plot_grid(
     title : str, optional
         Main figure title string (default: input dataset filename). Can be set to empty string to disable.
     subtitle : str, optional
-        Figure subtitle string (default: "Bathymetry and Orography"). Can be set to empty string to disable.
+        Figure subtitle string (default: "Bathymetry, Orography, and Obstructions"). Can be set to empty string to disable.
     output_path : str or Path, optional
         File path where the resulting plot figure should be saved.
     show : bool
@@ -330,11 +365,7 @@ def plot_grid(
         and bool(np.any(Obs_max >= 0.01))
     )
 
-    if has_obstr:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9), sharex=True, sharey=True)
-    else:
-        fig, ax1 = plt.subplots(figsize=(8, 5))
-        ax2 = None
+    fig, ax1 = plt.subplots(figsize=(8, 5))
 
     dark_green = "#1b4332"  # Dark green background for land/sea mask
     if show_mask:
@@ -385,11 +416,31 @@ def plot_grid(
             lon_plot, lat_plot, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
         )
         pcm2 = ax1.pcolormesh(
-            lon_plot, lat_plot, depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog, shading="nearest"
+            lon_plot, lat_plot, depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog, shading="nearest"
         )
     else:
         pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
-        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlOrBr", vmin=0.0, vmax=vmax_orog)
+        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
+
+    pcm_Obs = None
+    if has_obstr:
+        if is_global:
+            if Obs_max.ndim == 2:
+                Obs_plot = np.hstack([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+            else:
+                Obs_plot = np.concatenate([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+        else:
+            Obs_plot = Obs_max
+
+        # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
+        Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
+
+        if lon_plot.ndim == 2:
+            pcm_Obs = ax1.pcolormesh(
+                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+            )
+        else:
+            pcm_Obs = ax1.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
 
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
     ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
@@ -402,9 +453,19 @@ def plot_grid(
 
     sub_text = ""
     if subtitle:
-        bsource = bathy_source or data.get("bathy_source", "etopo2")
-        if bsource and f"({bsource})" not in subtitle:
-            sub_text = f"{subtitle} ({bsource})"
+        bsource = bathy_source or data.get("bathy_source") or "etopo2"
+        raw_bound_src = bound_source if bound_source is not None else data.get("bound_source")
+        if raw_bound_src is None or raw_bound_src == "":
+            raw_bound_src = "coastal_bound_low.mat"
+        c_desc = format_coastline_desc(raw_bound_src)
+
+        details = [d for d in [bsource, c_desc] if d]
+        if details:
+            detail_str = ", ".join(details)
+            if f"({detail_str})" not in subtitle:
+                sub_text = f"{subtitle} ({detail_str})"
+            else:
+                sub_text = subtitle
         else:
             sub_text = subtitle
 
@@ -415,13 +476,8 @@ def plot_grid(
         xlabel_str = "Longitude"
         ylabel_str = "Latitude"
 
-    if has_obstr:
-        ax2.set_xlabel(xlabel_str)
-        ax1.set_ylabel(ylabel_str)
-        ax2.set_ylabel(ylabel_str)
-    else:
-        ax1.set_xlabel(xlabel_str)
-        ax1.set_ylabel(ylabel_str)
+    ax1.set_xlabel(xlabel_str)
+    ax1.set_ylabel(ylabel_str)
 
     ax1.grid(True, linestyle="--", alpha=0.5)
 
@@ -486,88 +542,79 @@ def plot_grid(
         ax1.set_ylim(ylim)
         aspect = 1.0 / max(np.cos(np.radians(central_lat)), 0.01)
         ax1.set_aspect(aspect)
-        if has_obstr:
-            ax2.set_aspect(aspect)
         print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
     elif is_global:
         ax1.set_xlim(lon_min, lon_max)
         ax1.set_ylim(lat_min, lat_max)
 
-    if has_obstr:
-        if is_global:
-            if Obs_max.ndim == 2:
-                Obs_plot = np.hstack([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
-            else:
-                Obs_plot = np.concatenate([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
-        else:
-            Obs_plot = Obs_max
-
-        # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
-        Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
-
-        if lon_plot.ndim == 2:
-            pcm_Obs = ax2.pcolormesh(
-                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
-            )
-        else:
-            pcm_Obs = ax2.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
-
-        ax2.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
-        ax2.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
-
-        ax2.grid(True, linestyle="--", alpha=0.5)
-
-        ax2.set_title("Sub-grid Obstructions (Maximum of ObsX & ObsY)", fontsize=10, pad=4)
-
-        cax_Obs = inset_axes(
-            ax2,
-            width="3.5%",
-            height="90%",
-            loc="lower left",
-            bbox_to_anchor=(1.03, 0.05, 1, 0.9),
-            bbox_transform=ax2.transAxes,
-            borderpad=0,
-        )
-
-        cb_Obs = fig.colorbar(pcm_Obs, cax=cax_Obs, label="Obstruction Factor")
-        cb_Obs.ax.tick_params(labelsize=5)
-        cb_Obs.ax.yaxis.label.set_fontsize(6)
-
     fig.tight_layout()
-
-    # Orography colorbar (top-right, placed above Bathymetry colorbar)
-    cax_orog = inset_axes(
-        ax1,
-        width="3.5%",
-        height="45%",
-        loc="upper left",
-        bbox_to_anchor=(1.03, 0.05, 1, 0.95),
-        bbox_transform=ax1.transAxes,
-        borderpad=0,
-    )
-    # Bathymetry colorbar (bottom-right, placed below Orography colorbar)
-    cax_bathy = inset_axes(
-        ax1,
-        width="3.5%",
-        height="45%",
-        loc="lower left",
-        bbox_to_anchor=(1.03, 0.0, 1, 0.95),
-        bbox_transform=ax1.transAxes,
-        borderpad=0,
-    )
 
     has_orography = bool(np.any(~np.isnan(depth_orog)))
 
     if has_orography:
+        # 3 colorbars with nominal spacing (gap = 3%): Subgrid Obstruction Factor (top), Orography (middle), Bathymetry Depth (bottom)
+        cax_obstr = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.6867, 1, 0.3133),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+        cax_orog = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.3433, 1, 0.3133),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+        cax_bathy = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.0, 1, 0.3133),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+
         cb_orog = fig.colorbar(pcm2, cax=cax_orog, label="Orography (m)")
         cb_orog.ax.tick_params(labelsize=5)
         cb_orog.ax.yaxis.label.set_fontsize(6)
     else:
-        cax_orog.axis("off")
-        cax_orog.text(
+        # 2 colorbars with nominal spacing (gap = 3%): Subgrid Obstruction Factor (top), Bathymetry Depth (bottom)
+        cax_obstr = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.515, 1, 0.485),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+        cax_bathy = inset_axes(
+            ax1,
+            width="3.5%",
+            height="100%",
+            loc="lower left",
+            bbox_to_anchor=(1.03, 0.0, 1, 0.485),
+            bbox_transform=ax1.transAxes,
+            borderpad=0,
+        )
+
+    if has_obstr and pcm_Obs is not None:
+        cb_obstr = fig.colorbar(pcm_Obs, cax=cax_obstr, label="Subgrid Obstruction Factor")
+        cb_obstr.ax.tick_params(labelsize=5)
+        cb_obstr.ax.yaxis.label.set_fontsize(6)
+    else:
+        cax_obstr.axis("off")
+        cax_obstr.text(
             0.5,
             0.5,
-            "Grid contains no orography",
+            "Grid contains no obstructions",
             ha="center",
             va="center",
             rotation=90,
@@ -696,8 +743,8 @@ def main() -> None:
     parser.add_argument(
         "--subtitle",
         type=str,
-        default="Bathymetry and Orography",
-        help="Figure subtitle (default: Bathymetry and Orography)",
+        default="Bathymetry, Orography, and Obstructions",
+        help="Figure subtitle (default: Bathymetry, Orography, and Obstructions)",
     )
     parser.add_argument(
         "--no-subtitle",
@@ -711,6 +758,14 @@ def main() -> None:
         type=str,
         default=None,
         help="Bathymetry reference dataset identifier for subtitle (default: auto from dataset metadata)",
+    )
+    parser.add_argument(
+        "--bound-source",
+        "--bound-file",
+        dest="bound_source",
+        type=str,
+        default=None,
+        help="Shoreline boundary dataset file path or name for subtitle (default: auto from dataset metadata)",
     )
     parser.add_argument(
         "--no-mask",
@@ -784,6 +839,7 @@ def main() -> None:
         max_orography=args.max_orography,
         zoom=args.zoom,
         bathy_source=args.bathy_source,
+        bound_source=args.bound_source,
     )
 
 

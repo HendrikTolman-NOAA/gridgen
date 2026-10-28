@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-27
 
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def test_vis_orography_and_mask(tmp_path):
 
 
 def test_vis_orography_scale_when_no_orography(tmp_path):
-    """Verify plot_grid displays 'Grid contains no orography' statement when no land points exist."""
+    """Verify plot_grid omits orography legend and renders remaining 2 legends taking 50% plot height each when no land points exist."""
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -81,8 +81,10 @@ def test_vis_orography_scale_when_no_orography(tmp_path):
 
     fig = plot_grid(data, title="Purely Underwater Grid", output_path=out_file, max_orography=10.0)
     assert fig is not None
-    texts = [t.get_text() for ax in fig.axes for t in ax.texts]
-    assert "Grid contains no orography" in texts
+    # Figure should only contain main axes, obstruction cax, and bathymetry cax (no orography cax)
+    labels = [ax.get_ylabel() for ax in fig.axes if hasattr(ax, "get_ylabel")]
+    assert "Bathymetry Depth (m)" in labels
+    assert "Orography (m)" not in labels
 
 
 def test_vis_ugrid(tmp_path):
@@ -137,12 +139,12 @@ def test_vis_coards(tmp_path):
 
 
 def test_vis_obstructions_only_when_nonzero(tmp_path):
-    """Verify plot_grid renders 2 panels when obstructions are non-zero (bathymetry & maximum obstruction), and 1 panel when obstructions are all zero or None."""
+    """Verify plot_grid overlays obstructions on single plot panel and displays subgrid obstruction colorbar legend when non-zero obstructions exist."""
     lon, lat = np.meshgrid([10.0, 11.0], [20.0, 21.0])
     depth = np.full((2, 2), -50.0)
     mask = np.ones((2, 2), dtype=int)
 
-    # 1. All-zero obstructions -> 1 panel (bathymetry/orography)
+    # 1. All-zero obstructions -> 1 main panel, obstruction colorbar shows 'Grid contains no obstructions'
     data_zero = {
         "lon": lon,
         "lat": lat,
@@ -152,11 +154,12 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
         "ObsY": np.zeros((2, 2)),
     }
     fig_zero = plot_grid(data_zero)
-    # Filter main grid subplot axes (excluding inset colorbar axes)
     main_axes_zero = [ax for ax in fig_zero.axes if ax.get_subplotspec() is not None]
     assert len(main_axes_zero) == 1
+    texts_zero = [t.get_text() for ax in fig_zero.axes for t in ax.texts]
+    assert "Grid contains no obstructions" in texts_zero
 
-    # 2. Obstructions < 0.01 -> treated as no obstruction -> 1 panel
+    # 2. Obstructions < 0.01 -> treated as no obstruction -> 'Grid contains no obstructions'
     data_small = {
         "lon": lon,
         "lat": lat,
@@ -168,8 +171,10 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
     fig_small = plot_grid(data_small)
     main_axes_small = [ax for ax in fig_small.axes if ax.get_subplotspec() is not None]
     assert len(main_axes_small) == 1
+    texts_small = [t.get_text() for ax in fig_small.axes for t in ax.texts]
+    assert "Grid contains no obstructions" in texts_small
 
-    # 3. Obstructions >= 0.01 -> 2 main subplot panels (bathymetry and combined maximum obstruction)
+    # 3. Obstructions >= 0.01 -> overlaid on single main panel with Subgrid Obstruction Factor colorbar legend
     data_nonzero = {
         "lon": lon,
         "lat": lat,
@@ -180,10 +185,9 @@ def test_vis_obstructions_only_when_nonzero(tmp_path):
     }
     fig_nonzero = plot_grid(data_nonzero)
     main_axes_nonzero = [ax for ax in fig_nonzero.axes if ax.get_subplotspec() is not None]
-    assert len(main_axes_nonzero) == 2
-    # Verify ax2 retains default blank facecolor (not dark green)
-    dark_green_rgba = (0.10588235294117647, 0.2627450980392157, 0.19607843137254902, 1.0)
-    assert main_axes_nonzero[1].get_facecolor() != dark_green_rgba
+    assert len(main_axes_nonzero) == 1
+    labels = [ax.get_ylabel() for ax in fig_nonzero.axes if hasattr(ax, "get_ylabel")]
+    assert "Subgrid Obstruction Factor" in labels
 
 
 def test_vis_ascii(tmp_path):
@@ -375,8 +379,37 @@ def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
     assert (tmp_path / out_jpg).exists()
 
 
+def test_coastline_subtitle_formatting(tmp_path):
+    """Verify subtitle formatting appends bathymetry source and coastline resolution description."""
+    lon1d = np.array([10.0, 20.0])
+    lat1d = np.array([10.0, 18.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": np.full((2, 2), -10.0),
+        "mask": np.ones((2, 2), dtype=int),
+        "filename": "test_grid_ugrid.nc",
+        "bathy_source": "etopo2",
+        "bound_source": "coastal_bound_low.mat",
+    }
+
+    fig = plot_grid(data)
+    ax = fig.axes[0]
+    assert ax.get_title() == "Bathymetry, Orography, and Obstructions (etopo2, low res coastline)"
+
+    # Test high res coastline
+    fig_high = plot_grid(data, bound_source="coastal_bound_high.mat")
+    assert fig_high.axes[0].get_title() == "Bathymetry, Orography, and Obstructions (etopo2, high res coastline)"
+
+    # Test disabled coastline ('none')
+    fig_none = plot_grid(data, bound_source="none")
+    assert fig_none.axes[0].get_title() == "Bathymetry, Orography, and Obstructions (etopo2)"
+
+
 def test_default_title_and_subtitle(tmp_path):
-    """Verify default title uses input dataset filename and subtitle includes bathymetry source."""
+    """Verify default title uses input dataset filename and subtitle includes bathymetry and coastline sources."""
     lon1d = np.array([10.0, 20.0])
     lat1d = np.array([10.0, 18.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -391,7 +424,7 @@ def test_default_title_and_subtitle(tmp_path):
 
     fig = plot_grid(data)
     ax = fig.axes[0]
-    assert ax.get_title() == "Bathymetry and Orography (etopo2)"
+    assert ax.get_title() == "Bathymetry, Orography, and Obstructions (etopo2, low res coastline)"
     texts = [t.get_text() for t in ax.texts]
     assert "WAVEWATCH IV grid my_ww4_grid_ugrid.nc" in texts
 
@@ -413,7 +446,7 @@ def test_custom_and_disabled_title_subtitle(tmp_path):
     # Custom title, subtitle, and bathy source
     fig = plot_grid(data, title="Custom Main Title", subtitle="Custom Subtitle", bathy_source="gebco_2024")
     ax = fig.axes[0]
-    assert ax.get_title() == "Custom Subtitle (gebco_2024)"
+    assert ax.get_title() == "Custom Subtitle (gebco_2024, low res coastline)"
     texts = [t.get_text() for t in ax.texts]
     assert "Custom Main Title" in texts
 

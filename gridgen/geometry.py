@@ -10,6 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
+# @date Latest Update: 2026-10-27
 #
 # Code Heritage:
 # Converted from compute_cellcorner.m originally authored by NOAA/NCEP
@@ -196,19 +197,73 @@ def compute_all_corners(
         2D array of cell heights with shape (Ny, Nx).
     """
     Ny, Nx = x.shape
-    polygons = np.zeros((Ny, Nx, 5, 2), dtype=np.float64)
-    widths = np.zeros((Ny, Nx), dtype=np.float64)
-    heights = np.zeros((Ny, Nx), dtype=np.float64)
+    c1 = np.zeros((Ny, Nx, 2), dtype=np.float64)
+    c2 = np.zeros((Ny, Nx, 2), dtype=np.float64)
+    c3 = np.zeros((Ny, Nx, 2), dtype=np.float64)
+    c4 = np.zeros((Ny, Nx, 2), dtype=np.float64)
 
-    for j in range(Nx):
-        for k in range(Ny):
-            c1, c2, c3, c4, w, h = compute_cellcorner(x, y, j, k)
-            polygons[k, j, 0] = c4
-            polygons[k, j, 1] = c1
-            polygons[k, j, 2] = c2
-            polygons[k, j, 3] = c3
-            polygons[k, j, 4] = c4
-            widths[k, j] = w
-            heights[k, j] = h
+    if Ny > 2 and Nx > 2:
+        # Vectorized computation for interior cells (k in 1..Ny-2, j in 1..Nx-2)
+        x0 = x[1:-1, 1:-1]
+        y0 = y[1:-1, 1:-1]
+
+        def _unwrap_vec(xt: np.ndarray, ref: np.ndarray) -> np.ndarray:
+            diff = xt - ref
+            res = xt.copy()
+            res[diff > 270.0] -= 360.0
+            res[diff < -270.0] += 360.0
+            return res
+
+        xt1 = _unwrap_vec(x[:-2, 2:], x0)
+        c1[1:-1, 1:-1, 0] = 0.5 * (xt1 + x0)
+        c1[1:-1, 1:-1, 1] = 0.5 * (y[:-2, 2:] + y0)
+
+        xt2 = _unwrap_vec(x[2:, 2:], x0)
+        c2[1:-1, 1:-1, 0] = 0.5 * (xt2 + x0)
+        c2[1:-1, 1:-1, 1] = 0.5 * (y[2:, 2:] + y0)
+
+        xt3 = _unwrap_vec(x[2:, :-2], x0)
+        c3[1:-1, 1:-1, 0] = 0.5 * (xt3 + x0)
+        c3[1:-1, 1:-1, 1] = 0.5 * (y[2:, :-2] + y0)
+
+        xt4 = _unwrap_vec(x[:-2, :-2], x0)
+        c4[1:-1, 1:-1, 0] = 0.5 * (xt4 + x0)
+        c4[1:-1, 1:-1, 1] = 0.5 * (y[:-2, :-2] + y0)
+
+        # Handle boundary cells along edges
+        for j in range(Nx):
+            for k in (0, Ny - 1):
+                _c1, _c2, _c3, _c4, _, _ = compute_cellcorner(x, y, j, k)
+                c1[k, j] = _c1
+                c2[k, j] = _c2
+                c3[k, j] = _c3
+                c4[k, j] = _c4
+
+        for k in range(1, Ny - 1):
+            for j in (0, Nx - 1):
+                _c1, _c2, _c3, _c4, _, _ = compute_cellcorner(x, y, j, k)
+                c1[k, j] = _c1
+                c2[k, j] = _c2
+                c3[k, j] = _c3
+                c4[k, j] = _c4
+    else:
+        # Fallback loop for small grids
+        for j in range(Nx):
+            for k in range(Ny):
+                _c1, _c2, _c3, _c4, _, _ = compute_cellcorner(x, y, j, k)
+                c1[k, j] = _c1
+                c2[k, j] = _c2
+                c3[k, j] = _c3
+                c4[k, j] = _c4
+
+    widths = np.sqrt((c1[..., 0] - c4[..., 0]) ** 2 + (c1[..., 1] - c4[..., 1]) ** 2)
+    heights = np.sqrt((c2[..., 0] - c1[..., 0]) ** 2 + (c2[..., 1] - c1[..., 1]) ** 2)
+
+    polygons = np.zeros((Ny, Nx, 5, 2), dtype=np.float64)
+    polygons[:, :, 0] = c4
+    polygons[:, :, 1] = c1
+    polygons[:, :, 2] = c2
+    polygons[:, :, 3] = c3
+    polygons[:, :, 4] = c4
 
     return polygons, widths, heights
