@@ -40,6 +40,15 @@ target_link_libraries(ww4_ugrid_reader PRIVATE
     ${NETCDF_LIBRARY}
 )
 
+# Utility program to read and display NetCDF grid metadata
+add_executable(ww4_read_grid
+    src/read_grid.cpp
+)
+
+target_link_libraries(ww4_read_grid PRIVATE
+    ww4_ugrid_reader
+)
+
 # Test target
 enable_testing()
 add_executable(test_ugrid_reader

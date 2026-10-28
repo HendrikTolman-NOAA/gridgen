@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-10-28
 #
 # Code Heritage:
 # WAVEWATCH IV NetCDF-UGRID 1.0 format exporter module.
@@ -269,7 +269,7 @@ def create_ugrid_dataset(
                 y.astype(np.float64),
                 {
                     "standard_name": "latitude",
-                    "long_name": "2D Latitude grid coordinates",
+                    "long_name": "Latitude of grid points",
                     "units": "degrees_north",
                 },
             ),
@@ -288,7 +288,7 @@ def create_ugrid_dataset(
 
 
 def write_ugrid_nc(ds: xr.Dataset, filename: str) -> None:
-    """Write UGRID xarray Dataset to NetCDF file.
+    """Write UGRID xarray Dataset to NetCDF-4 file.
 
     Parameters
     ----------
@@ -297,4 +297,4 @@ def write_ugrid_nc(ds: xr.Dataset, filename: str) -> None:
     filename : str
         Target output NetCDF file path.
     """
-    ds.to_netcdf(filename)
+    ds.to_netcdf(filename, format="NETCDF4")
