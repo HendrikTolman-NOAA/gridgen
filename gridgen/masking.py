@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-28
 #
 # Code Heritage:
 # Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m,
