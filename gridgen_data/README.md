@@ -26,7 +26,7 @@ This directory (`gridgen_data/`) contains internal polygon configuration dataset
 
 ### 1. Polygon Switch Control File (`user_polygons.flag`)
 * **Format**: Plain text (`.flag`)
-* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 55 predefined coastal feature polygons (e.g., Caspian Sea, Hudson Bay, Mediterranean Sea, Chesapeake Bay, San Francisco Harbor, Netherlands IJsselmeer and Markermeer, Wester Schelde, Waddenzee East/North of Elbe River).
+* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 55 predefined coastal feature polygons (e.g., Caspian Sea, Netherlands below sea level IJsselmeer and Markermeer, Wester Schelde, Waddenzee East/North of Elbe River, Hudson Bay, Mediterranean Sea, Chesapeake Bay, San Francisco Harbor).
 * **Usage**: Read by `gridgen.masking.load_user_polygons` to determine which user-defined optional coastal polygons should be active during land/sea mask cleaning (`clean_mask`) and subgrid obstruction generation (`create_obstr`).
 
 ### 2. Polygon Coordinate Database (`optional_coastal_polygons.txt`)
