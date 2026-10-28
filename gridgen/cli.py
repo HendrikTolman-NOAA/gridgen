@@ -360,12 +360,6 @@ def main() -> None:
     if args.boundary_points:
         m_mod = define_boundary_points(m_mod, lon, lat)
 
-    num_bnd = int(np.count_nonzero(m_mod == 2))
-    if num_bnd > 0:
-        print(f"  Boundary points generated: {num_bnd} (mask value 2).")
-    else:
-        print("  No boundary points generated.")
-
     # Step 4: Calculate sub-grid obstructions (using shoreline MAT bounds only; user polygons reserved for mask generation)
     print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
     ObsX, ObsY = create_obstr(lon, lat, mat_bounds, m_mod)

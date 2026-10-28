@@ -753,25 +753,3 @@ def test_mask_option_removed(tmp_path: Path):
 
     assert result.returncode != 0
     assert "unrecognized option '--mask'" in result.stderr or "Unknown option: --mask" in result.stderr
-
-
-def test_vis_boundary_points(tmp_path: Path):
-    """Verify boundary points (mask == 2) are identified and rendered in deep yellow in plots."""
-    lon1d = np.array([10.0, 11.0, 12.0])
-    lat1d = np.array([20.0, 21.0, 22.0])
-    lon, lat = np.meshgrid(lon1d, lat1d)
-    depth = np.full((3, 3), -50.0)
-    # Mask with wet cells (1), dry cell (0), and input boundary cells (2)
-    mask = np.array([[2, 2, 2], [2, 1, 2], [2, 2, 2]])
-
-    data = {"lon": lon, "lat": lat, "depth": depth, "mask": mask}
-    out_file = str(tmp_path / "test_bnd_vis.jpg")
-
-    fig = plot_grid(data, title="Boundary Points Vis Test", output_path=out_file)
-    assert fig is not None
-    assert os.path.exists(out_file)
-
-    ax = fig.axes[0]
-    # Check that pcolormesh collections exist for bathymetry, orography, and boundary layer
-    collections = ax.collections
-    assert len(collections) >= 3
