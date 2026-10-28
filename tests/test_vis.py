@@ -756,7 +756,7 @@ def test_mask_option_removed(tmp_path: Path):
 
 
 def test_vis_boundary_points(tmp_path: Path):
-    """Verify boundary points (mask == 2) are identified and rendered in Magenta (#ff00ff) in plots."""
+    """Verify boundary points (mask == 2) are identified and rendered in deep yellow in plots."""
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)

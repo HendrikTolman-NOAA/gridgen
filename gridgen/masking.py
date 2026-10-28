@@ -455,37 +455,36 @@ def define_boundary_points(
                 if not comp_poly.contains(pt):
                     m_new[k, j] = 3
 
-    # 2. Flag outer domain edges as input boundary cells (value 2)
+    def has_wet_neighbor(r: int, c: int, m_check: np.ndarray) -> bool:
+        up = r + 1 if r + 1 < Ny else None
+        down = r - 1 if r - 1 >= 0 else None
+        left = c - 1 if c - 1 >= 0 else (Nx - 1 if igl == 1 else None)
+        right = c + 1 if c + 1 < Nx else (0 if igl == 1 else None)
+
+        for nr, nc in [(up, c), (down, c), (r, left), (r, right)]:
+            if nr is not None and nc is not None and m_check[nr, nc] in (1, 2):
+                return True
+        return False
+
+    # 2. Flag outer domain edges as input boundary cells (value 2) extending up to land/sea mask
+    m_init = np.copy(m_new)
+
     for j in range(Ny):
-        if m_new[j, 0] == 1:
+        if m_init[j, 0] in (1, 2) or has_wet_neighbor(j, 0, m_init):
             m_new[j, 0] = 2
-        if m_new[j, Nx - 1] == 1:
+        if m_init[j, Nx - 1] in (1, 2) or has_wet_neighbor(j, Nx - 1, m_init):
             m_new[j, Nx - 1] = 2
 
     for k in range(Nx):
-        if m_new[0, k] == 1:
+        if m_init[0, k] in (1, 2) or has_wet_neighbor(0, k, m_init):
             m_new[0, k] = 2
-        if m_new[Ny - 1, k] == 1:
+        if m_init[Ny - 1, k] in (1, 2) or has_wet_neighbor(Ny - 1, k, m_init):
             m_new[Ny - 1, k] = 2
 
     # 3. Flag cells adjacent to inactive cells (value 3) as boundary cells (value 2)
-    inactive_indices = np.argwhere(m_new == 3)
+    inactive_indices = np.argwhere(m_init == 3)
     for r, c in inactive_indices:
-        ny_down = max(0, r - 1)
-        ny_up = min(Ny - 1, r + 1)
-        nx_left = max(0, c - 1)
-        nx_right = min(Nx - 1, c + 1)
-
-        found_wet = False
-        if (
-            m_new[r, nx_left] == 1
-            or m_new[r, nx_right] == 1
-            or m_new[ny_down, c] == 1
-            or m_new[ny_up, c] == 1
-        ):
-            found_wet = True
-
-        if found_wet:
+        if m_init[r, c] in (1, 2) or has_wet_neighbor(r, c, m_init):
             m_new[r, c] = 2
 
     # 4. Reconcile boundary cells with parent/base grid if base grid provided

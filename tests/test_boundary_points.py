@@ -26,13 +26,13 @@ def test_define_boundary_points_edges() -> None:
         LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
     )
     mask = np.ones((5, 5), dtype=int)
-    # Set one cell to dry land
+    # Set one cell to dry land far from water
     mask[0, 0] = 0
 
     m_new = define_boundary_points(mask, lon, lat)
 
-    # Dry land remains 0
-    assert m_new[0, 0] == 0
+    # Land cell on boundary adjacent to wet neighbor extends boundary up to land
+    assert m_new[0, 0] == 2
     # Outer wet cells set to 2
     assert m_new[0, 1] == 2
     assert m_new[4, 4] == 2
