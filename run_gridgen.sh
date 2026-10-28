@@ -73,9 +73,10 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
-  --boundary-points      Define input boundary cells (mask value 2) [Optional]
-  --boundary-range LON_MIN LON_MAX LAT_MIN LAT_MAX
-                         Allowed longitude and latitude range for boundary points [Optional]
+  --boundary-points [LON_MIN LON_MAX LAT_MIN LAT_MAX]
+                         Define input boundary cells (mask value 2), optionally
+                         specifying allowed range [LON_MIN LON_MAX LAT_MIN LAT_MAX]
+                         [Optional]
   --bound-file FILE      MAT boundary polygon file path or name used for computing
                          subgrid obstructions (default: coastal_bound_low.mat).
                          Specify 'none' to disable obstruction calculations entirely.
@@ -237,10 +238,15 @@ while [[ $# -gt 0 ]]; do
     --boundary-points)
       BOUNDARY_POINTS=1
       shift 1
-      ;;
-    --boundary-range)
-      BOUNDARY_RANGE=("$2" "$3" "$4" "$5")
-      shift 5
+      BOUNDARY_RANGE=()
+      while [[ $# -gt 0 ]] && [[ "$1" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; do
+        BOUNDARY_RANGE+=("$1")
+        shift 1
+      done
+      if [[ ${#BOUNDARY_RANGE[@]} -ne 0 ]] && [[ ${#BOUNDARY_RANGE[@]} -ne 4 ]]; then
+        echo "Error: --boundary-points expects 0 arguments or 4 arguments [LON_MIN LON_MAX LAT_MIN LAT_MAX]" >&2
+        exit 1
+      fi
       ;;
     --bound-file)
       BOUND_FILE="$2"
@@ -462,8 +468,13 @@ if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi
 if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
-if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
-if [ "${#BOUNDARY_RANGE[@]}" -gt 0 ]; then CMD_ARGS+=(--boundary-range "${BOUNDARY_RANGE[@]}"); fi
+if [ "$BOUNDARY_POINTS" -eq 1 ]; then
+  if [ "${#BOUNDARY_RANGE[@]}" -eq 4 ]; then
+    CMD_ARGS+=(--boundary-points "${BOUNDARY_RANGE[@]}")
+  else
+    CMD_ARGS+=(--boundary-points)
+  fi
+fi
 if [ -n "$BOUND_FILE" ]; then CMD_ARGS+=(--bound-file "$BOUND_FILE"); fi
 if [ -n "$CUT_OFF" ]; then CMD_ARGS+=(--cut-off "$CUT_OFF"); fi
 if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINTS"); fi

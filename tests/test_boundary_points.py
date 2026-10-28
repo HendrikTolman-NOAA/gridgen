@@ -104,3 +104,78 @@ def test_define_boundary_points_range() -> None:
     assert m_new[0, 3] == 1
     assert m_new[0, 4] == 1
     assert m_new[2, 4] == 1
+
+
+def test_cli_boundary_points_optional_range(tmp_path) -> None:
+    """Test gridgen.cli --boundary-points with 0 arguments vs 4 range arguments."""
+    import subprocess
+    from pathlib import Path
+
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+
+    # 1. Execute run_gridgen.sh with --boundary-points without range arguments
+    out_nc1 = tmp_path / "bnd_no_range_ugrid.nc"
+    res1 = subprocess.run(
+        [
+            str(script_path),
+            "-n",
+            "bnd_no_range",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--lon-start",
+            "-70",
+            "--lat-start",
+            "20",
+            "--lon-end",
+            "-60",
+            "--lat-end",
+            "30",
+            "-o",
+            str(tmp_path),
+            "--boundary-points",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res1.returncode == 0
+    assert "Boundary points generated: 36 (mask value 2)." in res1.stdout
+    assert out_nc1.exists()
+
+    # 2. Execute run_gridgen.sh with --boundary-points and 4 range arguments
+    out_nc2 = tmp_path / "bnd_range_ugrid.nc"
+    res2 = subprocess.run(
+        [
+            str(script_path),
+            "-n",
+            "bnd_range",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--lon-start",
+            "-70",
+            "--lat-start",
+            "20",
+            "--lon-end",
+            "-60",
+            "--lat-end",
+            "30",
+            "-o",
+            str(tmp_path),
+            "--boundary-points",
+            "-70",
+            "-65",
+            "20",
+            "30",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res2.returncode == 0
+    assert "Boundary points generated: 18 (mask value 2)." in res2.stdout
+    assert out_nc2.exists()
