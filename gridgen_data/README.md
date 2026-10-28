@@ -26,12 +26,12 @@ This directory (`gridgen_data/`) contains internal polygon configuration dataset
 
 ### 1. Polygon Switch Control File (`user_polygons.flag`)
 * **Format**: Plain text (`.flag`)
-* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 71 predefined coastal feature polygons (e.g., Caspian Sea, Netherlands below sea level IJsselmeer and Markermeer, Wester Schelde, Waddenzee East/North of Elbe River, Hudson Bay, Mediterranean Sea, Chesapeake Bay, Japan: Uchiura Bay, Japan: Mutsu Bay, Japan: Tokyo Bay, Japan: Seto Inland Sea, Japan: Yamaguchi Bay, San Francisco Harbor).
+* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 77 predefined coastal feature polygons (e.g., Caspian Sea, Netherlands below sea level IJsselmeer and Markermeer, Aegean Sea, Adriatic, Sea of Azov, Gulf of Riga, Aland Islands and Turku Archipelago, Denmark inner seas, Wester Schelde, Waddenzee East/North of Elbe River, Hudson Bay, Mediterranean Sea, Chesapeake Bay, Japan: Uchiura Bay, Japan: Mutsu Bay, Japan: Tokyo Bay, Japan: Seto Inland Sea, Japan: Yamaguchi Bay, San Francisco Harbor).
 * **Usage**: Read by `gridgen.masking.load_user_polygons` to determine which user-defined optional coastal polygons should be active during land/sea mask cleaning (`clean_mask`) and subgrid obstruction generation (`create_obstr`).
 
 ### 2. Polygon Coordinate Database (`optional_coastal_polygons.txt`)
 * **Format**: Plain text (`.txt`)
-* **Description**: Plain text database storing coordinate polygon boundaries (`x`, `y` coordinates and nesting levels) for the 71 user-defined optional regional coastal domains.
+* **Description**: Plain text database storing coordinate polygon boundaries (`x`, `y` coordinates and nesting levels) for the 77 user-defined optional regional coastal domains.
 * **Usage**: Loaded by `gridgen.masking.load_user_polygons` during land/sea mask cleaning (`clean_mask`) and subgrid obstruction factor generation (`create_obstr`).
 
 ---
