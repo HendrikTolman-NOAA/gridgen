@@ -538,6 +538,12 @@ def define_boundary_points(
             if not (b11 and b12 and b21 and b22):
                 m_new[r, c] = 3
 
+    num_bnd = int(np.count_nonzero(m_new == 2))
+    if num_bnd > 0:
+        print(f"Generated {num_bnd} input boundary points (mask value 2).")
+    else:
+        print("No input boundary points generated.")
+
     return m_new
 
 

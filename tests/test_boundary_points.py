@@ -68,3 +68,18 @@ def test_modify_mask_alias() -> None:
 
     m_new = modify_mask(mask, lon, lat)
     assert m_new[0, 1] == 2
+
+
+def test_define_boundary_points_count(capsys) -> None:
+    """Test counting and reporting boundary points generated."""
+    lon, lat = create_regular_grid(
+        LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
+    )
+    mask = np.ones((5, 5), dtype=int)
+
+    m_new = define_boundary_points(mask, lon, lat)
+    num_bnd = np.count_nonzero(m_new == 2)
+    assert num_bnd == 16  # 5x5 outer boundary wet cells (4*5 - 4)
+
+    captured = capsys.readouterr()
+    assert "Generated 16 input boundary points" in captured.out
