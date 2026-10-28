@@ -1,6 +1,6 @@
  1 1 	 Caspian Sea
  2 1 	 Netherlands below sea level - IJsselmeer and Markermeer
- 3 1 	 Netherlands below sea level - Wester Schelde
+ 3 1 	 Netherlands - Wester Schelde
  4 1 	 Waddenzee East of the Elbe River
  5 1 	 Waddenzee North of the Elbe River
  6 0 	 Hudson Bay
@@ -14,42 +14,50 @@
 14 0 	 Gulf of Aden
 15 0 	 Gulf of Oman
 16 0 	 Sea of Okhotsk
-17 0 	 Sea of Japan
-18 1 	 USA East Coast - Long Island Sound
-19 1 	 USA East Coast - Delaware Bay
-20 1 	 USA East Coast - Atlantic City
-21 1 	 USA East Coast - Chesapeake Bay + Ocean City
-22 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
-23 1 	 USA East Coast - Cape Canaveral (Florida)
-24 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
-25 1 	 USA Gulf Coast - Tampa Bay (Florida)
-26 1 	 USA Gulf Coast - Panama City (Florida)
-27 1 	 USA Gulf Coast - Mobile Bay (Alabama)
-28 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
-29 1 	 USA Gulf Coast - Grand Isle (New Orleans)
-30 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
-31 1 	 USA Gulf Coast - Galveston Bay (Texas)
-32 1 	 USA Gulf Coast - Padre Island (Texas)
-33 1 	 Mexico Gulf Coast - Laguna Madre
-34 1 	 Mexico Gulf Coast - Tamiahua
-35 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
-36 1 	 Mexico Gulf Coast - Belize (Yukatan)
-37 1 	 Honduras Gulf Coast - Laguna Caratasca
-38 1 	 Nicaragua Gulf Coast
-39 1 	 Panama Gulf Coast
-40 1 	 Columbia Gulf Coast
-41 1 	 Venezuela Gulf Coast - Lago de Maracaibo
-42 1 	 Venezuela Gulf Coast - Gulf of Paria
-43 1 	 Brazil East Coast - Amazon Delta
-44 1 	 Alaska - Cook Inlet
-45 1 	 Alaska - Prince William Sound
-46 1 	 Alaska - Yakutat Bay
-47 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
-48 1 	 Canada West Coast
-49 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
-50 1 	 US West Coast - Columbia River Estuary
-51 1 	 US West Coast - San Francisco Harbor
-52 1 	 West Coast - Lake Ojo de Liebre (Baja California)
-53 1 	 West Coast - Laguna S. Ignacio (Baja California)
-54 1 	 West Coast - Bay of Magdalena (Baja California)
-55 0 	 West Coast - Gulf of California (Baja California)
+17 1 	 Sea of Okhotsk - Penzhina Bay
+18 1 	 Sea of Okhotsk - Gizhigin Bay
+19 1 	 Sea of Okhotsk - Taui Bay
+20 0 	 Sea of Okhotsk - Shelhikov Bay
+21 1 	 Sea of Okhotsk - Udskaya Guba
+22 1 	 Sea of Okhotsk - Tugurskiy Zaliv
+23 1 	 Sea of Okhotsk - Zaliv Akademii
+24 0 	 Sea of Okhotsk - Sakhalinskiy Zaliv
+25 0 	 Sea of Japan
+26 1 	 USA East Coast - Long Island Sound
+27 1 	 USA East Coast - Delaware Bay
+28 1 	 USA East Coast - Atlantic City
+29 1 	 USA East Coast - Chesapeake Bay + Ocean City
+30 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
+31 1 	 USA East Coast - Cape Canaveral (Florida)
+32 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
+33 1 	 USA Gulf Coast - Tampa Bay (Florida)
+34 1 	 USA Gulf Coast - Panama City (Florida)
+35 1 	 USA Gulf Coast - Mobile Bay (Alabama)
+36 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
+37 1 	 USA Gulf Coast - Grand Isle (New Orleans)
+38 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
+39 1 	 USA Gulf Coast - Galveston Bay (Texas)
+40 1 	 USA Gulf Coast - Padre Island (Texas)
+41 1 	 Mexico Gulf Coast - Laguna Madre
+42 1 	 Mexico Gulf Coast - Tamiahua
+43 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
+44 1 	 Mexico Gulf Coast - Belize (Yukatan)
+45 1 	 Honduras Gulf Coast - Laguna Caratasca
+46 1 	 Nicaragua Gulf Coast
+47 1 	 Panama Gulf Coast
+48 1 	 Columbia Gulf Coast
+49 1 	 Venezuela Gulf Coast - Lago de Maracaibo
+50 1 	 Venezuela Gulf Coast - Gulf of Paria
+51 1 	 Brazil East Coast - Amazon Delta
+52 1 	 Alaska - Cook Inlet
+53 1 	 Alaska - Prince William Sound
+54 1 	 Alaska - Yakutat Bay
+55 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
+56 1 	 Canada West Coast
+57 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
+58 1 	 US West Coast - Columbia River Estuary
+59 1 	 US West Coast - San Francisco Harbor
+60 1 	 West Coast - Lake Ojo de Liebre (Baja California)
+61 1 	 West Coast - Laguna S. Ignacio (Baja California)
+62 1 	 West Coast - Bay of Magdalena (Baja California)
+63 0 	 West Coast - Gulf of California (Baja California)
