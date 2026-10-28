@@ -429,8 +429,8 @@ def plot_grid(
 
     if has_boundary:
         bnd_display = np.where(boundary_plot, 1.0, np.nan)
-        deep_yellow = "#ffcc00"  # Deep yellow color for input boundary cells (mask value 2)
-        cmap_bnd = matplotlib.colors.ListedColormap([deep_yellow])
+        magenta = "#ff00ff"  # Vibrant magenta color for input boundary cells (mask value 2)
+        cmap_bnd = matplotlib.colors.ListedColormap([magenta])
         if lon_plot.ndim == 2:
             ax1.pcolormesh(
                 lon_plot, lat_plot, bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5, shading="nearest"

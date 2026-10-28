@@ -239,7 +239,7 @@ while [[ $# -gt 0 ]]; do
       BOUNDARY_POINTS=1
       shift 1
       BOUNDARY_RANGE=()
-      while [[ $# -gt 0 ]] && [[ "$1" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; do
+      while [[ $# -gt 0 ]] && { [[ "$1" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]] || [[ "$1" =~ ^-?[0-9]+\.$ ]]; }; do
         BOUNDARY_RANGE+=("$1")
         shift 1
       done

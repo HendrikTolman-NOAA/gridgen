@@ -161,7 +161,7 @@ def test_cli_boundary_points_optional_range(tmp_path) -> None:
     assert "Boundary points generated: 36 (mask value 2)." in res1.stdout
     assert out_nc1.exists()
 
-    # 2. Execute run_gridgen.sh with --boundary-points and 4 range arguments
+    # 2. Execute run_gridgen.sh with --boundary-points and 4 real/float range arguments
     out_nc2 = tmp_path / "bnd_range_ugrid.nc"
     res2 = subprocess.run(
         [
@@ -185,15 +185,15 @@ def test_cli_boundary_points_optional_range(tmp_path) -> None:
             "-o",
             str(tmp_path),
             "--boundary-points",
-            "-70",
-            "-65",
-            "20",
-            "30",
+            "-70.5",
+            "-65.2",
+            "20.1",
+            "30.8",
         ],
         capture_output=True,
         text=True,
         check=False,
     )
     assert res2.returncode == 0
-    assert "Boundary points generated: 18 (mask value 2)." in res2.stdout
+    assert "Boundary points generated: 13 (mask value 2)." in res2.stdout
     assert out_nc2.exists()
