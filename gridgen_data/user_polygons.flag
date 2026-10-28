@@ -1,6 +1,6 @@
  1 1 	 Caspian Sea
  2 1 	 Netherlands below sea level - IJsselmeer and Markermeer
- 3 1 	 Netherlands below sea level - Wester Schelde
+ 3 1 	 Netherlands - Wester Schelde
  4 1 	 Waddenzee East of the Elbe River
  5 1 	 Waddenzee North of the Elbe River
  6 0 	 Hudson Bay
@@ -14,42 +14,48 @@
 14 0 	 Gulf of Aden
 15 0 	 Gulf of Oman
 16 0 	 Sea of Okhotsk
-17 0 	 Sea of Japan
-18 1 	 USA East Coast - Long Island Sound
-19 1 	 USA East Coast - Delaware Bay
-20 1 	 USA East Coast - Atlantic City
-21 1 	 USA East Coast - Chesapeake Bay + Ocean City
-22 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
-23 1 	 USA East Coast - Cape Canaveral (Florida)
-24 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
-25 1 	 USA Gulf Coast - Tampa Bay (Florida)
-26 1 	 USA Gulf Coast - Panama City (Florida)
-27 1 	 USA Gulf Coast - Mobile Bay (Alabama)
-28 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
-29 1 	 USA Gulf Coast - Grand Isle (New Orleans)
-30 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
-31 1 	 USA Gulf Coast - Galveston Bay (Texas)
-32 1 	 USA Gulf Coast - Padre Island (Texas)
-33 1 	 Mexico Gulf Coast - Laguna Madre
-34 1 	 Mexico Gulf Coast - Tamiahua
-35 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
-36 1 	 Mexico Gulf Coast - Belize (Yukatan)
-37 1 	 Honduras Gulf Coast - Laguna Caratasca
-38 1 	 Nicaragua Gulf Coast
-39 1 	 Panama Gulf Coast
-40 1 	 Columbia Gulf Coast
-41 1 	 Venezuela Gulf Coast - Lago de Maracaibo
-42 1 	 Venezuela Gulf Coast - Gulf of Paria
-43 1 	 Brazil East Coast - Amazon Delta
-44 1 	 Alaska - Cook Inlet
-45 1 	 Alaska - Prince William Sound
-46 1 	 Alaska - Yakutat Bay
-47 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
-48 1 	 Canada West Coast
-49 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
-50 1 	 US West Coast - Columbia River Estuary
-51 1 	 US West Coast - San Francisco Harbor
-52 1 	 West Coast - Lake Ojo de Liebre (Baja California)
-53 1 	 West Coast - Laguna S. Ignacio (Baja California)
-54 1 	 West Coast - Bay of Magdalena (Baja California)
-55 0 	 West Coast - Gulf of California (Baja California)
+17 1 	 Sea of Okhotsk - Penzhina Bay
+18 1 	 Sea of Okhotsk - Gizhigin Bay
+19 1 	 Sea of Okhotsk - Taui Bay
+20 1 	 Sea of Okhotsk - Udskaya Guba
+21 1 	 Sea of Okhotsk - Guba Yakshina
+22 1 	 Sea of Okhotsk - Zaliv Akademii
+23 0 	 Sea of Japan
+24 1 	 USA East Coast - Long Island Sound
+25 1 	 USA East Coast - Delaware Bay
+26 1 	 USA East Coast - Atlantic City
+27 1 	 USA East Coast - Chesapeake Bay + Ocean City
+28 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
+29 1 	 USA East Coast - Cape Canaveral (Florida)
+30 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
+31 1 	 USA Gulf Coast - Tampa Bay (Florida)
+32 1 	 USA Gulf Coast - Panama City (Florida)
+33 1 	 USA Gulf Coast - Mobile Bay (Alabama)
+34 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
+35 1 	 USA Gulf Coast - Grand Isle (New Orleans)
+36 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
+37 1 	 USA Gulf Coast - Galveston Bay (Texas)
+38 1 	 USA Gulf Coast - Padre Island (Texas)
+39 1 	 Mexico Gulf Coast - Laguna Madre
+40 1 	 Mexico Gulf Coast - Tamiahua
+41 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
+42 1 	 Mexico Gulf Coast - Belize (Yukatan)
+43 1 	 Honduras Gulf Coast - Laguna Caratasca
+44 1 	 Nicaragua Gulf Coast
+45 1 	 Panama Gulf Coast
+46 1 	 Columbia Gulf Coast
+47 1 	 Venezuela Gulf Coast - Lago de Maracaibo
+48 1 	 Venezuela Gulf Coast - Gulf of Paria
+49 1 	 Brazil East Coast - Amazon Delta
+50 1 	 Alaska - Cook Inlet
+51 1 	 Alaska - Prince William Sound
+52 1 	 Alaska - Yakutat Bay
+53 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
+54 1 	 Canada West Coast
+55 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
+56 1 	 US West Coast - Columbia River Estuary
+57 1 	 US West Coast - San Francisco Harbor
+58 1 	 West Coast - Lake Ojo de Liebre (Baja California)
+59 1 	 West Coast - Laguna S. Ignacio (Baja California)
+60 1 	 West Coast - Bay of Magdalena (Baja California)
+61 0 	 West Coast - Gulf of California (Baja California)
