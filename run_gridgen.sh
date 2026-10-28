@@ -43,6 +43,7 @@ GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
 BOUNDARY_POINTS=0
+BOUNDARY_RANGE=()
 BOUND_FILE="coastal_bound_low.mat"
 CUT_OFF="0.1"
 LAKE_MIN_POINTS="15"
@@ -73,6 +74,8 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
   --boundary-points      Define input boundary cells (mask value 2) [Optional]
+  --boundary-range LON_MIN LON_MAX LAT_MIN LAT_MAX
+                         Allowed longitude and latitude range for boundary points [Optional]
   --bound-file FILE      MAT boundary polygon file path or name used for computing
                          subgrid obstructions (default: coastal_bound_low.mat).
                          Specify 'none' to disable obstruction calculations entirely.
@@ -234,6 +237,10 @@ while [[ $# -gt 0 ]]; do
     --boundary-points)
       BOUNDARY_POINTS=1
       shift 1
+      ;;
+    --boundary-range)
+      BOUNDARY_RANGE=("$2" "$3" "$4" "$5")
+      shift 5
       ;;
     --bound-file)
       BOUND_FILE="$2"
@@ -456,6 +463,7 @@ if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then CMD_ARGS+=(--boundary-points); fi
+if [ "${#BOUNDARY_RANGE[@]}" -gt 0 ]; then CMD_ARGS+=(--boundary-range "${BOUNDARY_RANGE[@]}"); fi
 if [ -n "$BOUND_FILE" ]; then CMD_ARGS+=(--bound-file "$BOUND_FILE"); fi
 if [ -n "$CUT_OFF" ]; then CMD_ARGS+=(--cut-off "$CUT_OFF"); fi
 if [ -n "$LAKE_MIN_POINTS" ]; then CMD_ARGS+=(--lake-min-points "$LAKE_MIN_POINTS"); fi

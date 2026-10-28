@@ -96,6 +96,14 @@ def main() -> None:
         help="Define input boundary points (mask value 2) along regional grid boundaries",
     )
     gen_group.add_argument(
+        "--boundary-range",
+        nargs=4,
+        type=float,
+        default=None,
+        metavar=("LON_MIN", "LON_MAX", "LAT_MIN", "LAT_MAX"),
+        help="Allowed longitude and latitude range [LON_MIN, LON_MAX, LAT_MIN, LAT_MAX] in which boundary points are generated",
+    )
+    gen_group.add_argument(
         "--bound-file",
         dest="bound_file",
         type=str,
@@ -357,8 +365,12 @@ def main() -> None:
         igl=0,
         lon=lon,
     )
+    if args.boundary_range is not None:
+        args.boundary_points = True
+
     if args.boundary_points:
-        m_mod = define_boundary_points(m_mod, lon, lat)
+        b_range = tuple(args.boundary_range) if args.boundary_range is not None else None
+        m_mod = define_boundary_points(m_mod, lon, lat, bound_range=b_range)
 
     num_bnd = int(np.count_nonzero(m_mod == 2))
     if num_bnd > 0:

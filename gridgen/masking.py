@@ -406,6 +406,7 @@ def define_boundary_points(
     base_lat: np.ndarray | None = None,
     igl: int = 0,
     active_poly: tuple[np.ndarray, np.ndarray] | None = None,
+    bound_range: tuple[float, float, float, float] | None = None,
 ) -> np.ndarray:
     """Define input boundary points (mask value 2) in regional / nested grids.
 
@@ -537,6 +538,24 @@ def define_boundary_points(
 
             if not (b11 and b12 and b21 and b22):
                 m_new[r, c] = 3
+
+    # 5. Filter boundary points by allowed lat/lon range if provided
+    if bound_range is not None:
+        b_lon_min, b_lon_max, b_lat_min, b_lat_max = bound_range
+        bnd_indices = np.argwhere(m_new == 2)
+        for r, c in bnd_indices:
+            x_val = float(lon[r, c])
+            y_val = float(lat[r, c])
+
+            in_lat = (b_lat_min <= y_val <= b_lat_max)
+            in_lon = (
+                (b_lon_min <= x_val <= b_lon_max)
+                or (b_lon_min <= x_val - 360.0 <= b_lon_max)
+                or (b_lon_min <= x_val + 360.0 <= b_lon_max)
+            )
+
+            if not (in_lat and in_lon):
+                m_new[r, c] = 1
 
     num_bnd = int(np.count_nonzero(m_new == 2))
     if num_bnd > 0:

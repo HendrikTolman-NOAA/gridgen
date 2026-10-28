@@ -83,3 +83,24 @@ def test_define_boundary_points_count(capsys) -> None:
 
     captured = capsys.readouterr()
     assert "Generated 16 input boundary points" in captured.out
+
+
+def test_define_boundary_points_range() -> None:
+    """Test restricting boundary points to allowed latitude and longitude range."""
+    lon, lat = create_regular_grid(
+        LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
+    )
+    mask = np.ones((5, 5), dtype=int)
+
+    # Restrict boundary points to lon in [0.0, 2.0] and lat in [0.0, 4.0]
+    m_new = define_boundary_points(mask, lon, lat, bound_range=(0.0, 2.0, 0.0, 4.0))
+
+    # Boundary cells with lon <= 2.0 are kept as 2
+    assert m_new[0, 0] == 2
+    assert m_new[0, 1] == 2
+    assert m_new[0, 2] == 2
+
+    # Boundary cells with lon > 2.0 revert to wet 1
+    assert m_new[0, 3] == 1
+    assert m_new[0, 4] == 1
+    assert m_new[2, 4] == 1
