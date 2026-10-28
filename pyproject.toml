@@ -13,7 +13,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-07
+# @date Latest Update: 2026-10-28
 #
 # @note Format Mandate (TOML vs. YAML):
 # Although YAML is the primary configuration/markup language throughout WAVEWATCH IV (WW4),
@@ -60,6 +60,7 @@ version = {attr = "gridgen.__version__"}
 [tool.ruff]
 line-length = 88
 target-version = "py39"
+exclude = ["externals"]
 
 [tool.ruff.lint]
 extend-select = ["E402"]

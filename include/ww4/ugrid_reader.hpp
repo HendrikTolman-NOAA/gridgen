@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -43,8 +44,15 @@ struct UgridGrid {
     std::string source;
     /// Global bathy_source attribute
     std::string bathy_source;
+    /// Global bound_source attribute
+    std::string bound_source;
     /// Global Conventions attribute
     std::string conventions;
+    /// Global history attribute
+    std::string history;
+
+    /// Complete map of all global attributes
+    std::map<std::string, std::string> global_attrs;
 
     /// Flag indicating whether subgrid x-obstruction array is present
     bool has_obsx{false};
@@ -87,16 +95,17 @@ struct UgridGrid {
 };
 
 /**
- * @brief Reads a WAVEWATCH IV NetCDF-UGRID 1.0 grid file using netcdf-c API.
+ * @brief Pure subroutine to read a WAVEWATCH IV NetCDF-UGRID 1.0 grid file using netcdf-c API.
  *
- * @details Opens the NetCDF file specified by `filepath`, reads global metadata
- * attributes, dimensions, 2D curvilinear grid coordinate and field arrays,
- * and 1D UGRID mesh topology/coordinates/fields.
+ * @details Opens the NetCDF file specified by `filepath` in read-only mode using netcdf-c API,
+ * parses all global metadata attributes, grid dimensions, 2D curvilinear grid coordinate
+ * and field arrays, and 1D UGRID mesh topology/coordinates/fields. All inputs and outputs
+ * pass through the routine interface without stdio side effects.
  *
  * @param filepath Path to the NetCDF-UGRID file to read.
  * @return UgridGrid Struct containing all parsed metadata, 2D arrays, and 1D UGRID fields.
- * @pre File must exist and be a valid NetCDF-UGRID file.
- * @post Returned UgridGrid fields are populated.
+ * @pre File must exist and be a valid NetCDF / NetCDF-4 file.
+ * @post Returned UgridGrid fields are populated with file contents.
  * @throws std::runtime_error If file opening fails or mandatory variables/dimensions are missing.
  */
 [[nodiscard]] UgridGrid read_ugrid_nc(const std::filesystem::path& filepath);

@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-23
+# @date Latest Update: 2026-10-28
 -->
 
 <p align="center">
@@ -37,14 +37,20 @@ The package requires Python 3.9+ and the following scientific Python libraries:
 - `shapely` (>= 2.0)
 - `matplotlib` (>= 3.5)
 
+For building the optional C++ reader library (`ww4_ugrid_reader`), metadata inspection tools (`ww4_read_grid`), and unit tests, the following system packages or submodules are required:
+- C++20 compliant compiler (`GCC 11+` or `Clang 13+`)
+- `CMake` (>= 3.20)
+- `libnetcdf-dev` (NetCDF C development library, or included via `externals/netcdf-c`)
+- `libgtest-dev` (GoogleTest development headers, or included via `externals/googletest`)
+
 ## Installation
 
 It is assumed that basic Python (v3.9 or higher) is installed already on your system.
 
-To create a local clone of the repository:
+To create a local clone of the repository and automatically pull external Git submodules into `externals/`:
 
 ```bash
-git clone https://github.com/NOAA-EMC/gridgen
+git clone --recursive https://github.com/NOAA-EMC/gridgen
 cd gridgen
 ```
 
@@ -58,6 +64,81 @@ Additionally, to execute utility scripts and binaries directly from any director
 
 ```bash
 export PATH="${PATH}:$(pwd):$(pwd)/bin"
+```
+
+## External Submodules (`externals/`)
+
+All third-party external C++ dependencies managed as Git submodules are located in the `externals/` directory:
+- **`externals/netcdf-c`**: Unidata NetCDF-C library for NetCDF-4 file I/O operations.
+- **`externals/googletest`**: GoogleTest framework for C++ unit testing.
+
+### Loading External Submodules Before Compilation
+
+Before compiling the C++ toolchain or running CMake, you **must ensure that all external submodules in `externals/` are fetched and initialized**.
+
+If you cloned the repository without the `--recursive` flag, initialize and load all externals by running:
+
+```bash
+git submodule update --init --recursive
+```
+
+To verify that all external submodules in `externals/` are properly populated before building:
+
+```bash
+git submodule status
+```
+
+You should see commit hashes for both `externals/netcdf-c` and `externals/googletest` without a leading minus sign (`-`).
+
+## Building and Compiling C++ Tools
+
+The repository contains a C++20 NetCDF-UGRID reader library (`ww4_ugrid_reader`), a grid metadata printer utility program (`ww4_read_grid`), and GoogleTest unit tests.
+
+### Prerequisites (Ubuntu / Debian)
+
+System libraries are optional if submodules in `externals/` are populated:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential cmake libnetcdf-dev libgtest-dev
+```
+
+### Build Instructions
+
+First, ensure external submodules in `externals/` are fetched (`git submodule update --init --recursive`), then build the C++ static library, metadata utility binary, and unit test runner using CMake:
+
+```bash
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+The CMake build automatically checks for system libraries first and seamlessly falls back to using `externals/netcdf-c` and `externals/googletest` submodules when system libraries are missing.
+
+This compiles the following targets in the `build/` directory:
+- `libww4_ugrid_reader.a`: C++ static library providing `ww4::io::read_ugrid_nc()`.
+- `ww4_read_grid`: Executable metadata inspection program.
+- `test_ugrid_reader`: C++ GoogleTest suite.
+
+### Running C++ Metadata Printer Utility (`ww4_read_grid`)
+
+To inspect global metadata attributes, grid dimensions, bathymetry depth ranges, land/sea cell counts, and obstruction availability of any NetCDF-UGRID grid file:
+
+```bash
+./build/ww4_read_grid <path_to_grid_file.nc>
+```
+
+Example usage:
+
+```bash
+./build/ww4_read_grid ww4_grid_ugrid.nc
+```
+
+### Running C++ Unit Tests
+
+Execute the C++ test suite using CTest:
+
+```bash
+ctest --test-dir build --output-on-failure
 ```
 
 ### Reference Data Population
@@ -188,7 +269,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 
 ---
 
-**Last updated:** October 23, 2026
+**Last updated:** October 28, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">

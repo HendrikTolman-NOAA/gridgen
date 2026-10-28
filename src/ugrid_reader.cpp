@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -74,20 +75,38 @@ void check_nc_err(const int status, const std::string& msg) {
 }
 
 /**
- * @brief Utility function to read a global string attribute.
+ * @brief Utility function to read all global attributes into a map.
  */
-[[nodiscard]] std::string read_global_attribute(const int ncid, const char* attname) {
-    std::size_t len = 0;
-    if (nc_inq_attlen(ncid, NC_GLOBAL, attname, &len) == NC_NOERR) {
-        std::string val(len, '\0');
-        if (nc_get_att_text(ncid, NC_GLOBAL, attname, val.data()) == NC_NOERR) {
-            while (!val.empty() && (val.back() == '\0' || val.back() == ' ')) {
-                val.pop_back();
+[[nodiscard]] std::map<std::string, std::string> read_all_global_attributes(const int ncid) {
+    std::map<std::string, std::string> attrs;
+    int num_atts = 0;
+    if (nc_inq_natts(ncid, &num_atts) != NC_NOERR) {
+        return attrs;
+    }
+
+    for (int i = 0; i < num_atts; ++i) {
+        char name[NC_MAX_NAME + 1];
+        if (nc_inq_attname(ncid, NC_GLOBAL, i, name) != NC_NOERR) {
+            continue;
+        }
+
+        nc_type xtype = NC_NAT;
+        std::size_t len = 0;
+        if (nc_inq_att(ncid, NC_GLOBAL, name, &xtype, &len) != NC_NOERR) {
+            continue;
+        }
+
+        if (xtype == NC_CHAR) {
+            std::string val(len, '\0');
+            if (nc_get_att_text(ncid, NC_GLOBAL, name, val.data()) == NC_NOERR) {
+                while (!val.empty() && (val.back() == '\0' || val.back() == ' ')) {
+                    val.pop_back();
+                }
+                attrs[name] = val;
             }
-            return val;
         }
     }
-    return "";
+    return attrs;
 }
 
 /**
@@ -159,11 +178,19 @@ UgridGrid read_ugrid_nc(const std::filesystem::path& filepath) {
     grid.n_nodes = read_dim_len("nMesh2_node");
     grid.max_face_nodes = read_dim_len("nMaxMesh2_face_nodes");
 
-    // Read global attributes
-    grid.title = read_global_attribute(ncid, "title");
-    grid.source = read_global_attribute(ncid, "source");
-    grid.bathy_source = read_global_attribute(ncid, "bathy_source");
-    grid.conventions = read_global_attribute(ncid, "Conventions");
+    // Read all global attributes
+    grid.global_attrs = read_all_global_attributes(ncid);
+    auto get_attr = [&grid](const std::string& key) -> std::string {
+        auto it = grid.global_attrs.find(key);
+        return (it != grid.global_attrs.end()) ? it->second : "";
+    };
+
+    grid.title = get_attr("title");
+    grid.source = get_attr("source");
+    grid.bathy_source = get_attr("bathy_source");
+    grid.bound_source = get_attr("bound_source");
+    grid.conventions = get_attr("Conventions");
+    grid.history = get_attr("history");
 
     const std::size_t num_2d = grid.ny * grid.nx;
     const std::size_t num_faces = grid.n_faces;

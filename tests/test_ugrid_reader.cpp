@@ -96,6 +96,8 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithObstructions) {
     EXPECT_FALSE(grid.conventions.empty());
     EXPECT_FALSE(grid.source.empty());
     EXPECT_EQ(grid.bathy_source, "etopo2");
+    EXPECT_FALSE(grid.global_attrs.empty());
+    EXPECT_EQ(grid.global_attrs.at("bathy_source"), "etopo2");
 
     // Verify obstruction flags
     EXPECT_TRUE(grid.has_obsx);
