@@ -37,11 +37,11 @@ The package requires Python 3.9+ and the following scientific Python libraries:
 - `shapely` (>= 2.0)
 - `matplotlib` (>= 3.5)
 
-For building the optional C++ reader library (`ww4_ugrid_reader`) and metadata inspection tools (`ww4_read_grid`), the following system packages are required:
+For building the optional C++ reader library (`ww4_ugrid_reader`), metadata inspection tools (`ww4_read_grid`), and unit tests, the following system packages or submodules are required:
 - C++20 compliant compiler (`GCC 11+` or `Clang 13+`)
 - `CMake` (>= 3.20)
-- `libnetcdf-dev` (NetCDF C development library)
-- `libgtest-dev` (GoogleTest development headers and library)
+- `libnetcdf-dev` (NetCDF C development library, or included via `externals/netcdf-c`)
+- `libgtest-dev` (GoogleTest development headers, or included via `externals/googletest`)
 
 ## Installation
 
@@ -68,7 +68,9 @@ export PATH="${PATH}:$(pwd):$(pwd)/bin"
 
 ## External Submodules (`externals/`)
 
-All third-party external dependencies managed as Git submodules (such as `netcdf-c`) are located in the `externals/` directory.
+All third-party external C++ dependencies managed as Git submodules are located in the `externals/` directory:
+- **`externals/netcdf-c`**: Unidata NetCDF-C library for NetCDF-4 file I/O operations.
+- **`externals/googletest`**: GoogleTest framework for C++ unit testing.
 
 ### Loading External Submodules Before Compilation
 
@@ -86,15 +88,15 @@ To verify that all external submodules in `externals/` are properly populated be
 git submodule status
 ```
 
-You should see a commit hash and the path `externals/netcdf-c` without a leading minus sign (`-`).
+You should see commit hashes for both `externals/netcdf-c` and `externals/googletest` without a leading minus sign (`-`).
 
 ## Building and Compiling C++ Tools
 
-The repository contains a C++20 NetCDF-UGRID reader library (`ww4_ugrid_reader`) and a grid metadata printer utility program (`ww4_read_grid`).
+The repository contains a C++20 NetCDF-UGRID reader library (`ww4_ugrid_reader`), a grid metadata printer utility program (`ww4_read_grid`), and GoogleTest unit tests.
 
 ### Prerequisites (Ubuntu / Debian)
 
-Ensure the C++ toolchain and NetCDF/GoogleTest development packages are installed:
+System libraries are optional if submodules in `externals/` are populated:
 
 ```bash
 sudo apt-get update
@@ -109,6 +111,8 @@ First, ensure external submodules in `externals/` are fetched (`git submodule up
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
+
+The CMake build automatically checks for system libraries first and seamlessly falls back to using `externals/netcdf-c` and `externals/googletest` submodules when system libraries are missing.
 
 This compiles the following targets in the `build/` directory:
 - `libww4_ugrid_reader.a`: C++ static library providing `ww4::io::read_ugrid_nc()`.

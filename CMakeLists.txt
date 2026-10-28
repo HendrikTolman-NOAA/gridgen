@@ -19,12 +19,34 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
-# Find NetCDF C library
-find_library(NETCDF_LIBRARY NAMES netcdf REQUIRED)
-find_path(NETCDF_INCLUDE_DIR NAMES netcdf.h REQUIRED)
+# Find NetCDF C library (check system first, fallback to externals/netcdf-c if present)
+find_library(NETCDF_LIBRARY NAMES netcdf)
+find_path(NETCDF_INCLUDE_DIR NAMES netcdf.h)
 
-# Find GoogleTest
-find_package(GTest REQUIRED)
+if(NOT NETCDF_LIBRARY OR NOT NETCDF_INCLUDE_DIR)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/externals/netcdf-c/CMakeLists.txt")
+        message(STATUS "NetCDF library not found in system paths; using externals/netcdf-c submodule.")
+        add_subdirectory(externals/netcdf-c)
+        set(NETCDF_LIBRARY netcdf)
+        set(NETCDF_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/netcdf-c/include")
+    else()
+        message(FATAL_ERROR "Could not find NetCDF C library in system paths or in externals/netcdf-c. Please run 'git submodule update --init --recursive'.")
+    endif()
+endif()
+
+# Find GoogleTest (check system first, fallback to externals/googletest)
+find_package(GTest QUIET)
+
+if(NOT GTest_FOUND)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/externals/googletest/CMakeLists.txt")
+        message(STATUS "GoogleTest not found in system paths; using externals/googletest submodule.")
+        set(BUILD_GMOCK OFF CACHE BOOL "Build gmock" FORCE)
+        set(INSTALL_GTEST OFF CACHE BOOL "Install gtest" FORCE)
+        add_subdirectory(externals/googletest)
+    else()
+        message(FATAL_ERROR "Could not find GoogleTest in system paths or in externals/googletest. Please run 'git submodule update --init --recursive'.")
+    endif()
+endif()
 
 # NetCDF-UGRID reader library
 add_library(ww4_ugrid_reader
@@ -55,11 +77,19 @@ add_executable(test_ugrid_reader
     tests/test_ugrid_reader.cpp
 )
 
-target_link_libraries(test_ugrid_reader PRIVATE
-    ww4_ugrid_reader
-    GTest::gtest
-    GTest::gtest_main
-)
+if(TARGET GTest::gtest_main)
+    target_link_libraries(test_ugrid_reader PRIVATE
+        ww4_ugrid_reader
+        GTest::gtest
+        GTest::gtest_main
+    )
+else()
+    target_link_libraries(test_ugrid_reader PRIVATE
+        ww4_ugrid_reader
+        gtest
+        gtest_main
+    )
+endif()
 
 include(GoogleTest)
 gtest_discover_tests(test_ugrid_reader)
