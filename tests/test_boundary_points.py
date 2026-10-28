@@ -111,8 +111,22 @@ def test_cli_boundary_points_optional_range(tmp_path) -> None:
     import subprocess
     from pathlib import Path
 
+    import xarray as xr
+
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "run_gridgen.sh"
+
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    lon_ref = np.linspace(-70.0, -60.0, 10)
+    lat_ref = np.linspace(20.0, 30.0, 10)
+    z_ref = np.full((10, 10), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z_ref)},
+        coords={"x": lon_ref, "y": lat_ref},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
 
     # 1. Execute run_gridgen.sh with --boundary-points without range arguments
     out_nc1 = tmp_path / "bnd_no_range_ugrid.nc"
@@ -133,6 +147,8 @@ def test_cli_boundary_points_optional_range(tmp_path) -> None:
             "-60",
             "--lat-end",
             "30",
+            "-r",
+            str(ref_dir),
             "-o",
             str(tmp_path),
             "--boundary-points",
@@ -164,6 +180,8 @@ def test_cli_boundary_points_optional_range(tmp_path) -> None:
             "-60",
             "--lat-end",
             "30",
+            "-r",
+            str(ref_dir),
             "-o",
             str(tmp_path),
             "--boundary-points",
