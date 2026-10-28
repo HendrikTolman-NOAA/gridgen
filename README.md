@@ -47,17 +47,11 @@ For building the optional C++ reader library (`ww4_ugrid_reader`) and metadata i
 
 It is assumed that basic Python (v3.9 or higher) is installed already on your system.
 
-To create a local clone of the repository and initialize submodules:
+To create a local clone of the repository and automatically pull external Git submodules into `externals/`:
 
 ```bash
 git clone --recursive https://github.com/NOAA-EMC/gridgen
 cd gridgen
-```
-
-If you cloned without `--recursive`, you can initialize the submodules at any time:
-
-```bash
-git submodule update --init --recursive
 ```
 
 It may be handy to add the root `gridgen` directory to your Python search path (`PYTHONPATH`):
@@ -71,6 +65,28 @@ Additionally, to execute utility scripts and binaries directly from any director
 ```bash
 export PATH="${PATH}:$(pwd):$(pwd)/bin"
 ```
+
+## External Submodules (`externals/`)
+
+All third-party external dependencies managed as Git submodules (such as `netcdf-c`) are located in the `externals/` directory.
+
+### Loading External Submodules Before Compilation
+
+Before compiling the C++ toolchain or running CMake, you **must ensure that all external submodules in `externals/` are fetched and initialized**.
+
+If you cloned the repository without the `--recursive` flag, initialize and load all externals by running:
+
+```bash
+git submodule update --init --recursive
+```
+
+To verify that all external submodules in `externals/` are properly populated before building:
+
+```bash
+git submodule status
+```
+
+You should see a commit hash and the path `externals/netcdf-c` without a leading minus sign (`-`).
 
 ## Building and Compiling C++ Tools
 
@@ -87,7 +103,7 @@ sudo apt-get install -y build-essential cmake libnetcdf-dev libgtest-dev
 
 ### Build Instructions
 
-Build the C++ static library, metadata utility binary, and unit test runner using CMake:
+First, ensure external submodules in `externals/` are fetched (`git submodule update --init --recursive`), then build the C++ static library, metadata utility binary, and unit test runner using CMake:
 
 ```bash
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
