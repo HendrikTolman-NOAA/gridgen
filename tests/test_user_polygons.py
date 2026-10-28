@@ -405,7 +405,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     assert len(japan_polys) == 7
 
     # Tokyo Bay test point (139.8°E, 35.5°N)
-    tokyo_poly = [p for p in japan_polys if "Tokyo Bay" in p.get("name", "")][0]
+    tokyo_poly = next(p for p in japan_polys if "Tokyo Bay" in p.get("name", ""))
     lon_tb, lat_tb = create_regular_grid(
         NX=3, NY=3, LON_START=139.7, LON_END=139.9, LAT_START=35.4, LAT_END=35.6
     )
