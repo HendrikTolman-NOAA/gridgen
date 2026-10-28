@@ -1,5 +1,5 @@
 # WAVEWATCH Optional Coastal Polygon Database (Plain Text Format)
-# Total Polygons: 61
+# Total Polygons: 71
 #
 # Polygon 1: Caspian Sea (Level: 1, Points: 17)
      49.800000      37.500000
@@ -279,7 +279,96 @@
     142.723214      52.824497
     140.133929      53.263254
 
-# Polygon 24: USA East Coast - Long Island Sound (Level: 1, Points: 19)
+
+
+# Polygon 24: Japan: Uchiura Bay (Level: 1, Points: 6)
+    140.350000      42.250000
+    140.550000      42.000000
+    140.950000      42.000000
+    141.000000      42.600000
+    140.350000      42.600000
+    140.350000      42.250000
+
+# Polygon 25: Japan: Mutsu Bay (Level: 1, Points: 7)
+    140.600000      41.350000
+    140.680000      41.350000
+    141.350000      41.150000
+    141.350000      40.850000
+    140.650000      40.850000
+    140.550000      41.100000
+    140.600000      41.350000
+
+# Polygon 26: Japan: Tokyo Bay (Level: 1, Points: 7)
+    139.670000      35.250000
+    139.780000      35.250000
+    140.150000      35.600000
+    140.100000      35.750000
+    139.600000      35.700000
+    139.600000      35.350000
+    139.670000      35.250000
+
+# Polygon 27: Japan: Ise Bay (Level: 1, Points: 7)
+    136.880000      34.620000
+    136.980000      34.620000
+    137.100000      35.100000
+    136.600000      35.200000
+    136.500000      34.800000
+    136.800000      34.500000
+    136.880000      34.620000
+
+# Polygon 28: Japan: Osaka Bay (Level: 1, Points: 7)
+    134.930000      34.250000
+    135.050000      34.250000
+    135.550000      34.700000
+    135.250000      34.800000
+    134.900000      34.600000
+    134.850000      34.350000
+    134.930000      34.250000
+
+# Polygon 29: Japan: Seto Inland Sea (Level: 1, Points: 7)
+    130.900000      33.900000
+    132.000000      33.500000
+    135.000000      34.100000
+    135.200000      34.700000
+    133.500000      34.800000
+    131.000000      34.100000
+    130.900000      33.900000
+
+# Polygon 30: Japan: Yamaguchi Bay (Level: 1, Points: 6)
+    131.350000      33.950000
+    131.500000      33.950000
+    131.500000      34.080000
+    131.350000      34.080000
+    131.350000      33.950000
+    131.350000      33.950000
+
+# Polygon 31: Japan: Ariake Sea (Level: 1, Points: 7)
+    130.150000      32.550000
+    130.300000      32.550000
+    130.650000      33.150000
+    130.300000      33.150000
+    130.050000      32.900000
+    130.050000      32.650000
+    130.150000      32.550000
+
+# Polygon 32: Japan: Kagoshima Bay (Level: 1, Points: 7)
+    130.630000      31.250000
+    130.730000      31.250000
+    130.850000      31.750000
+    130.500000      31.750000
+    130.500000      31.350000
+    130.580000      31.250000
+    130.630000      31.250000
+
+# Polygon 33: Japan: Omura Bay (Level: 1, Points: 7)
+    129.820000      33.020000
+    129.880000      33.020000
+    130.000000      33.050000
+    130.000000      32.800000
+    129.750000      32.800000
+    129.750000      32.950000
+    129.820000      33.020000
+# Polygon 34: USA East Coast - Long Island Sound (Level: 1, Points: 19)
     -71.826637      41.384826
     -72.243304      41.393967
     -72.912946      41.348263
@@ -300,7 +389,7 @@
     -71.856399      41.339122
     -71.826637      41.384826
 
-# Polygon 25: USA East Coast - Delaware Bay (Level: 1, Points: 11)
+# Polygon 35: USA East Coast - Delaware Bay (Level: 1, Points: 11)
     -74.855655      39.204753
     -75.480655      39.548446
     -75.355655      39.837294
@@ -313,7 +402,7 @@
     -74.805060      39.146252
     -74.855655      39.204753
 
-# Polygon 26: USA East Coast - Atlantic City (Level: 1, Points: 10)
+# Polygon 36: USA East Coast - Atlantic City (Level: 1, Points: 10)
     -74.060268      40.106033
     -74.197173      40.069470
     -74.360863      39.594150
@@ -325,7 +414,7 @@
     -74.040923      40.109689
     -74.060268      40.106033
 
-# Polygon 27: USA East Coast - Chesapeake Bay + Ocean City (Level: 1, Points: 21)
+# Polygon 37: USA East Coast - Chesapeake Bay + Ocean City (Level: 1, Points: 21)
     -76.002232      39.696527
     -76.886161      39.191956
     -77.609375      38.489945
@@ -348,7 +437,7 @@
     -75.872768      39.681901
     -76.002232      39.696527
 
-# Polygon 28: USA East Coast - Pamlico Sound (Level: 1, Points: 31)
+# Polygon 38: USA East Coast - Pamlico Sound (Level: 1, Points: 31)
     -76.078125      36.674589
     -77.319196      35.694698
     -77.555804      34.817185
@@ -381,7 +470,7 @@
     -75.993304      36.747715
     -76.078125      36.674589
 
-# Polygon 29: USA East Coast - Cape Canaveral (Level: 1, Points: 20)
+# Polygon 39: USA East Coast - Cape Canaveral (Level: 1, Points: 20)
     -80.752232      28.761426
     -80.984375      28.673675
     -80.493304      27.000914
@@ -403,7 +492,7 @@
     -80.560268      28.520110
     -80.752232      28.761426
 
-# Polygon 30: USA Gulf Coast - Charlotte Harbour (Level: 1, Points: 14)
+# Polygon 40: USA Gulf Coast - Charlotte Harbour (Level: 1, Points: 14)
     -82.028274      27.080439
     -82.337798      27.069470
     -82.412202      27.007313
@@ -419,7 +508,7 @@
     -81.593750      26.714808
     -82.028274      27.080439
 
-# Polygon 31: USA Gulf Coast - Tampa Bay (Level: 1, Points: 20)
+# Polygon 41: USA Gulf Coast - Tampa Bay (Level: 1, Points: 20)
     -82.611607      28.146252
     -82.760417      28.036563
     -82.825893      28.058501
@@ -441,7 +530,7 @@
     -82.364583      28.091408
     -82.611607      28.146252
 
-# Polygon 32: USA Gulf Coast - Panama City (Level: 1, Points: 20)
+# Polygon 42: USA Gulf Coast - Panama City (Level: 1, Points: 20)
     -85.735119      30.387569
     -85.967262      30.288848
     -85.907738      30.226691
@@ -463,7 +552,7 @@
     -85.294643      30.376600
     -85.735119      30.387569
 
-# Polygon 33: USA Gulf Coast - Mobile Bay (Level: 1, Points: 20)
+# Polygon 43: USA Gulf Coast - Mobile Bay (Level: 1, Points: 20)
     -87.973214      30.815356
     -88.360119      30.577697
     -88.151786      30.343693
@@ -485,7 +574,7 @@
     -86.068452      30.680073
     -87.973214      30.815356
 
-# Polygon 34: USA Gulf Coast - Lake Pontchartrain (Level: 1, Points: 8)
+# Polygon 44: USA Gulf Coast - Lake Pontchartrain (Level: 1, Points: 8)
     -90.497024      30.413163
     -90.497024      30.124314
     -90.312500      29.963437
@@ -495,7 +584,7 @@
     -90.169643      30.438757
     -90.497024      30.413163
 
-# Polygon 35: USA Gulf Coast - Grand Isle (Level: 1, Points: 11)
+# Polygon 45: USA Gulf Coast - Grand Isle (Level: 1, Points: 11)
     -90.020833      29.638026
     -90.348214      29.597806
     -90.139881      29.148080
@@ -508,7 +597,7 @@
     -89.854167      29.608775
     -90.020833      29.638026
 
-# Polygon 36: USA Gulf Coast - Sabine Lake (Level: 1, Points: 6)
+# Polygon 46: USA Gulf Coast - Sabine Lake (Level: 1, Points: 6)
     -93.731027      30.050823
     -94.045759      29.910420
     -93.878348      29.688117
@@ -516,7 +605,7 @@
     -93.650670      29.799269
     -93.731027      30.050823
 
-# Polygon 37: USA Gulf Coast - Galveston Bay (Level: 1, Points: 14)
+# Polygon 47: USA Gulf Coast - Galveston Bay (Level: 1, Points: 14)
     -94.722098      29.869470
     -95.030134      29.758318
     -95.157366      29.448263
@@ -532,7 +621,7 @@
     -94.467634      29.711517
     -94.722098      29.869470
 
-# Polygon 38: USA Gulf Coast - Padre Island (Level: 1, Points: 26)
+# Polygon 48: USA Gulf Coast - Padre Island (Level: 1, Points: 26)
     -96.878348      28.776965
     -97.640997      28.170018
     -97.853051      27.329068
@@ -560,7 +649,7 @@
     -96.484003      28.930530
     -96.878348      28.776965
 
-# Polygon 39: Mexico Gulf Coast - Laguna Madre (Level: 1, Points: 10)
+# Polygon 49: Mexico Gulf Coast - Laguna Madre (Level: 1, Points: 10)
     -97.414062      25.499086
     -97.927455      25.499086
     -97.916295      23.663620
@@ -572,7 +661,7 @@
     -97.361979      25.404022
     -97.414062      25.499086
 
-# Polygon 40: Mexico Gulf Coast - Tamiahua (Level: 1, Points: 11)
+# Polygon 50: Mexico Gulf Coast - Tamiahua (Level: 1, Points: 11)
     -97.838170      22.097806
     -97.562872      21.094150
     -97.421503      21.242230
@@ -585,7 +674,7 @@
     -97.774926      22.097806
     -97.838170      22.097806
 
-# Polygon 41: Mexico Gulf Coast - Paso Real (Level: 1, Points: 8)
+# Polygon 51: Mexico Gulf Coast - Paso Real (Level: 1, Points: 8)
     -91.288690      18.921389
     -91.592262      18.745887
     -91.758929      18.672761
@@ -595,7 +684,7 @@
     -91.080357      18.760512
     -91.288690      18.921389
 
-# Polygon 42: Mexico Gulf Coast - Belize (Level: 1, Points: 10)
+# Polygon 52: Mexico Gulf Coast - Belize (Level: 1, Points: 10)
     -88.104167      18.957952
     -88.514881      18.555759
     -88.431548      17.809872
@@ -607,7 +696,7 @@
     -87.901786      19.009141
     -88.104167      18.957952
 
-# Polygon 43: Honduras Gulf Coast - Laguna Caratasca (Level: 1, Points: 10)
+# Polygon 53: Honduras Gulf Coast - Laguna Caratasca (Level: 1, Points: 10)
     -83.508929      15.281536
     -83.669643      15.347349
     -83.776786      15.391225
@@ -619,7 +708,7 @@
     -83.532738      15.106033
     -83.508929      15.281536
 
-# Polygon 44: Nicaragua Gulf Coast (Level: 1, Points: 17)
+# Polygon 54: Nicaragua Gulf Coast (Level: 1, Points: 17)
     -83.568452      13.065814
     -83.836310      12.802559
     -83.937500      12.122486
@@ -638,7 +727,7 @@
     -83.550595      13.032907
     -83.568452      13.065814
 
-# Polygon 45: Panama Gulf Coast (Level: 1, Points: 16)
+# Polygon 55: Panama Gulf Coast (Level: 1, Points: 16)
     -82.550595       9.405850
     -82.473214       9.047532
     -82.145833       8.872029
@@ -656,7 +745,7 @@
     -82.383929       9.409506
     -82.550595       9.405850
 
-# Polygon 46: Columbia Gulf Coast (Level: 1, Points: 8)
+# Polygon 56: Columbia Gulf Coast (Level: 1, Points: 8)
     -74.170387      11.043876
     -74.289435      10.978062
     -74.423363      10.978062
@@ -666,7 +755,7 @@
     -74.200149      10.934186
     -74.170387      11.043876
 
-# Polygon 47: Venezuela Gulf Coast - Lago de Maracaibo (Level: 1, Points: 14)
+# Polygon 57: Venezuela Gulf Coast - Lago de Maracaibo (Level: 1, Points: 14)
     -71.826637      11.054845
     -72.191220      10.539305
     -72.325149       9.683729
@@ -682,7 +771,7 @@
     -71.729911      11.043876
     -71.826637      11.054845
 
-# Polygon 48: Venezuela Gulf Coast - Gulf of Paria (Level: 1, Points: 18)
+# Polygon 58: Venezuela Gulf Coast - Gulf of Paria (Level: 1, Points: 18)
     -61.439732      10.714808
     -61.610863      10.703839
     -61.953125      10.692870
@@ -702,7 +791,7 @@
     -61.104911      10.769653
     -61.439732      10.714808
 
-# Polygon 49: Brazil East Coast - Amazon Delta (Level: 1, Points: 7)
+# Polygon 59: Brazil East Coast - Amazon Delta (Level: 1, Points: 7)
     -58.537946       7.303473
     -58.738839       6.535649
     -58.776042       6.224863
@@ -711,7 +800,7 @@
     -58.485863       7.248629
     -58.537946       7.303473
 
-# Polygon 50: Alaska - Cook Inlet (Level: 1, Points: 28)
+# Polygon 60: Alaska - Cook Inlet (Level: 1, Points: 28)
    -149.603803      61.937500
    -150.871632      61.830357
    -152.028526      61.633929
@@ -741,7 +830,7 @@
    -148.652932      61.580357
    -149.603803      61.937500
 
-# Polygon 51: Alaska - Prince William Sound (Level: 1, Points: 30)
+# Polygon 61: Alaska - Prince William Sound (Level: 1, Points: 30)
    -148.470681      61.669643
    -148.676704      60.919643
    -148.740095      60.401786
@@ -773,7 +862,7 @@
    -145.412044      61.919643
    -148.470681      61.669643
 
-# Polygon 52: Alaska - Yakutat Bay (Level: 1, Points: 12)
+# Polygon 62: Alaska - Yakutat Bay (Level: 1, Points: 12)
    -140.079239      60.419643
    -140.301109      59.866071
    -140.348653      59.705357
@@ -787,7 +876,7 @@
    -139.033281      60.348214
    -140.079239      60.419643
 
-# Polygon 53: Alaska - Alexander Archipelago (Level: 1, Points: 48)
+# Polygon 63: Alaska - Alexander Archipelago (Level: 1, Points: 48)
    -137.107765      59.651786
    -137.393027      58.508929
    -137.107765      58.401786
@@ -837,7 +926,7 @@
    -134.936609      59.758929
    -137.107765      59.651786
 
-# Polygon 54: Canada West Coast (Level: 1, Points: 43)
+# Polygon 64: Canada West Coast (Level: 1, Points: 43)
    -129.920761      56.473214
    -130.332805      55.901786
    -130.412044      55.169643
@@ -882,7 +971,7 @@
    -129.270998      56.866071
    -129.920761      56.473214
 
-# Polygon 55: US/Canada West Coast - Strait of Juan de Fuca + Puget Sound (Level: 1, Points: 64)
+# Polygon 65: US/Canada West Coast - Strait of Juan de Fuca + Puget Sound (Level: 1, Points: 64)
    -126.188590      51.334821
    -126.664025      51.031250
    -127.408875      50.986607
@@ -948,7 +1037,7 @@
    -126.251981      51.540179
    -126.188590      51.334821
 
-# Polygon 56: US West Coast - Columbia River Estuary (Level: 1, Points: 21)
+# Polygon 66: US West Coast - Columbia River Estuary (Level: 1, Points: 21)
    -124.183043      47.156250
    -124.159271      46.995536
    -124.167195      46.941964
@@ -971,7 +1060,7 @@
    -124.072108      47.281250
    -124.183043      47.156250
 
-# Polygon 57: US West Coast - San Francisco Harbor (Level: 1, Points: 16)
+# Polygon 67: US West Coast - San Francisco Harbor (Level: 1, Points: 16)
    -122.801109      37.986607
    -122.721870      37.897321
    -122.618859      37.888393
@@ -989,7 +1078,7 @@
    -122.698098      38.174107
    -122.801109      37.986607
 
-# Polygon 58: West Coast - Lake Ojo de Liebre (Level: 1, Points: 21)
+# Polygon 68: West Coast - Lake Ojo de Liebre (Level: 1, Points: 21)
    -113.993661      28.298214
    -114.088748      28.276786
    -114.101426      28.241071
@@ -1012,7 +1101,7 @@
    -113.736926      28.366071
    -113.993661      28.298214
 
-# Polygon 59: West Coast - Laguna S. Ignacio (Level: 1, Points: 39)
+# Polygon 69: West Coast - Laguna S. Ignacio (Level: 1, Points: 39)
    -113.272583      27.076786
    -113.621236      26.948214
    -113.729002      26.798214
@@ -1053,7 +1142,7 @@
    -112.812995      27.087500
    -113.272583      27.076786
 
-# Polygon 60: West Coast - Bay of Magdalena (Level: 1, Points: 34)
+# Polygon 70: West Coast - Bay of Magdalena (Level: 1, Points: 34)
    -111.961173      25.844643
    -112.103803      25.716071
    -112.111727      25.373214
@@ -1089,7 +1178,7 @@
    -111.739303      25.812500
    -111.961173      25.844643
 
-# Polygon 61: West Coast - Gulf of California (Level: 1, Points: 56)
+# Polygon 71: West Coast - Gulf of California (Level: 1, Points: 56)
    -113.843106      32.281250
    -114.353407      32.093750
    -114.908082      31.879464

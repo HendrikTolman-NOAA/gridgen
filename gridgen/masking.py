@@ -802,6 +802,7 @@ def load_user_polygons(
 
         active_polygons.append(
             {
+                "name": bound_obj.get("name", "") if isinstance(bound_obj, dict) else str(getattr(bound_obj, "name", "")),
                 "x": bx,
                 "y": by,
                 "n": len(bx),

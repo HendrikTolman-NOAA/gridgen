@@ -21,41 +21,51 @@
 21 1 	 Sea of Okhotsk - Guba Yakshina
 22 1 	 Sea of Okhotsk - Zaliv Akademii
 23 0 	 Sea of Japan
-24 1 	 USA East Coast - Long Island Sound
-25 1 	 USA East Coast - Delaware Bay
-26 1 	 USA East Coast - Atlantic City
-27 1 	 USA East Coast - Chesapeake Bay + Ocean City
-28 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
-29 1 	 USA East Coast - Cape Canaveral (Florida)
-30 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
-31 1 	 USA Gulf Coast - Tampa Bay (Florida)
-32 1 	 USA Gulf Coast - Panama City (Florida)
-33 1 	 USA Gulf Coast - Mobile Bay (Alabama)
-34 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
-35 1 	 USA Gulf Coast - Grand Isle (New Orleans)
-36 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
-37 1 	 USA Gulf Coast - Galveston Bay (Texas)
-38 1 	 USA Gulf Coast - Padre Island (Texas)
-39 1 	 Mexico Gulf Coast - Laguna Madre
-40 1 	 Mexico Gulf Coast - Tamiahua
-41 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
-42 1 	 Mexico Gulf Coast - Belize (Yukatan)
-43 1 	 Honduras Gulf Coast - Laguna Caratasca
-44 1 	 Nicaragua Gulf Coast
-45 1 	 Panama Gulf Coast
-46 1 	 Columbia Gulf Coast
-47 1 	 Venezuela Gulf Coast - Lago de Maracaibo
-48 1 	 Venezuela Gulf Coast - Gulf of Paria
-49 1 	 Brazil East Coast - Amazon Delta
-50 1 	 Alaska - Cook Inlet
-51 1 	 Alaska - Prince William Sound
-52 1 	 Alaska - Yakutat Bay
-53 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
-54 1 	 Canada West Coast
-55 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
-56 1 	 US West Coast - Columbia River Estuary
-57 1 	 US West Coast - San Francisco Harbor
-58 1 	 West Coast - Lake Ojo de Liebre (Baja California)
-59 1 	 West Coast - Laguna S. Ignacio (Baja California)
-60 1 	 West Coast - Bay of Magdalena (Baja California)
-61 0 	 West Coast - Gulf of California (Baja California)
+24 1 	 Japan: Uchiura Bay
+25 1 	 Japan: Mutsu Bay
+26 1 	 Japan: Tokyo Bay
+27 1 	 Japan: Ise Bay
+28 1 	 Japan: Osaka Bay
+29 1 	 Japan: Seto Inland Sea
+30 1 	 Japan: Yamaguchi Bay
+31 1 	 Japan: Ariake Sea
+32 1 	 Japan: Kagoshima Bay
+33 1 	 Japan: Omura Bay
+34 1 	 USA East Coast - Long Island Sound
+35 1 	 USA East Coast - Delaware Bay
+36 1 	 USA East Coast - Atlantic City
+37 1 	 USA East Coast - Chesapeake Bay + Ocean City
+38 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
+39 1 	 USA East Coast - Cape Canaveral (Florida)
+40 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
+41 1 	 USA Gulf Coast - Tampa Bay (Florida)
+42 1 	 USA Gulf Coast - Panama City (Florida)
+43 1 	 USA Gulf Coast - Mobile Bay (Alabama)
+44 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
+45 1 	 USA Gulf Coast - Grand Isle (New Orleans)
+46 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
+47 1 	 USA Gulf Coast - Galveston Bay (Texas)
+48 1 	 USA Gulf Coast - Padre Island (Texas)
+49 1 	 Mexico Gulf Coast - Laguna Madre
+50 1 	 Mexico Gulf Coast - Tamiahua
+51 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
+52 1 	 Mexico Gulf Coast - Belize (Yukatan)
+53 1 	 Honduras Gulf Coast - Laguna Caratasca
+54 1 	 Nicaragua Gulf Coast
+55 1 	 Panama Gulf Coast
+56 1 	 Columbia Gulf Coast
+57 1 	 Venezuela Gulf Coast - Lago de Maracaibo
+58 1 	 Venezuela Gulf Coast - Gulf of Paria
+59 1 	 Brazil East Coast - Amazon Delta
+60 1 	 Alaska - Cook Inlet
+61 1 	 Alaska - Prince William Sound
+62 1 	 Alaska - Yakutat Bay
+63 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
+64 1 	 Canada West Coast
+65 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
+66 1 	 US West Coast - Columbia River Estuary
+67 1 	 US West Coast - San Francisco Harbor
+68 1 	 West Coast - Lake Ojo de Liebre (Baja California)
+69 1 	 West Coast - Laguna S. Ignacio (Baja California)
+70 1 	 West Coast - Bay of Magdalena (Baja California)
+71 0 	 West Coast - Gulf of California (Baja California)
