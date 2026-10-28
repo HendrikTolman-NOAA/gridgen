@@ -31,8 +31,8 @@ def test_define_boundary_points_edges() -> None:
 
     m_new = define_boundary_points(mask, lon, lat)
 
-    # Land cell on boundary adjacent to wet neighbor extends boundary up to land
-    assert m_new[0, 0] == 2
+    # Dry land remains 0
+    assert m_new[0, 0] == 0
     # Outer wet cells set to 2
     assert m_new[0, 1] == 2
     assert m_new[4, 4] == 2

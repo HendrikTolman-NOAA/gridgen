@@ -556,6 +556,9 @@ def define_boundary_points(
             if not (in_lat and in_lon):
                 m_new[r, c] = 1
 
+    # Ensure dry land cells (mask == 0) are NEVER converted to boundary points
+    m_new[mask == 0] = 0
+
     num_bnd = int(np.count_nonzero(m_new == 2))
     if num_bnd > 0:
         print(f"Generated {num_bnd} input boundary points (mask value 2).")

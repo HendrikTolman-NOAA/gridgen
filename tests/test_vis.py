@@ -756,12 +756,12 @@ def test_mask_option_removed(tmp_path: Path):
 
 
 def test_vis_boundary_points(tmp_path: Path):
-    """Verify boundary points (mask == 2) are identified and rendered in deep yellow in plots."""
+    """Verify boundary points (mask == 2) are identified, rendered in deep yellow, and do not trigger Orography legend."""
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
     depth = np.full((3, 3), -50.0)
-    # Mask with wet cells (1), dry cell (0), and input boundary cells (2)
+    # Mask with wet cells (1) and input boundary cells (2)
     mask = np.array([[2, 2, 2], [2, 1, 2], [2, 2, 2]])
 
     data = {"lon": lon, "lat": lat, "depth": depth, "mask": mask}
@@ -775,3 +775,8 @@ def test_vis_boundary_points(tmp_path: Path):
     # Check that pcolormesh collections exist for bathymetry, orography, and boundary layer
     collections = ax.collections
     assert len(collections) >= 3
+
+    # Verify Orography colorbar is NOT switched on for purely underwater grid with boundary points
+    labels = [a.get_ylabel() for a in fig.axes if hasattr(a, "get_ylabel")]
+    assert "Bathymetry Depth (m)" in labels
+    assert "Orography (m)" not in labels

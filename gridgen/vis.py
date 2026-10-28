@@ -378,7 +378,7 @@ def plot_grid(
 
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
     bathymetry_mask = (depth <= 0) & (mask != 0) if show_mask else (depth <= 0)
-    orography_mask = (depth > 0) & (depth < 999999.0) & (mask != 0) if show_mask else ((depth > 0) & (depth < 999999.0))
+    orography_mask = (depth > 0) & (depth < 999999.0) & (mask == 1) if show_mask else ((depth > 0) & (depth < 999999.0) & (mask != 2))
     boundary_mask = (mask == 2)
     has_boundary = bool(np.any(boundary_mask))
 
