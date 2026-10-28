@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-10-28
 
 """Unit tests for defining input boundary points in regional grids."""
 
@@ -26,7 +26,7 @@ def test_define_boundary_points_edges() -> None:
         LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
     )
     mask = np.ones((5, 5), dtype=int)
-    # Set one cell to dry land
+    # Set one cell to dry land far from water
     mask[0, 0] = 0
 
     m_new = define_boundary_points(mask, lon, lat)
@@ -68,3 +68,132 @@ def test_modify_mask_alias() -> None:
 
     m_new = modify_mask(mask, lon, lat)
     assert m_new[0, 1] == 2
+
+
+def test_define_boundary_points_count(capsys) -> None:
+    """Test counting and reporting boundary points generated."""
+    lon, lat = create_regular_grid(
+        LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
+    )
+    mask = np.ones((5, 5), dtype=int)
+
+    m_new = define_boundary_points(mask, lon, lat)
+    num_bnd = np.count_nonzero(m_new == 2)
+    assert num_bnd == 16  # 5x5 outer boundary wet cells (4*5 - 4)
+
+    captured = capsys.readouterr()
+    assert "Generated 16 input boundary points" in captured.out
+
+
+def test_define_boundary_points_range() -> None:
+    """Test restricting boundary points to allowed latitude and longitude range."""
+    lon, lat = create_regular_grid(
+        LON_START=0, LON_END=4, LAT_START=0, LAT_END=4, NX=5, NY=5
+    )
+    mask = np.ones((5, 5), dtype=int)
+
+    # Restrict boundary points to lon in [0.0, 2.0] and lat in [0.0, 4.0]
+    m_new = define_boundary_points(mask, lon, lat, bound_range=(0.0, 2.0, 0.0, 4.0))
+
+    # Boundary cells with lon <= 2.0 are kept as 2
+    assert m_new[0, 0] == 2
+    assert m_new[0, 1] == 2
+    assert m_new[0, 2] == 2
+
+    # Boundary cells with lon > 2.0 revert to wet 1
+    assert m_new[0, 3] == 1
+    assert m_new[0, 4] == 1
+    assert m_new[2, 4] == 1
+
+
+def test_cli_boundary_points_optional_range(tmp_path) -> None:
+    """Test gridgen.cli --boundary-points with 0 arguments vs 4 range arguments."""
+    import subprocess
+    from pathlib import Path
+
+    import xarray as xr
+
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    lon_ref = np.linspace(-70.0, -60.0, 10)
+    lat_ref = np.linspace(20.0, 30.0, 10)
+    z_ref = np.full((10, 10), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z_ref)},
+        coords={"x": lon_ref, "y": lat_ref},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
+
+    # 1. Execute run_gridgen.sh with --boundary-points without range arguments
+    out_nc1 = tmp_path / "bnd_no_range_ugrid.nc"
+    res1 = subprocess.run(
+        [
+            str(script_path),
+            "-n",
+            "bnd_no_range",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--lon-start",
+            "-70",
+            "--lat-start",
+            "20",
+            "--lon-end",
+            "-60",
+            "--lat-end",
+            "30",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(tmp_path),
+            "--boundary-points",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res1.returncode == 0
+    assert "Boundary points generated: 36 (mask value 2)." in res1.stdout
+    assert out_nc1.exists()
+
+    # 2. Execute run_gridgen.sh with --boundary-points and 4 real/float range arguments
+    out_nc2 = tmp_path / "bnd_range_ugrid.nc"
+    res2 = subprocess.run(
+        [
+            str(script_path),
+            "-n",
+            "bnd_range",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--lon-start",
+            "-70",
+            "--lat-start",
+            "20",
+            "--lon-end",
+            "-60",
+            "--lat-end",
+            "30",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(tmp_path),
+            "--boundary-points",
+            "-70.5",
+            "-65.2",
+            "20.1",
+            "30.8",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res2.returncode == 0
+    assert "Boundary points generated: 13 (mask value 2)." in res2.stdout
+    assert out_nc2.exists()

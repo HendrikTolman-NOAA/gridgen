@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-10-28
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -92,8 +92,11 @@ def main() -> None:
     )
     gen_group.add_argument(
         "--boundary-points",
-        action="store_true",
-        help="Define input boundary points (mask value 2) along regional grid boundaries",
+        nargs="*",
+        type=float,
+        default=None,
+        metavar="RANGE",
+        help="Define input boundary cells (mask value 2) along regional grid boundaries, optionally specifying allowed range [LON_MIN LON_MAX LAT_MIN LAT_MAX]",
     )
     gen_group.add_argument(
         "--bound-file",
@@ -357,8 +360,20 @@ def main() -> None:
         igl=0,
         lon=lon,
     )
-    if args.boundary_points:
-        m_mod = define_boundary_points(m_mod, lon, lat)
+    if args.boundary_points is not None:
+        if len(args.boundary_points) in (0, 4):
+            b_range = tuple(args.boundary_points) if len(args.boundary_points) == 4 else None
+            m_mod = define_boundary_points(m_mod, lon, lat, bound_range=b_range)
+        else:
+            parser.error(
+                f"--boundary-points expects 0 arguments or 4 arguments [LON_MIN LON_MAX LAT_MIN LAT_MAX], got {len(args.boundary_points)}"
+            )
+
+    num_bnd = int(np.count_nonzero(m_mod == 2))
+    if num_bnd > 0:
+        print(f"  Boundary points generated: {num_bnd} (mask value 2).")
+    else:
+        print("  No boundary points generated.")
 
     # Step 4: Calculate sub-grid obstructions (using shoreline MAT bounds only; user polygons reserved for mask generation)
     print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")

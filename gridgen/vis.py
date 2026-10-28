@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-10-28
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -378,7 +378,9 @@ def plot_grid(
 
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
     bathymetry_mask = (depth <= 0) & (mask != 0) if show_mask else (depth <= 0)
-    orography_mask = (depth > 0) & (depth < 999999.0) & (mask != 0) if show_mask else ((depth > 0) & (depth < 999999.0))
+    orography_mask = (depth > 0) & (depth < 999999.0) & (mask == 1) if show_mask else ((depth > 0) & (depth < 999999.0) & (mask != 2))
+    boundary_mask = (mask == 2)
+    has_boundary = bool(np.any(boundary_mask))
 
     depth_bathy = np.where(bathymetry_mask, depth, np.nan)
     depth_orog = np.where(orography_mask, np.clip(depth, 0.0, vmax_orog), np.nan)
@@ -400,16 +402,19 @@ def plot_grid(
             lat_plot = np.hstack([lat, lat, lat, lat, lat])
             depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
             depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
+            boundary_plot = np.hstack([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
         else:
             lon_plot = np.concatenate([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
             lat_plot = np.concatenate([lat, lat, lat, lat, lat])
             depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
             depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
+            boundary_plot = np.concatenate([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
     else:
         lon_plot = lon
         lat_plot = lat
         depth_bathy_plot = depth_bathy
         depth_orog_plot = depth_orog
+        boundary_plot = boundary_mask
 
     if lon_plot.ndim == 2:
         pcm1 = ax1.pcolormesh(
@@ -421,6 +426,19 @@ def plot_grid(
     else:
         pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
         pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
+
+    if has_boundary:
+        bnd_display = np.where(boundary_plot, 1.0, np.nan)
+        deep_yellow = "#ffcc00"  # Deep yellow color for input boundary cells (mask value 2)
+        cmap_bnd = matplotlib.colors.ListedColormap([deep_yellow])
+        if lon_plot.ndim == 2:
+            ax1.pcolormesh(
+                lon_plot, lat_plot, bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5, shading="nearest"
+            )
+        else:
+            ax1.scatter(
+                lon_plot, lat_plot, c=bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5
+            )
 
     pcm_Obs = None
     if has_obstr:
