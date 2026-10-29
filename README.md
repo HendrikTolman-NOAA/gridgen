@@ -20,6 +20,8 @@
 
 This software package is created for generating grids for WAVEWATCH III and WAVEWATCH IV.
 
+> **Note:** The C++ tools and reader library (`ww4_ugrid_reader`, `ww4_read_grid`) are intended to become part of the main WAVEWATCH IV ([WW4](https://github.com/NOAA-EMC/WW4)) repository once the code is sufficiently mature. However, they are currently being developed within this repository to assure consistency between the Python writing routines (`gridgen`) and C++ reading routines in the interaction between `gridgen` and WW4.
+
 ## Documentation
 
 Documentation is available at three levels:
@@ -100,7 +102,7 @@ System libraries are optional if submodules in `externals/` are populated:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y build-essential cmake libnetcdf-dev libgtest-dev
+sudo apt-get install -y build-essential cmake libnetcdf-dev libhdf5-dev libgtest-dev
 ```
 
 ### Build Instructions
@@ -114,9 +116,9 @@ cmake --build build
 
 The CMake build automatically checks for system libraries first and seamlessly falls back to using `externals/netcdf-c` and `externals/googletest` submodules when system libraries are missing.
 
-This compiles the following targets in the `build/` directory:
+This compiles the following targets:
 - `libww4_ugrid_reader.a`: C++ static library providing `ww4::io::read_ugrid_nc()`.
-- `ww4_read_grid`: Executable metadata inspection program.
+- `exe/ww4_read_grid`: Executable metadata inspection program (placed in `exe/` directory).
 - `test_ugrid_reader`: C++ GoogleTest suite.
 
 ### Running C++ Metadata Printer Utility (`ww4_read_grid`)
@@ -124,13 +126,13 @@ This compiles the following targets in the `build/` directory:
 To inspect global metadata attributes, grid dimensions, bathymetry depth ranges, land/sea cell counts, and obstruction availability of any NetCDF-UGRID grid file:
 
 ```bash
-./build/ww4_read_grid <path_to_grid_file.nc>
+./exe/ww4_read_grid <path_to_grid_file.nc>
 ```
 
 Example usage:
 
 ```bash
-./build/ww4_read_grid ww4_grid_ugrid.nc
+./exe/ww4_read_grid ww4_grid_ugrid.nc
 ```
 
 ### Running C++ Unit Tests

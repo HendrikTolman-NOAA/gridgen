@@ -288,7 +288,7 @@ def create_ugrid_dataset(
 
 
 def write_ugrid_nc(ds: xr.Dataset, filename: str) -> None:
-    """Write UGRID xarray Dataset to NetCDF-4 file.
+    """Write UGRID xarray Dataset to NetCDF file in 64-bit offset format.
 
     Parameters
     ----------
@@ -297,4 +297,4 @@ def write_ugrid_nc(ds: xr.Dataset, filename: str) -> None:
     filename : str
         Target output NetCDF file path.
     """
-    ds.to_netcdf(filename, format="NETCDF4")
+    ds.to_netcdf(filename, format="NETCDF3_64BIT")
