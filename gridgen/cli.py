@@ -386,6 +386,15 @@ def main() -> None:
     print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
     ObsX, ObsY = create_obstr(lon, lat, mat_bounds, m_mod)
 
+    # Determine if grid has global closure (either explicitly requested or NX * SX == 360)
+    is_global_closure = args.global_closure
+    if args.grid_type == "regular":
+        sx_val = args.sx
+        if sx_val is not None and np.isclose(float(args.nx) * float(sx_val), 360.0):
+            is_global_closure = True
+        elif sx_val is None and args.lon_end is None and args.nx == 1440:
+            is_global_closure = True
+
     # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
     print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 grid dataset...")
     ds_ugrid = create_ugrid_dataset(
@@ -400,7 +409,7 @@ def main() -> None:
         bound_source=args.bound_file,
         grid_type=args.grid_type,
         coord_type=args.coord_type,
-        global_closure=args.global_closure,
+        global_closure=is_global_closure,
     )
     nc_path = f"{args.out_dir}/{args.name}_ugrid.nc"
     write_ugrid_nc(ds_ugrid, nc_path)
@@ -438,7 +447,7 @@ def main() -> None:
             bound_source=args.bound_file,
             grid_type=args.grid_type,
             coord_type=args.coord_type,
-            global_closure=args.global_closure,
+            global_closure=is_global_closure,
         )
 
     print("Successfully generated WW4 NetCDF-UGRID grid output!")

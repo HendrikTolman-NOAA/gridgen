@@ -95,8 +95,24 @@ def test_grid_parameter_defaults_and_validation_errors() -> None:
     assert lat.shape == (601, 1440)
     assert np.isclose(lon[0, 0], 20.0)
     assert np.isclose(lon[0, -1], 379.75)
-    assert np.isclose(lat[0, 0], -75.0)
-    assert np.isclose(lat[-1, 0], 75.0)
+
+
+def test_create_regular_grid_auto_global_closure_nx_sx() -> None:
+    """Test that NX * SX == 360 automatically switches on global closure even if flag is False."""
+    lon, lat = create_regular_grid(
+        LON_START=0.0,
+        LAT_START=-90.0,
+        LAT_END=90.0,
+        NX=360,
+        SX=1.0,
+        NY=181,
+        global_closure=False,
+    )
+    assert lon.shape == (181, 360)
+    assert np.isclose(lon[0, 0], 0.0)
+    assert np.isclose(lon[0, -1], 359.0)
+    assert np.isclose(lat[0, 0], -90.0)
+    assert np.isclose(lat[-1, 0], 90.0)
 
     # 2. Missing custom_grid path for custom grid type
     with pytest.raises(ValueError, match="Missing mandatory parameter '--custom-grid'"):

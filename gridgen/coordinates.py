@@ -85,13 +85,16 @@ def create_regular_grid(
     lon_start_val = 0.0 if LON_START is None else float(LON_START)
     lat_start_val = -90.0 if LAT_START is None else float(LAT_START)
 
+    sx_given = SX if SX is not None else (DX if DX is not None else DLON)
     is_global = GLOBAL_CLOSURE or global_closure
+    if sx_given is not None and np.isclose(float(NX) * float(sx_given), 360.0):
+        is_global = True
 
     if is_global:
         sx_val = 360.0 / float(NX)
         lon_end_val = lon_start_val + (NX - 1) * sx_val
     else:
-        sx_val = SX if SX is not None else (DX if DX is not None else DLON)
+        sx_val = sx_given
         if LON_END is None and sx_val is None:
             lon_end_val = 359.75 if (lon_start_val == 0.0 and NX == 1440) else lon_start_val + (NX - 1) * 0.25
         elif LON_END is not None:
