@@ -44,18 +44,14 @@ if(NOT NETCDF_LIBRARY OR NOT NETCDF_INCLUDE_DIR)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/externals/netcdf-c/CMakeLists.txt")
         message(STATUS "NetCDF library not found in system paths; using externals/netcdf-c submodule.")
 
-        # Check if HDF5 is available on the system
-        find_package(HDF5 QUIET COMPONENTS C HL)
-        if(NOT HDF5_FOUND)
-            message(STATUS "HDF5 not found in system paths; building netcdf-c without HDF5 support.")
-            set(NETCDF_ENABLE_HDF5 OFF CACHE BOOL "Disable HDF5 in netcdf-c submodule" FORCE)
-            set(NETCDF_ENABLE_NETCDF4 OFF CACHE BOOL "Disable NetCDF4 in netcdf-c submodule" FORCE)
-        endif()
-
-        # Disable unneeded submodule features to ensure fast, clean builds
-        set(NETCDF_BUILD_UTILITIES OFF CACHE BOOL "Disable netcdf utilities in submodule" FORCE)
-        set(NETCDF_ENABLE_DAP OFF CACHE BOOL "Disable DAP in netcdf-c submodule" FORCE)
+        # Build embedded netcdf-c submodule in standalone mode without HDF5
+        # to ensure builds succeed cleanly on all platforms without requiring external HDF5 development libraries
+        set(NETCDF_ENABLE_HDF5 OFF CACHE BOOL "Disable HDF5 in netcdf-c submodule" FORCE)
+        set(NETCDF_ENABLE_NETCDF4 OFF CACHE BOOL "Disable NetCDF4 in netcdf-c submodule" FORCE)
+        set(NETCDF_ENABLE_NETCDF_4 OFF CACHE BOOL "Disable NetCDF4 in netcdf-c submodule" FORCE)
         set(NETCDF_ENABLE_NCZARR OFF CACHE BOOL "Disable NCZarr in netcdf-c submodule" FORCE)
+        set(NETCDF_ENABLE_DAP OFF CACHE BOOL "Disable DAP in netcdf-c submodule" FORCE)
+        set(NETCDF_BUILD_UTILITIES OFF CACHE BOOL "Disable netcdf utilities in submodule" FORCE)
         set(BUILD_TESTING OFF CACHE BOOL "Disable testing in submodules" FORCE)
 
         add_subdirectory(externals/netcdf-c EXCLUDE_FROM_ALL SYSTEM)
