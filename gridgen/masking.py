@@ -820,27 +820,78 @@ def load_user_polygons(
     return active_polygons
 
 
-def load_mat_polygons(mat_path: str) -> list[dict[str, Any]]:
-    """Load shoreline boundary polygons from a MATLAB MAT file (e.g., coastal_bound_*.mat).
+def resolve_bound_file(bound_input: str, ref_dir: str = "reference_data") -> str | None:
+    """Resolve shoreline boundary MAT file path from a filename, path, or unique identifier (e.g., 'inter', 'coarse', 'high', 'full', 'low').
+
+    Parameters
+    ----------
+    bound_input : str
+        Input string: full file path, filename, or unique resolution identifier (e.g., 'inter', 'coarse', 'low', 'high', 'full').
+    ref_dir : str
+        Reference data directory to search in (default: "reference_data").
+
+    Returns
+    -------
+    str or None
+        Resolved MAT file path, or None if disabled ('none') or not found.
+    """
+    if not bound_input or str(bound_input).strip().lower() == "none":
+        return None
+
+    raw = str(bound_input).strip()
+
+    # If raw is an existing file, return it directly
+    if os.path.isfile(raw):
+        return raw
+
+    clean_stem = raw[:-4] if raw.lower().endswith(".mat") else raw
+
+    # Candidate filename variations
+    name_variations = [
+        raw,
+        f"{raw}.mat" if not raw.lower().endswith(".mat") else raw,
+        f"coastal_bound_{clean_stem}.mat" if not clean_stem.startswith("coastal_bound_") else f"{clean_stem}.mat",
+        f"coastal_bound_{clean_stem}" if not clean_stem.startswith("coastal_bound_") else clean_stem,
+    ]
+
+    # Search directories in order: exact path provided, ref_dir, '.', 'reference_data', 'gridgen_data'
+    search_dirs = ["", ref_dir, ".", "reference_data", "gridgen_data"]
+
+    for d in search_dirs:
+        for name in name_variations:
+            candidate = os.path.join(d, name) if d else name
+            if os.path.isfile(candidate):
+                return candidate
+
+    return None
+
+
+def load_mat_polygons(mat_path: str, ref_dir: str = "reference_data") -> list[dict[str, Any]]:
+    """Load shoreline boundary polygons from a MATLAB MAT file or unique identifier (e.g., 'inter', 'coastal_bound_*.mat').
 
     Parameters
     ----------
     mat_path : str
-        Path to the MATLAB .mat boundary file.
+        Path to the MATLAB .mat boundary file or unique identifier (e.g. 'inter', 'low', 'high').
+    ref_dir : str
+        Reference data directory to search in (default: "reference_data").
 
     Returns
     -------
     polygons : List[Dict[str, Any]]
         List of boundary polygon dictionaries containing 'x', 'y', 'level', etc.
     """
-    if not os.path.exists(mat_path):
+    target_path = resolve_bound_file(mat_path, ref_dir=ref_dir)
+    if not target_path or not os.path.exists(target_path):
         return []
+
+    mat_path = target_path
 
     try:
         from scipy.io import loadmat
 
         mat = loadmat(mat_path)
-    except (OSError, ValueError, TypeError, KeyError):
+    except Exception:
         return []
 
     if "bound" not in mat:
