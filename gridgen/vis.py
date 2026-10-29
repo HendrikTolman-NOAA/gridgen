@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-28
+# @date Latest Update: 2026-10-29
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 from typing import Any
 
@@ -723,6 +724,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Graphically display WAVEWATCH III / IV resulting grid."
     )
+    # Enable parsing negative floats with trailing decimal dots (e.g. -75.)
+    parser._negative_number_matcher = re.compile(r"^-\d+(\.\d*)?$|^-\d*\.\d+$")
     parser.add_argument(
         "-i",
         "--input",

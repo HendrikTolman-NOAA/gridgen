@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-10-29
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -149,33 +149,65 @@ while [[ $# -gt 0 ]]; do
       NAME="$2"
       shift 2
       ;;
+    -n=*|--name=*)
+      NAME="${1#*=}"
+      shift 1
+      ;;
     -g|--grid-type)
       GRID_TYPE="$2"
       shift 2
+      ;;
+    -g=*|--grid-type=*)
+      GRID_TYPE="${1#*=}"
+      shift 1
       ;;
     --lon-start|--LON-START)
       LON_START="$2"
       shift 2
       ;;
+    --lon-start=*|--LON-START=*)
+      LON_START="${1#*=}"
+      shift 1
+      ;;
     --lon-end|--LON-END)
       LON_END="$2"
       shift 2
+      ;;
+    --lon-end=*|--LON-END=*)
+      LON_END="${1#*=}"
+      shift 1
       ;;
     --lat-start|--LAT-START)
       LAT_START="$2"
       shift 2
       ;;
+    --lat-start=*|--LAT-START=*)
+      LAT_START="${1#*=}"
+      shift 1
+      ;;
     --lat-end|--LAT-END)
       LAT_END="$2"
       shift 2
+      ;;
+    --lat-end=*|--LAT-END=*)
+      LAT_END="${1#*=}"
+      shift 1
       ;;
     --sx|--SX)
       SX="$2"
       shift 2
       ;;
+    --sx=*|--SX=*)
+      SX="${1#*=}"
+      shift 1
+      ;;
     --sy|--SY)
       SY="$2"
       shift 2
+      ;;
+    --sy=*|--SY=*)
+      SY="${1#*=}"
+      shift 1
       ;;
     --global-closure|--global|--global-grid)
       GLOBAL_CLOSURE=1
@@ -185,63 +217,132 @@ while [[ $# -gt 0 ]]; do
       CENTER_LON="$2"
       shift 2
       ;;
+    --center-lon=*|--CENTER-LON=*)
+      CENTER_LON="${1#*=}"
+      shift 1
+      ;;
     --center-lat|--CENTER-LAT)
       CENTER_LAT="$2"
       shift 2
+      ;;
+    --center-lat=*|--CENTER-LAT=*)
+      CENTER_LAT="${1#*=}"
+      shift 1
       ;;
     --extent-km|--EXTENT-KM)
       EXTENT_KM="$2"
       shift 2
       ;;
+    --extent-km=*|--EXTENT-KM=*)
+      EXTENT_KM="${1#*=}"
+      shift 1
+      ;;
     --extent-deg|--EXTENT-DEG)
       EXTENT_DEG="$2"
       shift 2
+      ;;
+    --extent-deg=*|--EXTENT-DEG=*)
+      EXTENT_DEG="${1#*=}"
+      shift 1
       ;;
     --rotation|--ROTATION)
       ROTATION="$2"
       shift 2
       ;;
+    --rotation=*|--ROTATION=*)
+      ROTATION="${1#*=}"
+      shift 1
+      ;;
     --pole-lon|--POLE-LON)
       POLE_LON="$2"
       shift 2
+      ;;
+    --pole-lon=*|--POLE-LON=*)
+      POLE_LON="${1#*=}"
+      shift 1
       ;;
     --pole-lat|--POLE-LAT)
       POLE_LAT="$2"
       shift 2
       ;;
+    --pole-lat=*|--POLE-LAT=*)
+      POLE_LAT="${1#*=}"
+      shift 1
+      ;;
     --nx|--NX)
       NX="$2"
       shift 2
+      ;;
+    --nx=*|--NX=*)
+      NX="${1#*=}"
+      shift 1
       ;;
     --ny|--NY)
       NY="$2"
       shift 2
       ;;
+    --ny=*|--NY=*)
+      NY="${1#*=}"
+      shift 1
+      ;;
     --custom-grid)
       CUSTOM_GRID="$2"
       shift 2
+      ;;
+    --custom-grid=*)
+      CUSTOM_GRID="${1#*=}"
+      shift 1
       ;;
     -o|--out-dir)
       OUT_DIR="$2"
       OUT_DIR_SPECIFIED=1
       shift 2
       ;;
+    -o=*|--out-dir=*)
+      OUT_DIR="${1#*=}"
+      OUT_DIR_SPECIFIED=1
+      shift 1
+      ;;
     -r|--ref-dir)
       REF_DIR="$2"
       REF_DIR_SPECIFIED=1
       shift 2
       ;;
+    -r=*|--ref-dir=*)
+      REF_DIR="${1#*=}"
+      REF_DIR_SPECIFIED=1
+      shift 1
+      ;;
     --bathy-source|--BATHY-SOURCE)
       BATHY_SOURCE="$2"
       shift 2
       ;;
-    --boundary-points)
-      BOUNDARY_POINTS=1
+    --bathy-source=*|--BATHY-SOURCE=*)
+      BATHY_SOURCE="${1#*=}"
       shift 1
+      ;;
+    --boundary-points|--boundary-points=*)
+      BOUNDARY_POINTS=1
       BOUNDARY_RANGE=()
-      while [[ $# -gt 0 ]] && { [[ "$1" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]] || [[ "$1" =~ ^-?[0-9]+\.$ ]]; }; do
-        BOUNDARY_RANGE+=("$1")
+      if [[ "$1" == *=* ]]; then
+        val="${1#*=}"
         shift 1
+        if [ -n "$val" ]; then
+          BOUNDARY_RANGE+=("$val")
+        fi
+      else
+        shift 1
+      fi
+      while [[ $# -gt 0 ]]; do
+        if [[ "$1" == -* ]] && [[ ! "$1" =~ ^-?[0-9] ]] && [[ ! "$1" =~ ^-\.[0-9] ]]; then
+          break
+        fi
+        if [[ "$1" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]] || [[ "$1" =~ ^-?[0-9]+\.$ ]]; then
+          BOUNDARY_RANGE+=("$1")
+          shift 1
+        else
+          break
+        fi
       done
       if [[ ${#BOUNDARY_RANGE[@]} -ne 0 ]] && [[ ${#BOUNDARY_RANGE[@]} -ne 4 ]]; then
         echo "Error: --boundary-points expects 0 arguments or 4 arguments [LON_MIN LON_MAX LAT_MIN LAT_MAX]" >&2
@@ -252,17 +353,33 @@ while [[ $# -gt 0 ]]; do
       BOUND_FILE="$2"
       shift 2
       ;;
+    --bound-file=*)
+      BOUND_FILE="${1#*=}"
+      shift 1
+      ;;
     --cut-off|--cutoff-depth)
       CUT_OFF="$2"
       shift 2
+      ;;
+    --cut-off=*|--cutoff-depth=*)
+      CUT_OFF="${1#*=}"
+      shift 1
       ;;
     --lake-min-points)
       LAKE_MIN_POINTS="$2"
       shift 2
       ;;
+    --lake-min-points=*)
+      LAKE_MIN_POINTS="${1#*=}"
+      shift 1
+      ;;
     --lake-min-fraction)
       LAKE_MIN_FRACTION="$2"
       shift 2
+      ;;
+    --lake-min-fraction=*)
+      LAKE_MIN_FRACTION="${1#*=}"
+      shift 1
       ;;
     --legacy)
       LEGACY=1
@@ -283,6 +400,10 @@ while [[ $# -gt 0 ]]; do
     --user-flag)
       USER_POLYGONS_FLAG="$2"
       shift 2
+      ;;
+    --user-flag=*)
+      USER_POLYGONS_FLAG="${1#*=}"
+      shift 1
       ;;
     -c|--clean|--cleanup)
       CLEANUP=1
