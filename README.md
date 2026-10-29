@@ -114,9 +114,9 @@ cmake --build build
 
 The CMake build automatically checks for system libraries first and seamlessly falls back to using `externals/netcdf-c` and `externals/googletest` submodules when system libraries are missing.
 
-This compiles the following targets in the `build/` directory:
+This compiles the following targets:
 - `libww4_ugrid_reader.a`: C++ static library providing `ww4::io::read_ugrid_nc()`.
-- `ww4_read_grid`: Executable metadata inspection program.
+- `exe/ww4_read_grid`: Executable metadata inspection program (placed in `exe/` directory).
 - `test_ugrid_reader`: C++ GoogleTest suite.
 
 ### Running C++ Metadata Printer Utility (`ww4_read_grid`)
@@ -124,13 +124,13 @@ This compiles the following targets in the `build/` directory:
 To inspect global metadata attributes, grid dimensions, bathymetry depth ranges, land/sea cell counts, and obstruction availability of any NetCDF-UGRID grid file:
 
 ```bash
-./build/ww4_read_grid <path_to_grid_file.nc>
+./exe/ww4_read_grid <path_to_grid_file.nc>
 ```
 
 Example usage:
 
 ```bash
-./build/ww4_read_grid ww4_grid_ugrid.nc
+./exe/ww4_read_grid ww4_grid_ugrid.nc
 ```
 
 ### Running C++ Unit Tests
