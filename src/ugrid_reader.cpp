@@ -187,6 +187,9 @@ UgridGrid read_ugrid_nc(const std::filesystem::path& filepath) {
 
     grid.title = get_attr("title");
     grid.source = get_attr("source");
+    grid.grid_type = get_attr("grid_type");
+    grid.coord_type = get_attr("coord_type");
+    grid.global_closure = get_attr("global_closure");
     grid.bathy_source = get_attr("bathy_source");
     grid.bound_source = get_attr("bound_source");
     grid.conventions = get_attr("Conventions");

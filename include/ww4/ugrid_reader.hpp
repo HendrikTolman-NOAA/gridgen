@@ -42,6 +42,12 @@ struct UgridGrid {
     std::string title;
     /// Global source attribute
     std::string source;
+    /// Global grid_type attribute
+    std::string grid_type;
+    /// Global coord_type attribute
+    std::string coord_type;
+    /// Global global_closure attribute
+    std::string global_closure;
     /// Global bathy_source attribute
     std::string bathy_source;
     /// Global bound_source attribute

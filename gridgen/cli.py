@@ -87,6 +87,16 @@ def main() -> None:
         help="Grid coordinate projection/layout type (default: regular)",
     )
     gen_group.add_argument(
+        "--coord-type",
+        type=str,
+        default="spherical",
+        choices=[
+            "spherical",
+            "cartesian",
+        ],
+        help="Grid coordinate system type ('spherical' or 'cartesian', default: spherical)",
+    )
+    gen_group.add_argument(
         "--out-dir", type=str, default=".", help="Output directory for generated files (default: .)"
     )
     gen_group.add_argument(
@@ -388,6 +398,9 @@ def main() -> None:
         title=f"WW4 Grid {args.name}",
         bathy_source=args.bathy_source,
         bound_source=args.bound_file,
+        grid_type=args.grid_type,
+        coord_type=args.coord_type,
+        global_closure=args.global_closure,
     )
     nc_path = f"{args.out_dir}/{args.name}_ugrid.nc"
     write_ugrid_nc(ds_ugrid, nc_path)
@@ -423,6 +436,9 @@ def main() -> None:
             ObsY=ObsY,
             bathy_source=args.bathy_source,
             bound_source=args.bound_file,
+            grid_type=args.grid_type,
+            coord_type=args.coord_type,
+            global_closure=args.global_closure,
         )
 
     print("Successfully generated WW4 NetCDF-UGRID grid output!")
