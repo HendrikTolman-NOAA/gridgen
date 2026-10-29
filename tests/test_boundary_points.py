@@ -197,3 +197,89 @@ def test_cli_boundary_points_optional_range(tmp_path) -> None:
     assert res2.returncode == 0
     assert "Boundary points generated: 13 (mask value 2)." in res2.stdout
     assert out_nc2.exists()
+
+
+def test_resolve_bound_file_unique_identifiers(tmp_path) -> None:
+    """Test resolving boundary MAT dataset files by unique identifier (e.g. 'inter', 'coarse', 'high')."""
+    import scipy.io as sio
+
+    from gridgen.masking import load_mat_polygons, resolve_bound_file
+
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write dummy MAT file with valid structure
+    mat_inter = ref_dir / "coastal_bound_inter.mat"
+    poly_struct = np.array(
+        [(np.array([0.0, 1.0, 1.0, 0.0]), np.array([0.0, 0.0, 1.0, 1.0]), 1, 0.0, 1.0, 0.0, 1.0)],
+        dtype=[("x", "O"), ("y", "O"), ("level", "O"), ("west", "O"), ("east", "O"), ("south", "O"), ("north", "O")],
+    )
+    sio.savemat(str(mat_inter), {"bound": poly_struct})
+
+    assert resolve_bound_file("inter", ref_dir=str(ref_dir)) == str(mat_inter)
+    assert resolve_bound_file("inter.mat", ref_dir=str(ref_dir)) == str(mat_inter)
+    assert resolve_bound_file("coastal_bound_inter", ref_dir=str(ref_dir)) == str(mat_inter)
+    assert resolve_bound_file("coastal_bound_inter.mat", ref_dir=str(ref_dir)) == str(mat_inter)
+    assert resolve_bound_file("none", ref_dir=str(ref_dir)) is None
+
+    # Load MAT polygons using unique identifier 'inter'
+    polys = load_mat_polygons("inter", ref_dir=str(ref_dir))
+    assert isinstance(polys, list)
+    assert len(polys) == 1
+
+
+def test_cli_real_value_parameters(tmp_path) -> None:
+    """Test CLI parsing real/floating point inputs for dimensions, coordinates, and factors."""
+    import subprocess
+    import sys
+
+    import xarray as xr
+
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    lon_ref = np.linspace(0.0, 10.0, 10)
+    lat_ref = np.linspace(0.0, 10.0, 10)
+    z_ref = np.full((10, 10), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z_ref)},
+        coords={"x": lon_ref, "y": lat_ref},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
+
+    out_dir = tmp_path / "out"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Pass real/floating point values for --nx, --ny, --lake-min-points, --cut-off, --lake-min-fraction, --lon-start, --lat-start
+    cmd = [
+        sys.executable,
+        "-m",
+        "gridgen.cli",
+        "--name",
+        "real_val_grid",
+        "--ref-dir",
+        str(ref_dir),
+        "--out-dir",
+        str(out_dir),
+        "--nx",
+        "10.0",
+        "--ny",
+        "10.0",
+        "--lon-start",
+        "0.0",
+        "--lat-start",
+        "0.0",
+        "--lon-end",
+        "10.00",
+        "--lat-end",
+        "10.00",
+        "--cut-off",
+        "0.25",
+        "--lake-min-points",
+        "15.0",
+        "--lake-min-fraction",
+        "0.0005",
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    assert res.returncode == 0
+    assert (out_dir / "real_val_grid_ugrid.nc").exists()

@@ -33,6 +33,7 @@ from .masking import (
     load_user_polygons,
     modify_mask,
     remove_lake,
+    resolve_bound_file,
     split_boundary,
 )
 
@@ -49,5 +50,6 @@ __all__ = [
     "load_user_polygons",
     "modify_mask",
     "remove_lake",
+    "resolve_bound_file",
     "split_boundary",
 ]

@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 
 import numpy as np
 
@@ -35,8 +34,14 @@ from .masking import (
     load_mat_polygons,
     load_user_polygons,
     remove_lake,
+    resolve_bound_file,
 )
 from .obstructions import create_obstr
+
+
+def real_int(val: str | float) -> int:
+    """Parse real or floating point input string into integer value (e.g. '1440.0' or 1440.0 -> 1440)."""
+    return round(float(val))
 
 
 def main() -> None:
@@ -52,14 +57,14 @@ def main() -> None:
     )
     gen_group.add_argument(
         "--nx",
-        type=int,
+        type=real_int,
         default=1440,
         metavar="NX",
         help="[Optional] Discrete grid dimension NX (number of X points, default: 1440)",
     )
     gen_group.add_argument(
         "--ny",
-        type=int,
+        type=real_int,
         default=601,
         metavar="NY",
         help="[Optional] Discrete grid dimension NY (number of Y points, default: 601)",
@@ -140,7 +145,7 @@ def main() -> None:
     )
     gen_group.add_argument(
         "--lake-min-points",
-        type=int,
+        type=real_int,
         default=15,
         metavar="POINTS",
         help="Minimum number of grid points for a water body/lake to be retained (default: 15)",
@@ -311,23 +316,12 @@ def main() -> None:
 
     m = np.where(depth <= args.cut_off, 1, 0)
 
-    # Resolve boundary MAT file (default: coastal_bound_low.mat; 'none' disables obstructions)
+    # Resolve boundary MAT file (default: coastal_bound_low.mat or unique identifier e.g. 'inter', 'coarse', 'high', 'full', 'low'; 'none' disables obstructions)
     mat_bounds = []
     if args.bound_file and args.bound_file.lower() != "none":
-        candidates = [
-            args.bound_file,
-            os.path.join(args.ref_dir, args.bound_file),
-            os.path.join(".", args.bound_file),
-            os.path.join("reference_data", args.bound_file),
-        ]
-        target_bound_file = None
-        for c in candidates:
-            if os.path.exists(c):
-                target_bound_file = c
-                break
-
-        if target_bound_file and os.path.exists(target_bound_file):
-            mat_bounds = load_mat_polygons(target_bound_file)
+        target_bound_file = resolve_bound_file(args.bound_file, ref_dir=args.ref_dir)
+        if target_bound_file:
+            mat_bounds = load_mat_polygons(target_bound_file, ref_dir=args.ref_dir)
             if mat_bounds:
                 print(f"Loaded {len(mat_bounds)} boundary polygons from '{target_bound_file}'.")
     else:
