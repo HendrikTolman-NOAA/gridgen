@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-28
+# @date Latest Update: 2026-10-29
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 
 import numpy as np
 
@@ -50,6 +51,8 @@ def main() -> None:
         description="WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid Generation Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # Enable parsing negative floats with trailing decimal dots (e.g. -75.)
+    parser._negative_number_matcher = re.compile(r"^-\d+(\.\d*)?$|^-\d*\.\d+$")
 
     # Group 1: General & Dimension Options (Common to all grid options)
     gen_group = parser.add_argument_group(

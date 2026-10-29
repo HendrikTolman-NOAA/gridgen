@@ -774,3 +774,35 @@ def test_run_gridgen_real_lat_lon_args(tmp_path: Path):
     assert (out_dir / "real_args_grid_ugrid.nc").exists()
     assert "LAT_START (Lower-Left) : -75.5 deg" in res.stdout
     assert "LAT_END (Upper-Right)  : 75.5000 deg" in res.stdout
+
+    # Execute with trailing-decimal-dot float arguments (e.g. -75.)
+    res_dot = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "trailing_dot_grid",
+            "--lat-start",
+            "-75.",
+            "--lat-end",
+            "75.",
+            "--lon-start",
+            "-170.",
+            "--lon-end",
+            "170.",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert res_dot.returncode == 0
+    assert (out_dir / "trailing_dot_grid_ugrid.nc").exists()
+    assert "LAT_START (Lower-Left) : -75. deg" in res_dot.stdout
