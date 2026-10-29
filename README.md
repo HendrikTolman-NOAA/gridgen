@@ -20,6 +20,8 @@
 
 This software package is created for generating grids for WAVEWATCH III and WAVEWATCH IV.
 
+> **Note:** The C++ tools and reader library (`ww4_ugrid_reader`, `ww4_read_grid`) are intended to become part of the main WAVEWATCH IV ([WW4](https://github.com/NOAA-EMC/WW4)) repository once the code is sufficiently mature. However, they are currently being developed within this repository to assure consistency between the Python writing routines (`gridgen`) and C++ reading routines in the interaction between `gridgen` and WW4.
+
 ## Documentation
 
 Documentation is available at three levels:
