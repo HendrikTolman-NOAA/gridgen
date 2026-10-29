@@ -100,7 +100,7 @@ System libraries are optional if submodules in `externals/` are populated:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y build-essential cmake libnetcdf-dev libgtest-dev
+sudo apt-get install -y build-essential cmake libnetcdf-dev libhdf5-dev libgtest-dev
 ```
 
 ### Build Instructions
