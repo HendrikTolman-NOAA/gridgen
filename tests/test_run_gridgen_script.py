@@ -707,3 +707,70 @@ def test_run_gridgen_user_polygons_flags(tmp_path: Path):
     )
     assert res_all.returncode == 0
     assert "Loaded 77 active user-defined coastal polygons." in res_all.stdout
+
+
+def test_run_gridgen_real_lat_lon_args(tmp_path: Path):
+    """Verify run_gridgen.sh handles real/floating point parameters for lat/lon and coordinates."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+    out_dir = tmp_path / "grid_output"
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    import numpy as np
+    import xarray as xr
+
+    lon = np.linspace(-180.0, 180.0, 10)
+    lat = np.linspace(-90.0, 90.0, 10)
+    z = np.full((10, 10), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z)},
+        coords={"x": lon, "y": lat},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
+
+    # Execute with negative real/float arguments for lat/lon and boundary points
+    res = subprocess.run(
+        [
+            str(script_path),
+            "--name",
+            "real_args_grid",
+            "--lat-start",
+            "-75.5",
+            "--lat-end",
+            "75.5",
+            "--lon-start",
+            "-170.25",
+            "--lon-end",
+            "170.25",
+            "--sx",
+            "0.25",
+            "--sy",
+            "0.25",
+            "--pole-lon",
+            "-180.0",
+            "--pole-lat",
+            "60.5",
+            "--nx",
+            "10",
+            "--ny",
+            "10",
+            "--boundary-points",
+            "-180.0",
+            "180.0",
+            "-75.5",
+            "75.5",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(out_dir),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert res.returncode == 0
+    assert (out_dir / "real_args_grid_ugrid.nc").exists()
+    assert "LAT_START (Lower-Left) : -75.5 deg" in res.stdout
+    assert "LAT_END (Upper-Right)  : 75.5000 deg" in res.stdout
