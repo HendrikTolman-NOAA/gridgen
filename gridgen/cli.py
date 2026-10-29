@@ -390,9 +390,9 @@ def main() -> None:
     is_global_closure = args.global_closure
     if args.grid_type == "regular":
         sx_val = args.sx
-        if sx_val is not None and np.isclose(float(args.nx) * float(sx_val), 360.0):
-            is_global_closure = True
-        elif sx_val is None and args.lon_end is None and args.nx == 1440:
+        if (
+            sx_val is not None and np.isclose(float(args.nx) * float(sx_val), 360.0)
+        ) or (sx_val is None and args.lon_end is None and args.nx == 1440):
             is_global_closure = True
 
     # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
