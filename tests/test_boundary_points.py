@@ -202,6 +202,7 @@ def test_cli_boundary_points_optional_range(tmp_path) -> None:
 def test_resolve_bound_file_unique_identifiers(tmp_path) -> None:
     """Test resolving boundary MAT dataset files by unique identifier (e.g. 'inter', 'coarse', 'high')."""
     import scipy.io as sio
+
     from gridgen.masking import load_mat_polygons, resolve_bound_file
 
     ref_dir = tmp_path / "ref_data"
@@ -229,8 +230,9 @@ def test_resolve_bound_file_unique_identifiers(tmp_path) -> None:
 
 def test_cli_real_value_parameters(tmp_path) -> None:
     """Test CLI parsing real/floating point inputs for dimensions, coordinates, and factors."""
-    import sys
     import subprocess
+    import sys
+
     import xarray as xr
 
     ref_dir = tmp_path / "ref_data"

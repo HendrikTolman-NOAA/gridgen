@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 
 import numpy as np
 
@@ -40,9 +39,9 @@ from .masking import (
 from .obstructions import create_obstr
 
 
-def real_int(val: str | float | int) -> int:
+def real_int(val: str | float) -> int:
     """Parse real or floating point input string into integer value (e.g. '1440.0' or 1440.0 -> 1440)."""
-    return int(round(float(val)))
+    return round(float(val))
 
 
 def main() -> None:

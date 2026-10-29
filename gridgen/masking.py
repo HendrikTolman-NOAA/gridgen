@@ -891,7 +891,7 @@ def load_mat_polygons(mat_path: str, ref_dir: str = "reference_data") -> list[di
         from scipy.io import loadmat
 
         mat = loadmat(mat_path)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return []
 
     if "bound" not in mat:
