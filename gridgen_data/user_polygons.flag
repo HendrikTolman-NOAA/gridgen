@@ -32,11 +32,11 @@
 32 1 	 UK: Thames Estuary
 33 1 	 UK: Bristol Channel
 34 0 	 UK: Irish Sea
-35 1 	 UK: Orkney Islands
-36 1 	 UK: Shetland Islands
+35 0 	 UK: Orkney Islands
+36 0 	 UK: Shetland Islands
 37 1 	 UK: Hebrides
 38 1 	 UK: Inner Hebrides, Firth of Clyde, and SW Islands
-39 1 	 Faroe Islands
+39 0 	 Faroe Islands
 40 1 	 White Sea
 41 0 	 Red Sea
 42 0 	 Persian Gulf
