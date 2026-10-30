@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-24
-# @date Latest Update: 2026-10-28
+# @date Latest Update: 2026-10-30
 -->
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 This software package is created for generating grids for WAVEWATCH III and WAVEWATCH IV.
 
-> **Note:** The C++ tools and reader library (`ww4_ugrid_reader`, `ww4_read_grid`) are intended to become part of the main WAVEWATCH IV ([WW4](https://github.com/NOAA-EMC/WW4)) repository once the code is sufficiently mature. However, they are currently being developed within this repository to assure consistency between the Python writing routines (`gridgen`) and C++ reading routines in the interaction between `gridgen` and WW4.
+> **Note:** The C++ tools and reader library (`ww4_ugrid_reader`, `ww4_grid_info`) are intended to become part of the main WAVEWATCH IV ([WW4](https://github.com/NOAA-EMC/WW4)) repository once the code is sufficiently mature. However, they are currently being developed within this repository to assure consistency between the Python writing routines (`gridgen`) and C++ reading routines in the interaction between `gridgen` and WW4.
 
 ## Documentation
 
@@ -39,7 +39,7 @@ The package requires Python 3.9+ and the following scientific Python libraries:
 - `shapely` (>= 2.0)
 - `matplotlib` (>= 3.5)
 
-For building the optional C++ reader library (`ww4_ugrid_reader`), metadata inspection tools (`ww4_read_grid`), and unit tests, the following system packages or submodules are required:
+For building the optional C++ reader library (`ww4_ugrid_reader`), metadata inspection tools (`ww4_grid_info`), and unit tests, the following system packages or submodules are required:
 - C++20 compliant compiler (`GCC 11+` or `Clang 13+`)
 - `CMake` (>= 3.20)
 - `libnetcdf-dev` (NetCDF C development library, or included via `externals/netcdf-c`)
@@ -94,7 +94,7 @@ You should see commit hashes for both `externals/netcdf-c` and `externals/google
 
 ## Building and Compiling C++ Tools
 
-The repository contains a C++20 NetCDF-UGRID reader library (`ww4_ugrid_reader`), a grid metadata printer utility program (`ww4_read_grid`), and GoogleTest unit tests.
+The repository contains a C++20 NetCDF-UGRID reader library (`ww4_ugrid_reader`), a grid metadata printer utility program (`ww4_grid_info`), and GoogleTest unit tests.
 
 ### Prerequisites (Ubuntu / Debian)
 
@@ -117,22 +117,22 @@ cmake --build build
 The CMake build automatically checks for system libraries first and seamlessly falls back to using `externals/netcdf-c` and `externals/googletest` submodules when system libraries are missing.
 
 This compiles the following targets:
-- `libww4_ugrid_reader.a`: C++ static library providing `ww4::io::read_ugrid_nc()`.
-- `exe/ww4_read_grid`: Executable metadata inspection program (placed in `exe/` directory).
+- `libww4_ugrid_reader.a`: C++ static library providing `ww4::io::readUQgrid()`.
+- `exe/ww4_grid_info`: Executable metadata inspection program (placed in `exe/` directory).
 - `test_ugrid_reader`: C++ GoogleTest suite.
 
-### Running C++ Metadata Printer Utility (`ww4_read_grid`)
+### Running C++ Metadata Printer Utility (`ww4_grid_info`)
 
 To inspect global metadata attributes, grid dimensions, bathymetry depth ranges, land/sea cell counts, and obstruction availability of any NetCDF-UGRID grid file:
 
 ```bash
-./exe/ww4_read_grid <path_to_grid_file.nc>
+./exe/ww4_grid_info <path_to_grid_file.nc>
 ```
 
 Example usage:
 
 ```bash
-./exe/ww4_read_grid ww4_grid_ugrid.nc
+./exe/ww4_grid_info ww4_grid_ugrid.nc
 ```
 
 ### Running C++ Unit Tests

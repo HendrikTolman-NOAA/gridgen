@@ -10,9 +10,9 @@
 // @author Aldgisl (Agentic AI), Hendrik Tolman
 // @author Jules (Agentic AI) (contributor)
 // @date Initial: 2026-10-27
-// @date Latest Update: 2026-10-28
+// @date Latest Update: 2026-10-30
 
-#include "ww4/ugrid_reader.hpp"
+#include "UQ_read_grid.h"
 
 #include <gtest/gtest.h>
 
@@ -83,7 +83,8 @@ protected:
 };
 
 TEST_F(UgridReaderTest, ReadUgridNcFileWithObstructions) {
-    const ww4::io::UgridGrid grid = ww4::io::read_ugrid_nc(test_nc_file_with_obs);
+    ww4::io::UgridGrid grid;
+    EXPECT_EQ(ww4::io::readUQgrid(test_nc_file_with_obs, grid), 0);
 
     // Verify dimensions
     EXPECT_EQ(grid.ny, 2u);
@@ -104,6 +105,7 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithObstructions) {
     EXPECT_EQ(grid.global_attrs.at("grid_type"), "regular");
     EXPECT_EQ(grid.global_attrs.at("coord_type"), "spherical");
     EXPECT_EQ(grid.global_attrs.at("global_closure"), "true");
+    EXPECT_EQ(grid.global_attrs.at("has_obstructions"), "true");
 
     // Verify obstruction flags
     EXPECT_TRUE(grid.has_obsx);
@@ -140,7 +142,8 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithObstructions) {
 }
 
 TEST_F(UgridReaderTest, ReadUgridNcFileWithoutObstructions) {
-    const ww4::io::UgridGrid grid = ww4::io::read_ugrid_nc(test_nc_file_no_obs);
+    ww4::io::UgridGrid grid;
+    EXPECT_EQ(ww4::io::readUQgrid(test_nc_file_no_obs, grid), 0);
 
     EXPECT_EQ(grid.ny, 2u);
     EXPECT_EQ(grid.nx, 2u);
@@ -149,6 +152,7 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithoutObstructions) {
     EXPECT_EQ(grid.grid_type, "stereographic");
     EXPECT_EQ(grid.coord_type, "cartesian");
     EXPECT_EQ(grid.global_closure, "false");
+    EXPECT_EQ(grid.global_attrs.at("has_obstructions"), "false");
 
     EXPECT_FALSE(grid.has_obsx);
     EXPECT_FALSE(grid.has_obsy);
@@ -159,11 +163,13 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithoutObstructions) {
     EXPECT_TRUE(grid.ObsY.empty());
 }
 
-TEST_F(UgridReaderTest, FileNotFoundException) {
+TEST_F(UgridReaderTest, FileNotFoundFailure) {
     const std::filesystem::path non_existent = std::filesystem::temp_directory_path() / "non_existent_grid_file_12345.nc";
-    EXPECT_THROW(ww4::io::read_ugrid_nc(non_existent), std::runtime_error);
+    ww4::io::UgridGrid grid;
+    EXPECT_EQ(ww4::io::readUQgrid(non_existent, grid), 1);
 }
 
-TEST_F(UgridReaderTest, InvalidNcFileException) {
-    EXPECT_THROW(ww4::io::read_ugrid_nc(invalid_file), std::runtime_error);
+TEST_F(UgridReaderTest, InvalidNcFileFailure) {
+    ww4::io::UgridGrid grid;
+    EXPECT_NE(ww4::io::readUQgrid(invalid_file, grid), 0);
 }

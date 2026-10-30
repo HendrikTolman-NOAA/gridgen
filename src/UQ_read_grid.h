@@ -1,19 +1,25 @@
-// WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+//| WAVEWATCH IV, open source, code management by NOAA / NWS                    |
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 //
-// Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+// @file UQ_read_grid.h
+// @brief NetCDF-UGRID 1.0 grid file reader subroutine interface for WAVEWATCH IV.
+// @details Header declaring data structures and the readUQgrid subroutine for reading
+// NetCDF-UGRID grid files in WAVEWATCH IV.
+//
+// @copyright © 2026 National Weather Service, National Oceanic and Atmospheric
+// Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks
+// of the National Weather Service.
 // NWS often uses Generative AI (GenAI) for code development and refactoring.
 // Whenever GenAI is used, NWS requires a full human review of code before it
 // is added to its repositories.
-//
-// @file ugrid_reader.hpp
-// @brief NetCDF-UGRID 1.0 grid file reader using netcdf-c for WAVEWATCH IV.
-// @author Aldgisl (Agentic AI), Hendrik Tolman
-// @author Jules (Agentic AI) (contributor)
-// @date Initial: 2026-10-27
-// @date Latest Update: 2026-10-28
+// @author Main Author(s) : Aldgisl (AI Persona), Hendrik L. Tolman
+// @author Contributors : Jules (Agentic AI)
+// @date Initial : 2026-10-27
+// @date Latest Update : 2026-10-30
 
-#ifndef WW4_UGRID_READER_HPP
-#define WW4_UGRID_READER_HPP
+#ifndef WW4_UQ_READ_GRID_H
+#define WW4_UQ_READ_GRID_H
 
 #include <cstdint>
 #include <filesystem>
@@ -98,24 +104,60 @@ struct UgridGrid {
 
     /// Face-node connectivity map (n_faces * max_face_nodes)
     std::vector<int32_t> face_node_connectivity;
+
+    /// Clears all grid metadata and data fields.
+    void clear() noexcept {
+        ny = 0;
+        nx = 0;
+        n_faces = 0;
+        n_nodes = 0;
+        max_face_nodes = 0;
+        title.clear();
+        source.clear();
+        grid_type.clear();
+        coord_type.clear();
+        global_closure.clear();
+        bathy_source.clear();
+        bound_source.clear();
+        conventions.clear();
+        history.clear();
+        global_attrs.clear();
+        has_obsx = false;
+        has_obsy = false;
+        grid_lon.clear();
+        grid_lat.clear();
+        grid_depth.clear();
+        grid_mask.clear();
+        grid_ObsX.clear();
+        grid_ObsY.clear();
+        face_lon.clear();
+        face_lat.clear();
+        depth.clear();
+        mask.clear();
+        ObsX.clear();
+        ObsY.clear();
+        node_lon.clear();
+        node_lat.clear();
+        face_node_connectivity.clear();
+    }
 };
 
 /**
- * @brief Pure subroutine to read a WAVEWATCH IV NetCDF-UGRID 1.0 grid file using netcdf-c API.
+ * @brief Subroutine to read a WAVEWATCH IV NetCDF-UGRID 1.0 grid file using netcdf-c API.
  *
  * @details Opens the NetCDF file specified by `filepath` in read-only mode using netcdf-c API,
- * parses all global metadata attributes, grid dimensions, 2D curvilinear grid coordinate
- * and field arrays, and 1D UGRID mesh topology/coordinates/fields. All inputs and outputs
- * pass through the routine interface without stdio side effects.
+ * verifies file existence, parses all metadata attributes and grid dimensions, and reads 2D/1D
+ * curvilinear grid coordinate and field arrays and mesh topology. Returns an integer status code:
+ * 0 for success, 1 for file not found, 2 for failure to read metadata, and 3 for failure to read grid data.
  *
- * @param filepath Path to the NetCDF-UGRID file to read.
- * @return UgridGrid Struct containing all parsed metadata, 2D arrays, and 1D UGRID fields.
- * @pre File must exist and be a valid NetCDF / NetCDF-4 file.
- * @post Returned UgridGrid fields are populated with file contents.
- * @throws std::runtime_error If file opening fails or mandatory variables/dimensions are missing.
+ * @param[in]  filepath Path to the NetCDF-UGRID file to read.
+ * @param[out] grid     UgridGrid struct populated with file metadata and data arrays on success.
+ * @return int Status code (0 = success, 1 = file not found, 2 = metadata failure, 3 = grid data failure).
+ * @pre File must exist and be a valid NetCDF-UGRID file.
+ * @post On success (return code 0), `grid` fields are populated with file contents. On failure, `grid` is cleared.
  */
-[[nodiscard]] UgridGrid read_ugrid_nc(const std::filesystem::path& filepath);
+[[nodiscard]] int readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid);
 
 } // namespace ww4::io
 
-#endif // WW4_UGRID_READER_HPP
+#endif // WW4_UQ_READ_GRID_H

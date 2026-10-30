@@ -383,8 +383,12 @@ def main() -> None:
         print("  No boundary points generated.")
 
     # Step 4: Calculate sub-grid obstructions (using shoreline MAT bounds only; user polygons reserved for mask generation)
-    print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
-    ObsX, ObsY = create_obstr(lon, lat, mat_bounds, m_mod)
+    if mat_bounds and args.bound_file.lower() not in ("none", ""):
+        print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
+        ObsX, ObsY = create_obstr(lon, lat, mat_bounds, m_mod)
+    else:
+        print("[Step 4/5] Sub-grid obstructions disabled or boundary file is 'none'.")
+        ObsX, ObsY = None, None
 
     # Determine if grid has global closure (either explicitly requested or NX * SX == 360)
     is_global_closure = args.global_closure
@@ -421,11 +425,18 @@ def main() -> None:
         d_ascii = np.round(depth * depth_scale)
         write_ww3file(f"{args.out_dir}/{args.name}.depth_ascii", d_ascii)
         write_ww3file(f"{args.out_dir}/{args.name}.maskorig_ascii", m_mod)
-        write_ww3obstr(
-            f"{args.out_dir}/{args.name}.obstr_lev1",
-            np.round(ObsX * obstr_scale),
-            np.round(ObsY * obstr_scale),
-        )
+        if ObsX is not None and ObsY is not None:
+            write_ww3obstr(
+                f"{args.out_dir}/{args.name}.obstr_lev1",
+                np.round(ObsX * obstr_scale),
+                np.round(ObsY * obstr_scale),
+            )
+        else:
+            write_ww3obstr(
+                f"{args.out_dir}/{args.name}.obstr_lev1",
+                np.zeros_like(depth),
+                np.zeros_like(depth),
+            )
         write_ww3meta(
             f"{args.out_dir}/{args.name}",
             "RECT",

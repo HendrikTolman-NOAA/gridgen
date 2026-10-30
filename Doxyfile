@@ -8,9 +8,9 @@ PROJECT_BRIEF          = "WAVEWATCH III / WAVEWATCH IV Grid Generation Package"
 OUTPUT_DIRECTORY       = docs
 
 # Source Code Parsing Settings
-INPUT                  = gridgen README.md
+INPUT                  = gridgen src README.md
 RECURSIVE              = YES
-FILE_PATTERNS          = *.py *.md
+FILE_PATTERNS          = *.py *.md *.h *.cpp
 EXTENSION_MAPPING      = py=Python
 
 # Extraction Settings
