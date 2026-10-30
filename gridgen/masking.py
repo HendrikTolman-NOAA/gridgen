@@ -299,6 +299,9 @@ def clean_mask(
                 if overlap_ratio >= lim:
                     clean_m[k, j] = 0
 
+    sys.stdout.write("\r  Cleaning land/sea mask with user coastal polygons... 100.0%\n")
+    sys.stdout.flush()
+
     return clean_m
 
 
