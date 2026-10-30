@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 78 active polygons set to 1 out of 94 total
-    assert len(active_polys) == 78
+    # user_polygons.flag has 77 active polygons set to 1 out of 94 total (Vestfjorden switched off)
+    assert len(active_polys) == 77
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 78 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 77 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -388,7 +388,8 @@ def test_oresund_polygon_loading_and_masking() -> None:
     assert "Oresund" in oresund_poly.get("name", "")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 78
+    assert len(active_polys) == 77
+    assert len(active_polys) == 77
     assert any("Oresund" in p.get("name", "") for p in active_polys)
 
     # Test Oresund point (12.6°E, 55.68°N) near Copenhagen
@@ -437,7 +438,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 78
+    assert len(active_polys) == 77
 
     japan_names = [
         "Japan: Uchiura Bay",
@@ -518,13 +519,13 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
         assert len(p["x"]) >= 10, f"Polygon '{p['name']}' must have at least 10 points (has {len(p['x'])})"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 78
+    assert len(active_polys) == 77
 
-    # Check active switches: 6 Norway active, 8 UK active (Irish Sea disabled)
+    # Check active switches: 5 Norway active (Vestfjorden disabled), 8 UK active (Irish Sea disabled)
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
     active_uk = [p for p in active_polys if any(name in p.get("name", "") for name in uk_names)]
 
-    assert len(active_norway) == 6
+    assert len(active_norway) == 5
     assert len(active_uk) == 8
 
     irish_sea = next(p for p in uk_polys if "Irish Sea" in p.get("name", ""))
