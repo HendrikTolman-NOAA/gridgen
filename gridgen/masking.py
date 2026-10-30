@@ -249,10 +249,23 @@ def clean_mask(
     if not polygons:
         return clean_m
 
+    import sys
+
     tree = STRtree(polygons)
+    total_cells = Nx * Ny
+    processed = 0
+
+    sys.stdout.write("\r  Cleaning land/sea mask with user coastal polygons...   0.0%")
+    sys.stdout.flush()
 
     for j in range(Nx):
         for k in range(Ny):
+            processed += 1
+            if processed % max(1, total_cells // 100) == 0 or processed == total_cells:
+                pct = (processed / total_cells) * 100.0
+                sys.stdout.write(f"\r  Cleaning land/sea mask with user coastal polygons... {pct:5.1f}%")
+                sys.stdout.flush()
+
             if clean_m[k, j] == 1:
                 c1, c2, c3, c4, _, _ = compute_cellcorner(x, y, j, k)
                 cell_poly = Polygon([c4, c1, c2, c3, c4])

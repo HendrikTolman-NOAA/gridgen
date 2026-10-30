@@ -559,8 +559,6 @@ def plot_grid(
 
         ax1.set_xlim(xlim)
         ax1.set_ylim(ylim)
-        aspect = 1.0 / max(np.cos(np.radians(central_lat)), 0.01)
-        ax1.set_aspect(aspect)
         print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
     elif is_global:
         ax1.set_xlim(lon_min, lon_max)
