@@ -5,6 +5,7 @@
 // @file UQ_read_grid.cpp
 // @brief NetCDF-UGRID 1.0 grid file reader implementation using netcdf-c for WAVEWATCH IV.
 // @details Subroutine implementation for reading NetCDF-UGRID grid files in WAVEWATCH IV.
+// Checks for file existence, metadata parsing success, and complete dataset reading.
 //
 // @copyright © 2026 National Weather Service, National Oceanic and Atmospheric
 // Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks
@@ -23,8 +24,8 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <iostream>
 #include <map>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -71,16 +72,18 @@ private:
 };
 
 /**
- * @brief Utility function to check NetCDF error status.
+ * @brief Utility function to check NetCDF status and output error without throwing exception.
  *
  * @param[in] status Status code returned by netcdf function.
  * @param[in] msg    Descriptive error message prefix.
- * @throws std::runtime_error If status is not NC_NOERR.
+ * @return true if status is NC_NOERR, false otherwise.
  */
-void check_nc_err(const int status, const std::string& msg) {
+bool check_nc_err(const int status, const std::string& msg) {
     if (status != NC_NOERR) {
-        throw std::runtime_error(msg + ": " + nc_strerror(status));
+        std::cerr << "Error [readUQgrid]: " << msg << ": " << nc_strerror(status) << "\n";
+        return false;
     }
+    return true;
 }
 
 /**
@@ -128,9 +131,8 @@ void check_nc_err(const int status, const std::string& msg) {
  * @param[in]  ncid     Open NetCDF file ID.
  * @param[in]  varname  Variable name to read.
  * @param[out] vec      Vector to store variable values.
- * @param[in]  required Whether missing variable triggers exception.
+ * @param[in]  required Whether missing variable triggers error.
  * @return true if variable was successfully read, false otherwise.
- * @throws std::runtime_error If required variable is missing or reading fails.
  */
 template <typename T>
 bool read_variable(const int ncid, const char* varname, std::vector<T>& vec, const bool required = true) {
@@ -138,27 +140,37 @@ bool read_variable(const int ncid, const char* varname, std::vector<T>& vec, con
     const int status = nc_inq_varid(ncid, varname, &varid);
     if (status != NC_NOERR) {
         if (required) {
-            throw std::runtime_error("Missing required variable '" + std::string(varname) + "': " + nc_strerror(status));
+            std::cerr << "Error [readUQgrid]: Missing required variable '" << varname << "': " << nc_strerror(status) << "\n";
         }
         return false;
     }
 
     nc_type xtype = NC_NAT;
-    check_nc_err(nc_inq_vartype(ncid, varid, &xtype), "Failed inquiring variable type for '" + std::string(varname) + "'");
+    if (!check_nc_err(nc_inq_vartype(ncid, varid, &xtype), "Inquiring variable type for '" + std::string(varname) + "'")) {
+        return false;
+    }
 
     if constexpr (std::is_same_v<T, double>) {
-        check_nc_err(nc_get_var_double(ncid, varid, vec.data()), "Failed reading double variable '" + std::string(varname) + "'");
+        if (!check_nc_err(nc_get_var_double(ncid, varid, vec.data()), "Reading double variable '" + std::string(varname) + "'")) {
+            return false;
+        }
     } else if constexpr (std::is_same_v<T, float>) {
-        check_nc_err(nc_get_var_float(ncid, varid, vec.data()), "Failed reading float variable '" + std::string(varname) + "'");
+        if (!check_nc_err(nc_get_var_float(ncid, varid, vec.data()), "Reading float variable '" + std::string(varname) + "'")) {
+            return false;
+        }
     } else if constexpr (std::is_same_v<T, int32_t>) {
         if (xtype == NC_INT64) {
             std::vector<long long> tmp_64(vec.size());
-            check_nc_err(nc_get_var_longlong(ncid, varid, tmp_64.data()), "Failed reading int64 variable '" + std::string(varname) + "'");
+            if (!check_nc_err(nc_get_var_longlong(ncid, varid, tmp_64.data()), "Reading int64 variable '" + std::string(varname) + "'")) {
+                return false;
+            }
             for (std::size_t i = 0; i < vec.size(); ++i) {
                 vec[i] = static_cast<int32_t>(tmp_64[i]);
             }
         } else {
-            check_nc_err(nc_get_var_int(ncid, varid, reinterpret_cast<int*>(vec.data())), "Failed reading int variable '" + std::string(varname) + "'");
+            if (!check_nc_err(nc_get_var_int(ncid, varid, reinterpret_cast<int*>(vec.data())), "Reading int variable '" + std::string(varname) + "'")) {
+                return false;
+            }
         }
     }
 
@@ -167,36 +179,45 @@ bool read_variable(const int ncid, const char* varname, std::vector<T>& vec, con
 
 } // namespace
 
-UgridGrid readUQgrid(const std::filesystem::path& filepath) {
-    if (!std::filesystem::exists(filepath)) {
-        throw std::runtime_error("File does not exist: " + filepath.string());
+bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
+    grid.clear();
+
+    // Step 1: Check for file existence
+    std::error_code ec;
+    if (!std::filesystem::exists(filepath, ec) || ec) {
+        std::cerr << "Error [readUQgrid]: File does not exist: " << filepath.string() << "\n";
+        return false;
     }
 
     int raw_ncid = -1;
-    check_nc_err(nc_open(filepath.string().c_str(), NC_NOWRITE, &raw_ncid), "Failed opening file " + filepath.string());
+    const int open_status = nc_open(filepath.string().c_str(), NC_NOWRITE, &raw_ncid);
+    if (open_status != NC_NOERR) {
+        std::cerr << "Error [readUQgrid]: Failed opening NetCDF file " << filepath.string() << ": " << nc_strerror(open_status) << "\n";
+        return false;
+    }
     const NcHandle nc_handle(raw_ncid);
     const int ncid = nc_handle.get();
 
-    UgridGrid grid;
-
-    // Helper lambda for dimension inquiry
-    auto read_dim_len = [ncid](const char* dimname) -> std::size_t {
+    // Step 2: Successful reading of metadata (dimensions and global attributes)
+    auto read_dim_len = [ncid](const char* dimname, std::size_t& len) -> bool {
         int dimid = -1;
         const int status = nc_inq_dimid(ncid, dimname, &dimid);
         if (status != NC_NOERR) {
-            throw std::runtime_error("Missing required dimension '" + std::string(dimname) + "': " + nc_strerror(status));
+            std::cerr << "Error [readUQgrid]: Missing required dimension '" << dimname << "': " << nc_strerror(status) << "\n";
+            return false;
         }
-        std::size_t len = 0;
-        check_nc_err(nc_inq_dimlen(ncid, dimid, &len), "Failed reading dimension length for '" + std::string(dimname) + "'");
-        return len;
+        return check_nc_err(nc_inq_dimlen(ncid, dimid, &len), "Reading dimension length for '" + std::string(dimname) + "'");
     };
 
-    // Read mandatory dimensions
-    grid.ny = read_dim_len("ny");
-    grid.nx = read_dim_len("nx");
-    grid.n_faces = read_dim_len("nMesh2_face");
-    grid.n_nodes = read_dim_len("nMesh2_node");
-    grid.max_face_nodes = read_dim_len("nMaxMesh2_face_nodes");
+    if (!read_dim_len("ny", grid.ny) ||
+        !read_dim_len("nx", grid.nx) ||
+        !read_dim_len("nMesh2_face", grid.n_faces) ||
+        !read_dim_len("nMesh2_node", grid.n_nodes) ||
+        !read_dim_len("nMaxMesh2_face_nodes", grid.max_face_nodes)) {
+        std::cerr << "Error [readUQgrid]: Failed reading metadata dimensions from file " << filepath.string() << "\n";
+        grid.clear();
+        return false;
+    }
 
     // Read all global attributes
     grid.global_attrs = read_all_global_attributes(ncid);
@@ -215,6 +236,7 @@ UgridGrid readUQgrid(const std::filesystem::path& filepath) {
     grid.conventions = get_attr("Conventions");
     grid.history = get_attr("history");
 
+    // Step 3: Successful reading of the entire file (all data arrays)
     const std::size_t num_2d = grid.ny * grid.nx;
     const std::size_t num_faces = grid.n_faces;
     const std::size_t num_nodes = grid.n_nodes;
@@ -227,10 +249,14 @@ UgridGrid readUQgrid(const std::filesystem::path& filepath) {
     grid.grid_mask.resize(num_2d);
 
     // Read 2D grid variables
-    read_variable(ncid, "grid_lon", grid.grid_lon, true);
-    read_variable(ncid, "grid_lat", grid.grid_lat, true);
-    read_variable(ncid, "grid_depth", grid.grid_depth, true);
-    read_variable(ncid, "grid_mask", grid.grid_mask, true);
+    if (!read_variable(ncid, "grid_lon", grid.grid_lon, true) ||
+        !read_variable(ncid, "grid_lat", grid.grid_lat, true) ||
+        !read_variable(ncid, "grid_depth", grid.grid_depth, true) ||
+        !read_variable(ncid, "grid_mask", grid.grid_mask, true)) {
+        std::cerr << "Error [readUQgrid]: Failed reading 2D grid arrays from file " << filepath.string() << "\n";
+        grid.clear();
+        return false;
+    }
 
     // Allocate 1D face vectors
     grid.face_lon.resize(num_faces);
@@ -239,22 +265,34 @@ UgridGrid readUQgrid(const std::filesystem::path& filepath) {
     grid.mask.resize(num_faces);
 
     // Read 1D face variables
-    read_variable(ncid, "face_lon", grid.face_lon, true);
-    read_variable(ncid, "face_lat", grid.face_lat, true);
-    read_variable(ncid, "depth", grid.depth, true);
-    read_variable(ncid, "mask", grid.mask, true);
+    if (!read_variable(ncid, "face_lon", grid.face_lon, true) ||
+        !read_variable(ncid, "face_lat", grid.face_lat, true) ||
+        !read_variable(ncid, "depth", grid.depth, true) ||
+        !read_variable(ncid, "mask", grid.mask, true)) {
+        std::cerr << "Error [readUQgrid]: Failed reading 1D face arrays from file " << filepath.string() << "\n";
+        grid.clear();
+        return false;
+    }
 
     // Allocate 1D node vectors
     grid.node_lon.resize(num_nodes);
     grid.node_lat.resize(num_nodes);
 
     // Read 1D node coordinates
-    read_variable(ncid, "node_lon", grid.node_lon, true);
-    read_variable(ncid, "node_lat", grid.node_lat, true);
+    if (!read_variable(ncid, "node_lon", grid.node_lon, true) ||
+        !read_variable(ncid, "node_lat", grid.node_lat, true)) {
+        std::cerr << "Error [readUQgrid]: Failed reading mesh node coordinates from file " << filepath.string() << "\n";
+        grid.clear();
+        return false;
+    }
 
     // Read connectivity
     grid.face_node_connectivity.resize(num_conn);
-    read_variable(ncid, "face_node_connectivity", grid.face_node_connectivity, true);
+    if (!read_variable(ncid, "face_node_connectivity", grid.face_node_connectivity, true)) {
+        std::cerr << "Error [readUQgrid]: Failed reading connectivity array from file " << filepath.string() << "\n";
+        grid.clear();
+        return false;
+    }
 
     // Read optional subgrid obstruction factors
     grid.grid_ObsX.resize(num_2d);
@@ -279,7 +317,7 @@ UgridGrid readUQgrid(const std::filesystem::path& filepath) {
         grid.has_obsy = false;
     }
 
-    return grid;
+    return true;
 }
 
 } // namespace ww4::io

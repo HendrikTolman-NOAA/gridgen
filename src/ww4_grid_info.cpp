@@ -57,64 +57,62 @@ int main(int argc, char* argv[]) {
 
     const std::filesystem::path filepath(argv[1]);
 
-    try {
-        const ww4::io::UgridGrid grid = ww4::io::readUQgrid(filepath);
-
-        print_header("WW4 NetCDF-UGRID Grid Metadata Summary");
-        std::cout << " File Path            : " << filepath.string() << "\n";
-        std::cout << " Title                : " << (grid.title.empty() ? "(none)" : grid.title) << "\n";
-        std::cout << " Source               : " << (grid.source.empty() ? "(none)" : grid.source) << "\n";
-        std::cout << " Grid Type            : " << (grid.grid_type.empty() ? "(none)" : grid.grid_type) << "\n";
-        std::cout << " Coordinate Type      : " << (grid.coord_type.empty() ? "(none)" : grid.coord_type) << "\n";
-        std::cout << " Global Closure       : " << (grid.global_closure.empty() ? "(none)" : grid.global_closure) << "\n";
-        std::cout << " Bathymetry Source    : " << (grid.bathy_source.empty() ? "(none)" : grid.bathy_source) << "\n";
-        std::cout << " Boundary Source      : " << (grid.bound_source.empty() ? "(none)" : grid.bound_source) << "\n";
-        std::cout << " Conventions          : " << (grid.conventions.empty() ? "(none)" : grid.conventions) << "\n";
-        std::cout << " History              : " << (grid.history.empty() ? "(none)" : grid.history) << "\n";
-
-        print_header("Global Attributes (" + std::to_string(grid.global_attrs.size()) + ")");
-        for (const auto& [key, value] : grid.global_attrs) {
-            std::cout << " " << key << " = " << value << "\n";
-        }
-
-        print_header("Grid Dimensions");
-        std::cout << " NY (Latitude/Y rows) : " << grid.ny << "\n";
-        std::cout << " NX (Longitude/X cols): " << grid.nx << "\n";
-        std::cout << " Faces (ny * nx)      : " << grid.n_faces << "\n";
-        std::cout << " Mesh Nodes           : " << grid.n_nodes << "\n";
-        std::cout << " Max Nodes per Face   : " << grid.max_face_nodes << "\n";
-
-        print_header("Field Characteristics & Statistics");
-        if (!grid.grid_depth.empty()) {
-            float min_depth = std::numeric_limits<float>::max();
-            float max_depth = std::numeric_limits<float>::lowest();
-            for (const float d : grid.grid_depth) {
-                if (!std::isnan(d)) {
-                    min_depth = std::min(min_depth, d);
-                    max_depth = std::max(max_depth, d);
-                }
-            }
-            std::cout << " Depth Range          : " << min_depth << " m to " << max_depth << " m\n";
-        }
-
-        std::size_t wet_count = 0;
-        std::size_t dry_count = 0;
-        for (const int32_t m : grid.grid_mask) {
-            if (m != 0) {
-                ++wet_count;
-            } else {
-                ++dry_count;
-            }
-        }
-        std::cout << " Mask Cells           : " << wet_count << " wet, " << dry_count << " dry\n";
-        std::cout << " Has Obstructions     : ObsX=" << (grid.has_obsx ? "Yes" : "No")
-                  << ", ObsY=" << (grid.has_obsy ? "Yes" : "No") << "\n";
-
-        std::cout << "\nGrid file read successfully.\n";
-        return 0;
-
-    } catch (const std::exception& ex) {
-        std::cerr << "Error reading grid file '" << filepath.string() << "': " << ex.what() << "\n";
+    ww4::io::UgridGrid grid;
+    if (!ww4::io::readUQgrid(filepath, grid)) {
+        std::cerr << "Error reading grid file '" << filepath.string() << "'.\n";
         return 1;
     }
+
+    print_header("WW4 NetCDF-UGRID Grid Metadata Summary");
+    std::cout << " File Path            : " << filepath.string() << "\n";
+    std::cout << " Title                : " << (grid.title.empty() ? "(none)" : grid.title) << "\n";
+    std::cout << " Source               : " << (grid.source.empty() ? "(none)" : grid.source) << "\n";
+    std::cout << " Grid Type            : " << (grid.grid_type.empty() ? "(none)" : grid.grid_type) << "\n";
+    std::cout << " Coordinate Type      : " << (grid.coord_type.empty() ? "(none)" : grid.coord_type) << "\n";
+    std::cout << " Global Closure       : " << (grid.global_closure.empty() ? "(none)" : grid.global_closure) << "\n";
+    std::cout << " Bathymetry Source    : " << (grid.bathy_source.empty() ? "(none)" : grid.bathy_source) << "\n";
+    std::cout << " Boundary Source      : " << (grid.bound_source.empty() ? "(none)" : grid.bound_source) << "\n";
+    std::cout << " Conventions          : " << (grid.conventions.empty() ? "(none)" : grid.conventions) << "\n";
+    std::cout << " History              : " << (grid.history.empty() ? "(none)" : grid.history) << "\n";
+
+    print_header("Global Attributes (" + std::to_string(grid.global_attrs.size()) + ")");
+    for (const auto& [key, value] : grid.global_attrs) {
+        std::cout << " " << key << " = " << value << "\n";
+    }
+
+    print_header("Grid Dimensions");
+    std::cout << " NY (Latitude/Y rows) : " << grid.ny << "\n";
+    std::cout << " NX (Longitude/X cols): " << grid.nx << "\n";
+    std::cout << " Faces (ny * nx)      : " << grid.n_faces << "\n";
+    std::cout << " Mesh Nodes           : " << grid.n_nodes << "\n";
+    std::cout << " Max Nodes per Face   : " << grid.max_face_nodes << "\n";
+
+    print_header("Field Characteristics & Statistics");
+    if (!grid.grid_depth.empty()) {
+        float min_depth = std::numeric_limits<float>::max();
+        float max_depth = std::numeric_limits<float>::lowest();
+        for (const float d : grid.grid_depth) {
+            if (!std::isnan(d)) {
+                min_depth = std::min(min_depth, d);
+                max_depth = std::max(max_depth, d);
+            }
+        }
+        std::cout << " Depth Range          : " << min_depth << " m to " << max_depth << " m\n";
+    }
+
+    std::size_t wet_count = 0;
+    std::size_t dry_count = 0;
+    for (const int32_t m : grid.grid_mask) {
+        if (m != 0) {
+            ++wet_count;
+        } else {
+            ++dry_count;
+        }
+    }
+    std::cout << " Mask Cells           : " << wet_count << " wet, " << dry_count << " dry\n";
+    std::cout << " Has Obstructions     : ObsX=" << (grid.has_obsx ? "Yes" : "No")
+              << ", ObsY=" << (grid.has_obsy ? "Yes" : "No") << "\n";
+
+    std::cout << "\nGrid file read successfully.\n";
+    return 0;
 }
