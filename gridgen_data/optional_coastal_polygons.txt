@@ -214,7 +214,7 @@
 
 
 
-# Polygon 13: The inner seas in Denmark, including the Store and Lille Belt, The Kieler Bucht and the waters West of Samso (Level: 1, Points: 12)
+# Polygon 13: Denmark: Store and Lille Belt, The Kieler Bucht and the waters West of Samso (Level: 1, Points: 12)
       9.800000      54.400000
       9.400000      54.800000
       9.600000      55.300000
