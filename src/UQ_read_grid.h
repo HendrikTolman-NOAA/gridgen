@@ -1,19 +1,25 @@
-// WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+//| WAVEWATCH IV, open source, code management by NOAA / NWS                    |
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 //
-// Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+// @file UQ_read_grid.h
+// @brief NetCDF-UGRID 1.0 grid file reader subroutine interface for WAVEWATCH IV.
+// @details Header declaring data structures and the readUQgrid subroutine for reading
+// NetCDF-UGRID grid files in WAVEWATCH IV.
+//
+// @copyright © 2026 National Weather Service, National Oceanic and Atmospheric
+// Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks
+// of the National Weather Service.
 // NWS often uses Generative AI (GenAI) for code development and refactoring.
 // Whenever GenAI is used, NWS requires a full human review of code before it
 // is added to its repositories.
-//
-// @file ugrid_reader.hpp
-// @brief NetCDF-UGRID 1.0 grid file reader using netcdf-c for WAVEWATCH IV.
-// @author Aldgisl (Agentic AI), Hendrik Tolman
-// @author Jules (Agentic AI) (contributor)
-// @date Initial: 2026-10-27
-// @date Latest Update: 2026-10-28
+// @author Main Author(s) : Aldgisl (AI Persona), Hendrik L. Tolman
+// @author Contributors : Jules (Agentic AI)
+// @date Initial : 2026-10-27
+// @date Latest Update : 2026-10-30
 
-#ifndef WW4_UGRID_READER_HPP
-#define WW4_UGRID_READER_HPP
+#ifndef WW4_UQ_READ_GRID_H
+#define WW4_UQ_READ_GRID_H
 
 #include <cstdint>
 #include <filesystem>
@@ -108,14 +114,14 @@ struct UgridGrid {
  * and field arrays, and 1D UGRID mesh topology/coordinates/fields. All inputs and outputs
  * pass through the routine interface without stdio side effects.
  *
- * @param filepath Path to the NetCDF-UGRID file to read.
+ * @param[in] filepath Path to the NetCDF-UGRID file to read.
  * @return UgridGrid Struct containing all parsed metadata, 2D arrays, and 1D UGRID fields.
  * @pre File must exist and be a valid NetCDF / NetCDF-4 file.
  * @post Returned UgridGrid fields are populated with file contents.
  * @throws std::runtime_error If file opening fails or mandatory variables/dimensions are missing.
  */
-[[nodiscard]] UgridGrid read_ugrid_nc(const std::filesystem::path& filepath);
+[[nodiscard]] UgridGrid readUQgrid(const std::filesystem::path& filepath);
 
 } // namespace ww4::io
 
-#endif // WW4_UGRID_READER_HPP
+#endif // WW4_UQ_READ_GRID_H

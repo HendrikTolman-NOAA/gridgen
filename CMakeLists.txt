@@ -1,5 +1,5 @@
 #+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-#| WAVEWATCH IV, open source, code management by NOAA / NWS |
+#| WAVEWATCH IV, open source, code management by NOAA / NWS                    |
 #+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 #
 #@file CMakeLists.txt
@@ -16,7 +16,7 @@
 #@author Main Author(s) : Aldgisl (AI Persona), Hendrik L. Tolman
 #@author Contributors : Jules (Agentic AI), Kit Stokes, Jessica Meixner
 #@date Initial : 2026-07-09
-#@date Last update : 2026-10-29
+#@date Last update : 2026-10-30
 
 cmake_minimum_required(VERSION 3.25)
 
@@ -102,11 +102,11 @@ endif()
 # Library: ww4_ugrid_reader
 add_library(
     ww4_ugrid_reader
-    src/ugrid_reader.cpp
+    src/UQ_read_grid.cpp
 )
 
 target_include_directories(ww4_ugrid_reader PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
 target_link_libraries(ww4_ugrid_reader PUBLIC
@@ -116,22 +116,22 @@ target_link_libraries(ww4_ugrid_reader PUBLIC
 target_compile_options(ww4_ugrid_reader PRIVATE ${WW4_COMMON_COMPILE_OPTIONS})
 target_link_options(ww4_ugrid_reader PRIVATE ${WW4_COMMON_LINK_OPTIONS})
 
-# Executable: ww4_read_grid
+# Executable: ww4_grid_info
 add_executable(
-    ww4_read_grid
-    src/read_grid.cpp
+    ww4_grid_info
+    src/ww4_grid_info.cpp
 )
 
-target_link_libraries(ww4_read_grid PRIVATE
+target_link_libraries(ww4_grid_info PRIVATE
     ww4_ugrid_reader
 )
 
-target_compile_options(ww4_read_grid PRIVATE ${WW4_COMMON_COMPILE_OPTIONS})
-target_link_options(ww4_read_grid PRIVATE ${WW4_COMMON_LINK_OPTIONS})
+target_compile_options(ww4_grid_info PRIVATE ${WW4_COMMON_COMPILE_OPTIONS})
+target_link_options(ww4_grid_info PRIVATE ${WW4_COMMON_LINK_OPTIONS})
 
 # Place the main program in the exe directory
 set_target_properties(
-    ww4_read_grid
+    ww4_grid_info
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/exe
 )
 

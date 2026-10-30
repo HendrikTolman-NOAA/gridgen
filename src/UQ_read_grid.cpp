@@ -1,18 +1,23 @@
-// WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+//| WAVEWATCH IV, open source, code management by NOAA / NWS                    |
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 //
-// Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+// @file UQ_read_grid.cpp
+// @brief NetCDF-UGRID 1.0 grid file reader implementation using netcdf-c for WAVEWATCH IV.
+// @details Subroutine implementation for reading NetCDF-UGRID grid files in WAVEWATCH IV.
+//
+// @copyright © 2026 National Weather Service, National Oceanic and Atmospheric
+// Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks
+// of the National Weather Service.
 // NWS often uses Generative AI (GenAI) for code development and refactoring.
 // Whenever GenAI is used, NWS requires a full human review of code before it
 // is added to its repositories.
-//
-// @file ugrid_reader.cpp
-// @brief NetCDF-UGRID 1.0 grid file reader using netcdf-c for WAVEWATCH IV.
-// @author Aldgisl (Agentic AI), Hendrik Tolman
-// @author Jules (Agentic AI) (contributor)
-// @date Initial: 2026-10-27
-// @date Latest Update: 2026-10-28
+// @author Main Author(s) : Aldgisl (AI Persona), Hendrik L. Tolman
+// @author Contributors : Jules (Agentic AI)
+// @date Initial : 2026-10-27
+// @date Latest Update : 2026-10-30
 
-#include "ww4/ugrid_reader.hpp"
+#include "UQ_read_grid.h"
 
 #include <netcdf.h>
 
@@ -67,6 +72,10 @@ private:
 
 /**
  * @brief Utility function to check NetCDF error status.
+ *
+ * @param[in] status Status code returned by netcdf function.
+ * @param[in] msg    Descriptive error message prefix.
+ * @throws std::runtime_error If status is not NC_NOERR.
  */
 void check_nc_err(const int status, const std::string& msg) {
     if (status != NC_NOERR) {
@@ -76,6 +85,9 @@ void check_nc_err(const int status, const std::string& msg) {
 
 /**
  * @brief Utility function to read all global attributes into a map.
+ *
+ * @param[in] ncid Open NetCDF file ID.
+ * @return Map of attribute names to string values.
  */
 [[nodiscard]] std::map<std::string, std::string> read_all_global_attributes(const int ncid) {
     std::map<std::string, std::string> attrs;
@@ -111,6 +123,14 @@ void check_nc_err(const int status, const std::string& msg) {
 
 /**
  * @brief Reads data from a NetCDF variable into a std::vector.
+ *
+ * @tparam T Vector element data type.
+ * @param[in]  ncid     Open NetCDF file ID.
+ * @param[in]  varname  Variable name to read.
+ * @param[out] vec      Vector to store variable values.
+ * @param[in]  required Whether missing variable triggers exception.
+ * @return true if variable was successfully read, false otherwise.
+ * @throws std::runtime_error If required variable is missing or reading fails.
  */
 template <typename T>
 bool read_variable(const int ncid, const char* varname, std::vector<T>& vec, const bool required = true) {
@@ -147,7 +167,7 @@ bool read_variable(const int ncid, const char* varname, std::vector<T>& vec, con
 
 } // namespace
 
-UgridGrid read_ugrid_nc(const std::filesystem::path& filepath) {
+UgridGrid readUQgrid(const std::filesystem::path& filepath) {
     if (!std::filesystem::exists(filepath)) {
         throw std::runtime_error("File does not exist: " + filepath.string());
     }

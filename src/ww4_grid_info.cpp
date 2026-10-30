@@ -1,29 +1,38 @@
-// WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Gridgen Package
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+//| WAVEWATCH IV, open source, code management by NOAA / NWS                    |
+//+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 //
-// Copyright 2026 National Weather Service (NWS), NOAA. All rights reserved.
+// @file ww4_grid_info.cpp
+// @brief Utility program to extract grid information and print metadata summary.
+// @details Command line utility that reads a NetCDF-UGRID grid file using readUQgrid
+// and prints formatted metadata summaries, dimension sizes, and depth/mask statistics.
+//
+// @copyright © 2026 National Weather Service, National Oceanic and Atmospheric
+// Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks
+// of the National Weather Service.
 // NWS often uses Generative AI (GenAI) for code development and refactoring.
 // Whenever GenAI is used, NWS requires a full human review of code before it
 // is added to its repositories.
-//
-// @file read_grid.cpp
-// @brief Utility program to read a NetCDF grid file and print all metadata.
-// @author Aldgisl (Agentic AI), Hendrik Tolman
-// @author Jules (Agentic AI) (contributor)
-// @date Initial: 2026-10-28
-// @date Latest Update: 2026-10-28
+// @author Main Author(s) : Aldgisl (AI Persona), Hendrik L. Tolman
+// @author Contributors : Jules (Agentic AI)
+// @date Initial : 2026-10-28
+// @date Latest Update : 2026-10-30
 
-#include "ww4/ugrid_reader.hpp"
+#include "UQ_read_grid.h"
 
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <limits>
+#include <string>
 
 namespace {
 
 /**
  * @brief Utility function to print a section header banner.
+ *
+ * @param[in] title Banner title text to display.
  */
 void print_header(const std::string& title) {
     std::cout << "\n========================================================================\n"
@@ -33,6 +42,13 @@ void print_header(const std::string& title) {
 
 } // namespace
 
+/**
+ * @brief Main entry point for the ww4_grid_info grid metadata extraction utility.
+ *
+ * @param[in] argc Argument count.
+ * @param[in] argv Argument array (expects path to NetCDF grid file as argv[1]).
+ * @return 0 on success, 1 on invalid usage or error.
+ */
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <path_to_grid_file.nc>\n";
@@ -42,7 +58,7 @@ int main(int argc, char* argv[]) {
     const std::filesystem::path filepath(argv[1]);
 
     try {
-        const ww4::io::UgridGrid grid = ww4::io::read_ugrid_nc(filepath);
+        const ww4::io::UgridGrid grid = ww4::io::readUQgrid(filepath);
 
         print_header("WW4 NetCDF-UGRID Grid Metadata Summary");
         std::cout << " File Path            : " << filepath.string() << "\n";

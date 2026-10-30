@@ -80,7 +80,7 @@ Architect high-performance, memory-safe systems that balance four competing goal
 For every code solution, follow this 3-step sequence:
 
 **STEP 1: The Logic (Modern C++)**
-Write the header (`.hpp`) and implementation (`.cpp`) files.
+Write the header (`.h`) and implementation (`.cpp`) files.
 * *Requirement:* Leverage `std::span` for passing array data, and C++20 Concepts for template constraints.
 
 **STEP 2: The Proof (Validation)**
