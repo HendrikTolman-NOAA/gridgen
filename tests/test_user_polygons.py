@@ -325,10 +325,10 @@ def test_netherlands_polygons_loading_and_masking() -> None:
     assert len(all_polys) == 94
 
     nl_poly = all_polys[1]
-    ws_poly = all_polys[13]
+    ws_poly = all_polys[14]
 
     assert nl_poly is not None, "Netherlands below sea level polygon 2 must be present"
-    assert ws_poly is not None, "Netherlands below sea level Wester Schelde polygon 14 must be present"
+    assert ws_poly is not None, "Netherlands below sea level Wester Schelde polygon 15 must be present"
 
     # Test IJsselmeer point (5.2°E, 52.6°N) -> inside Netherlands polygon 2, outside Wester Schelde polygon 14
     lon_ij, lat_ij = create_regular_grid(
@@ -376,19 +376,18 @@ def test_netherlands_polygons_loading_and_masking() -> None:
 
 
 def test_oresund_polygon_loading_and_masking() -> None:
-    """Test that Denmark - Oresund polygon 94 loads correctly and masks points in the Oresund sound."""
+    """Test that Denmark - Oresund polygon 14 loads correctly and masks points in the Oresund sound."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
     assert len(all_polys) == 94
 
-    oresund_poly = all_polys[93]
-    assert oresund_poly is not None, "Oresund polygon 94 must be present"
+    oresund_poly = all_polys[13]
+    assert oresund_poly is not None, "Oresund polygon 14 must be present"
     assert "Oresund" in oresund_poly.get("name", "")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 77
     assert len(active_polys) == 77
     assert any("Oresund" in p.get("name", "") for p in active_polys)
 
@@ -402,15 +401,15 @@ def test_oresund_polygon_loading_and_masking() -> None:
 
 
 def test_waddenzee_polygons_loading_and_masking() -> None:
-    """Test that Waddenzee polygons (15 and 16) load correctly and mask expected regions."""
+    """Test that Waddenzee polygons (16 and 17) load correctly and mask expected regions."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
     assert len(all_polys) == 94
 
-    poly_east = all_polys[14]
-    poly_north = all_polys[15]
+    poly_east = all_polys[15]
+    poly_north = all_polys[16]
 
     assert poly_east is not None, "Waddenzee East polygon 15 must be present"
     assert poly_north is not None, "Waddenzee North polygon 16 must be present"
