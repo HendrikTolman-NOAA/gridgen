@@ -87,6 +87,16 @@ def main() -> None:
         help="Grid coordinate projection/layout type (default: regular)",
     )
     gen_group.add_argument(
+        "--coord-type",
+        type=str,
+        default="spherical",
+        choices=[
+            "spherical",
+            "cartesian",
+        ],
+        help="Grid coordinate system type ('spherical' or 'cartesian', default: spherical)",
+    )
+    gen_group.add_argument(
         "--out-dir", type=str, default=".", help="Output directory for generated files (default: .)"
     )
     gen_group.add_argument(
@@ -376,6 +386,15 @@ def main() -> None:
     print("[Step 4/5] Computing directional sub-grid obstruction factors (ObsX, ObsY)...")
     ObsX, ObsY = create_obstr(lon, lat, mat_bounds, m_mod)
 
+    # Determine if grid has global closure (either explicitly requested or NX * SX == 360)
+    is_global_closure = args.global_closure
+    if args.grid_type == "regular":
+        sx_val = args.sx
+        if (
+            sx_val is not None and np.isclose(float(args.nx) * float(sx_val), 360.0)
+        ) or (sx_val is None and args.lon_end is None and args.nx == 1440):
+            is_global_closure = True
+
     # Step 5: Export NetCDF-UGRID 1.0 (Default Output)
     print("[Step 5/5] Exporting WW4 NetCDF-UGRID 1.0 grid dataset...")
     ds_ugrid = create_ugrid_dataset(
@@ -388,6 +407,9 @@ def main() -> None:
         title=f"WW4 Grid {args.name}",
         bathy_source=args.bathy_source,
         bound_source=args.bound_file,
+        grid_type=args.grid_type,
+        coord_type=args.coord_type,
+        global_closure=is_global_closure,
     )
     nc_path = f"{args.out_dir}/{args.name}_ugrid.nc"
     write_ugrid_nc(ds_ugrid, nc_path)
@@ -423,6 +445,9 @@ def main() -> None:
             ObsY=ObsY,
             bathy_source=args.bathy_source,
             bound_source=args.bound_file,
+            grid_type=args.grid_type,
+            coord_type=args.coord_type,
+            global_closure=is_global_closure,
         )
 
     print("Successfully generated WW4 NetCDF-UGRID grid output!")

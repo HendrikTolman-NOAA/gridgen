@@ -37,6 +37,9 @@ def nc_ww3_grdwrite(
     ObsY: np.ndarray | None = None,
     bathy_source: str = "etopo2",
     bound_source: str | None = None,
+    grid_type: str = "regular",
+    coord_type: str = "spherical",
+    global_closure: bool | str = False,
 ) -> None:
     """Write GMT / COARDS compliant NetCDF grid file for WAVEWATCH III.
 
@@ -141,6 +144,9 @@ def nc_ww3_grdwrite(
             "Conventions": "COARDS/CF-1.0",
             "title": filename,
             "source": "WAVEWATCH IV Gridgen Package",
+            "grid_type": grid_type,
+            "coord_type": coord_type,
+            "global_closure": "true" if str(global_closure).lower() in ("true", "1") else "false",
             "bathy_source": bathy_source,
             "bound_source": bound_source or "",
             "history": "File written by WAVEWATCH IV Python gridgen package",

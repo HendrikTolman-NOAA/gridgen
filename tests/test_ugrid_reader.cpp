@@ -39,10 +39,10 @@ void create_test_ugrid_nc(const std::filesystem::path& filepath, const bool incl
         python_cmd +=
             "obsx = np.array([[0.1, 0.2], [0.3, 0.4]], dtype=float); "
             "obsy = np.array([[0.5, 0.6], [0.7, 0.8]], dtype=float); "
-            "ds = create_ugrid_dataset(x, y, depth, mask, obsx, obsy, bathy_source='etopo2'); ";
+            "ds = create_ugrid_dataset(x, y, depth, mask, obsx, obsy, bathy_source='etopo2', grid_type='regular', coord_type='spherical', global_closure=True); ";
     } else {
         python_cmd +=
-            "ds = create_ugrid_dataset(x, y, depth, mask, bathy_source='etopo2'); ";
+            "ds = create_ugrid_dataset(x, y, depth, mask, bathy_source='etopo2', grid_type='stereographic', coord_type='cartesian', global_closure=False); ";
     }
 
     python_cmd += "write_ugrid_nc(ds, '" + filepath.string() + "')\"";
@@ -95,9 +95,15 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithObstructions) {
     // Verify metadata attributes
     EXPECT_FALSE(grid.conventions.empty());
     EXPECT_FALSE(grid.source.empty());
+    EXPECT_EQ(grid.grid_type, "regular");
+    EXPECT_EQ(grid.coord_type, "spherical");
+    EXPECT_EQ(grid.global_closure, "true");
     EXPECT_EQ(grid.bathy_source, "etopo2");
     EXPECT_FALSE(grid.global_attrs.empty());
     EXPECT_EQ(grid.global_attrs.at("bathy_source"), "etopo2");
+    EXPECT_EQ(grid.global_attrs.at("grid_type"), "regular");
+    EXPECT_EQ(grid.global_attrs.at("coord_type"), "spherical");
+    EXPECT_EQ(grid.global_attrs.at("global_closure"), "true");
 
     // Verify obstruction flags
     EXPECT_TRUE(grid.has_obsx);
@@ -139,6 +145,10 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithoutObstructions) {
     EXPECT_EQ(grid.ny, 2u);
     EXPECT_EQ(grid.nx, 2u);
     EXPECT_EQ(grid.n_faces, 4u);
+
+    EXPECT_EQ(grid.grid_type, "stereographic");
+    EXPECT_EQ(grid.coord_type, "cartesian");
+    EXPECT_EQ(grid.global_closure, "false");
 
     EXPECT_FALSE(grid.has_obsx);
     EXPECT_FALSE(grid.has_obsy);

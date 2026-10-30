@@ -77,7 +77,18 @@ def test_nc_ww3_grdwrite(tmp_path):
     ObsY = np.zeros((3, 3), dtype=float)
 
     filepath = str(tmp_path / "test_coards.nc")
-    nc_ww3_grdwrite(lon, lat, z, filepath, mask=mask, ObsX=ObsX, ObsY=ObsY)
+    nc_ww3_grdwrite(
+        lon,
+        lat,
+        z,
+        filepath,
+        mask=mask,
+        ObsX=ObsX,
+        ObsY=ObsY,
+        grid_type="regular",
+        coord_type="spherical",
+        global_closure=True,
+    )
 
     assert os.path.exists(filepath)
     ds = xr.open_dataset(filepath)
@@ -86,6 +97,9 @@ def test_nc_ww3_grdwrite(tmp_path):
     assert "ObsX" in ds
     assert "ObsY" in ds
     assert ds.attrs["Conventions"] == "COARDS/CF-1.0"
+    assert ds.attrs["grid_type"] == "regular"
+    assert ds.attrs["coord_type"] == "spherical"
+    assert ds.attrs["global_closure"] == "true"
     ds.close()
 
 
@@ -98,7 +112,17 @@ def test_create_ugrid_dataset_full_grid(tmp_path):
     ObsX = np.zeros((3, 3), dtype=float)
     ObsY = np.zeros((3, 3), dtype=float)
 
-    ds = create_ugrid_dataset(lon, lat, z, mask, ObsX=ObsX, ObsY=ObsY)
+    ds = create_ugrid_dataset(
+        lon,
+        lat,
+        z,
+        mask,
+        ObsX=ObsX,
+        ObsY=ObsY,
+        grid_type="regular",
+        coord_type="spherical",
+        global_closure=True,
+    )
     assert "grid_lon" in ds.coords
     assert "grid_lat" in ds.coords
     assert "grid_depth" in ds
@@ -106,6 +130,9 @@ def test_create_ugrid_dataset_full_grid(tmp_path):
     assert "grid_ObsX" in ds
     assert "grid_ObsY" in ds
     assert ds["grid_lon"].shape == (3, 3)
+    assert ds.attrs["grid_type"] == "regular"
+    assert ds.attrs["coord_type"] == "spherical"
+    assert ds.attrs["global_closure"] == "true"
 
     filepath = str(tmp_path / "test_ugrid.nc")
     write_ugrid_nc(ds, filepath)
@@ -113,4 +140,7 @@ def test_create_ugrid_dataset_full_grid(tmp_path):
     ds_read = xr.open_dataset(filepath)
     assert "grid_lon" in ds_read.coords
     assert ds_read["grid_depth"].shape == (3, 3)
+    assert ds_read.attrs["grid_type"] == "regular"
+    assert ds_read.attrs["coord_type"] == "spherical"
+    assert ds_read.attrs["global_closure"] == "true"
     ds_read.close()

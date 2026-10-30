@@ -48,6 +48,9 @@ int main(int argc, char* argv[]) {
         std::cout << " File Path            : " << filepath.string() << "\n";
         std::cout << " Title                : " << (grid.title.empty() ? "(none)" : grid.title) << "\n";
         std::cout << " Source               : " << (grid.source.empty() ? "(none)" : grid.source) << "\n";
+        std::cout << " Grid Type            : " << (grid.grid_type.empty() ? "(none)" : grid.grid_type) << "\n";
+        std::cout << " Coordinate Type      : " << (grid.coord_type.empty() ? "(none)" : grid.coord_type) << "\n";
+        std::cout << " Global Closure       : " << (grid.global_closure.empty() ? "(none)" : grid.global_closure) << "\n";
         std::cout << " Bathymetry Source    : " << (grid.bathy_source.empty() ? "(none)" : grid.bathy_source) << "\n";
         std::cout << " Boundary Source      : " << (grid.bound_source.empty() ? "(none)" : grid.bound_source) << "\n";
         std::cout << " Conventions          : " << (grid.conventions.empty() ? "(none)" : grid.conventions) << "\n";
