@@ -47,7 +47,7 @@ void print_header(const std::string& title) {
  *
  * @param[in] argc Argument count.
  * @param[in] argv Argument array (expects path to NetCDF grid file as argv[1]).
- * @return 0 on success, 1 on invalid usage or error.
+ * @return 0 on success, status code (1, 2, or 3) on error.
  */
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -58,9 +58,19 @@ int main(int argc, char* argv[]) {
     const std::filesystem::path filepath(argv[1]);
 
     ww4::io::UgridGrid grid;
-    if (!ww4::io::readUQgrid(filepath, grid)) {
-        std::cerr << "Error reading grid file '" << filepath.string() << "'.\n";
-        return 1;
+    const int status = ww4::io::readUQgrid(filepath, grid);
+    if (status != 0) {
+        std::cerr << "Error: readUQgrid failed for '" << filepath.string() << "' with status code " << status;
+        if (status == 1) {
+            std::cerr << " (File not found).\n";
+        } else if (status == 2) {
+            std::cerr << " (Failure to read metadata).\n";
+        } else if (status == 3) {
+            std::cerr << " (Failure to read grid data).\n";
+        } else {
+            std::cerr << " (Unknown error).\n";
+        }
+        return status;
     }
 
     print_header("WW4 NetCDF-UGRID Grid Metadata Summary");

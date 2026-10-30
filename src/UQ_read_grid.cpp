@@ -5,7 +5,7 @@
 // @file UQ_read_grid.cpp
 // @brief NetCDF-UGRID 1.0 grid file reader implementation using netcdf-c for WAVEWATCH IV.
 // @details Subroutine implementation for reading NetCDF-UGRID grid files in WAVEWATCH IV.
-// Checks for file existence, metadata parsing success, and complete dataset reading.
+// Checks for file existence (status 1), metadata parsing success (status 2), and complete dataset reading (status 3).
 //
 // @copyright © 2026 National Weather Service, National Oceanic and Atmospheric
 // Administration. WAVEWATCH IV (TM) and WW4 (TM) are trademarks
@@ -179,26 +179,26 @@ bool read_variable(const int ncid, const char* varname, std::vector<T>& vec, con
 
 } // namespace
 
-bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
+int readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
     grid.clear();
 
-    // Step 1: Check for file existence
+    // Return code 1: File not found
     std::error_code ec;
     if (!std::filesystem::exists(filepath, ec) || ec) {
         std::cerr << "Error [readUQgrid]: File does not exist: " << filepath.string() << "\n";
-        return false;
+        return 1;
     }
 
     int raw_ncid = -1;
     const int open_status = nc_open(filepath.string().c_str(), NC_NOWRITE, &raw_ncid);
     if (open_status != NC_NOERR) {
         std::cerr << "Error [readUQgrid]: Failed opening NetCDF file " << filepath.string() << ": " << nc_strerror(open_status) << "\n";
-        return false;
+        return 1;
     }
     const NcHandle nc_handle(raw_ncid);
     const int ncid = nc_handle.get();
 
-    // Step 2: Successful reading of metadata (dimensions and global attributes)
+    // Return code 2: Failure to read metadata (dimensions and global attributes)
     auto read_dim_len = [ncid](const char* dimname, std::size_t& len) -> bool {
         int dimid = -1;
         const int status = nc_inq_dimid(ncid, dimname, &dimid);
@@ -216,7 +216,7 @@ bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
         !read_dim_len("nMaxMesh2_face_nodes", grid.max_face_nodes)) {
         std::cerr << "Error [readUQgrid]: Failed reading metadata dimensions from file " << filepath.string() << "\n";
         grid.clear();
-        return false;
+        return 2;
     }
 
     // Read all global attributes
@@ -236,7 +236,7 @@ bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
     grid.conventions = get_attr("Conventions");
     grid.history = get_attr("history");
 
-    // Step 3: Successful reading of the entire file (all data arrays)
+    // Return code 3: Failure to read grid data (all data arrays)
     const std::size_t num_2d = grid.ny * grid.nx;
     const std::size_t num_faces = grid.n_faces;
     const std::size_t num_nodes = grid.n_nodes;
@@ -255,7 +255,7 @@ bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
         !read_variable(ncid, "grid_mask", grid.grid_mask, true)) {
         std::cerr << "Error [readUQgrid]: Failed reading 2D grid arrays from file " << filepath.string() << "\n";
         grid.clear();
-        return false;
+        return 3;
     }
 
     // Allocate 1D face vectors
@@ -271,7 +271,7 @@ bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
         !read_variable(ncid, "mask", grid.mask, true)) {
         std::cerr << "Error [readUQgrid]: Failed reading 1D face arrays from file " << filepath.string() << "\n";
         grid.clear();
-        return false;
+        return 3;
     }
 
     // Allocate 1D node vectors
@@ -283,7 +283,7 @@ bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
         !read_variable(ncid, "node_lat", grid.node_lat, true)) {
         std::cerr << "Error [readUQgrid]: Failed reading mesh node coordinates from file " << filepath.string() << "\n";
         grid.clear();
-        return false;
+        return 3;
     }
 
     // Read connectivity
@@ -291,7 +291,7 @@ bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
     if (!read_variable(ncid, "face_node_connectivity", grid.face_node_connectivity, true)) {
         std::cerr << "Error [readUQgrid]: Failed reading connectivity array from file " << filepath.string() << "\n";
         grid.clear();
-        return false;
+        return 3;
     }
 
     // Read optional subgrid obstruction factors
@@ -317,7 +317,8 @@ bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid) {
         grid.has_obsy = false;
     }
 
-    return true;
+    // Return code 0: Success
+    return 0;
 }
 
 } // namespace ww4::io

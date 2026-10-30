@@ -147,17 +147,16 @@ struct UgridGrid {
  *
  * @details Opens the NetCDF file specified by `filepath` in read-only mode using netcdf-c API,
  * verifies file existence, parses all metadata attributes and grid dimensions, and reads 2D/1D
- * curvilinear grid coordinate and field arrays and mesh topology. If any check fails (file missing,
- * invalid metadata, or incomplete file read), the routine aborts early without terminating the calling
- * program and returns `false`. Returns `true` on complete success.
+ * curvilinear grid coordinate and field arrays and mesh topology. Returns an integer status code:
+ * 0 for success, 1 for file not found, 2 for failure to read metadata, and 3 for failure to read grid data.
  *
  * @param[in]  filepath Path to the NetCDF-UGRID file to read.
  * @param[out] grid     UgridGrid struct populated with file metadata and data arrays on success.
- * @return true if the entire file and metadata were successfully read, false on failure.
+ * @return int Status code (0 = success, 1 = file not found, 2 = metadata failure, 3 = grid data failure).
  * @pre File must exist and be a valid NetCDF-UGRID file.
- * @post On success, `grid` fields are populated with file contents. On failure, `grid` is cleared.
+ * @post On success (return code 0), `grid` fields are populated with file contents. On failure, `grid` is cleared.
  */
-[[nodiscard]] bool readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid);
+[[nodiscard]] int readUQgrid(const std::filesystem::path& filepath, UgridGrid& grid);
 
 } // namespace ww4::io
 
