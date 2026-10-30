@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 77 active polygons set to 1 out of 93 total
-    assert len(active_polys) == 77
+    # user_polygons.flag has 78 active polygons set to 1 out of 94 total
+    assert len(active_polys) == 78
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 77 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 78 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -278,7 +278,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 93 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 94 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -288,7 +288,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 93
+    assert len(all_polys) == 94
 
     # Caspian Sea is now Polygon 1
     caspian_poly = None
@@ -317,38 +317,87 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
 
 def test_netherlands_polygons_loading_and_masking() -> None:
-    """Test that Netherlands below sea level IJsselmeer and Markermeer (Polygon 2) and Wester Schelde (Polygon 14) load separately and mask points correctly."""
+    """Test that Netherlands below sea level polygon 2 (covering IJsselmeer, Markermeer, Noord/Zuid Holland, Utrecht) and Wester Schelde (Polygon 14) load separately and mask points correctly."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 93
+    assert len(all_polys) == 94
 
-    ij_poly = all_polys[1]
+    nl_poly = all_polys[1]
     ws_poly = all_polys[13]
 
-    assert ij_poly is not None, "Netherlands below sea level IJsselmeer and Markermeer polygon 2 must be present"
+    assert nl_poly is not None, "Netherlands below sea level polygon 2 must be present"
     assert ws_poly is not None, "Netherlands below sea level Wester Schelde polygon 14 must be present"
 
-    # Test IJsselmeer point (5.2°E, 52.6°N) -> inside IJsselmeer polygon 52, outside Wester Schelde polygon 53
+    # Test IJsselmeer point (5.2°E, 52.6°N) -> inside Netherlands polygon 2, outside Wester Schelde polygon 14
     lon_ij, lat_ij = create_regular_grid(
         NX=5, NY=5, LON_START=5.0, LON_END=5.4, LAT_START=52.4, LAT_END=52.8
     )
     mask_ij = np.ones_like(lon_ij, dtype=int)
-    cleaned_ij = clean_mask(lon_ij, lat_ij, mask_ij, [ij_poly])
+    cleaned_ij = clean_mask(lon_ij, lat_ij, mask_ij, [nl_poly])
     assert cleaned_ij[2, 2] == 0
     cleaned_ij_ws = clean_mask(lon_ij, lat_ij, mask_ij, [ws_poly])
     assert cleaned_ij_ws[2, 2] == 1
 
-    # Test Wester Schelde point (3.8°E, 51.35°N) -> inside Wester Schelde polygon 53, outside IJsselmeer polygon 52
+    # Test Amsterdam (Noord Holland) point (4.9°E, 52.37°N) -> inside Netherlands polygon 2
+    lon_ams, lat_ams = create_regular_grid(
+        NX=3, NY=3, LON_START=4.8, LON_END=5.0, LAT_START=52.3, LAT_END=52.4
+    )
+    mask_ams = np.ones_like(lon_ams, dtype=int)
+    cleaned_ams = clean_mask(lon_ams, lat_ams, mask_ams, [nl_poly])
+    assert cleaned_ams[1, 1] == 0
+
+    # Test Rotterdam (Zuid Holland) point (4.48°E, 51.92°N) -> inside Netherlands polygon 2
+    lon_rot, lat_rot = create_regular_grid(
+        NX=3, NY=3, LON_START=4.4, LON_END=4.6, LAT_START=51.85, LAT_END=51.95
+    )
+    mask_rot = np.ones_like(lon_rot, dtype=int)
+    cleaned_rot = clean_mask(lon_rot, lat_rot, mask_rot, [nl_poly])
+    assert cleaned_rot[1, 1] == 0
+
+    # Test Utrecht city point (5.12°E, 52.09°N) -> inside Netherlands polygon 2
+    lon_utr, lat_utr = create_regular_grid(
+        NX=3, NY=3, LON_START=5.0, LON_END=5.2, LAT_START=52.0, LAT_END=52.2
+    )
+    mask_utr = np.ones_like(lon_utr, dtype=int)
+    cleaned_utr = clean_mask(lon_utr, lat_utr, mask_utr, [nl_poly])
+    assert cleaned_utr[1, 1] == 0
+
+    # Test Wester Schelde point (3.8°E, 51.35°N) -> inside Wester Schelde polygon 14, outside Netherlands polygon 2
     lon_ws, lat_ws = create_regular_grid(
         NX=3, NY=3, LON_START=3.7, LON_END=3.9, LAT_START=51.3, LAT_END=51.4
     )
     mask_ws = np.ones_like(lon_ws, dtype=int)
     cleaned_ws = clean_mask(lon_ws, lat_ws, mask_ws, [ws_poly])
     assert cleaned_ws[1, 1] == 0
-    cleaned_ws_ij = clean_mask(lon_ws, lat_ws, mask_ws, [ij_poly])
+    cleaned_ws_ij = clean_mask(lon_ws, lat_ws, mask_ws, [nl_poly])
     assert cleaned_ws_ij[1, 1] == 1
+
+
+def test_oresund_polygon_loading_and_masking() -> None:
+    """Test that Denmark - Oresund polygon 94 loads correctly and masks points in the Oresund sound."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
+
+    all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
+    assert len(all_polys) == 94
+
+    oresund_poly = all_polys[93]
+    assert oresund_poly is not None, "Oresund polygon 94 must be present"
+    assert "Oresund" in oresund_poly.get("name", "")
+
+    active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
+    assert len(active_polys) == 78
+    assert any("Oresund" in p.get("name", "") for p in active_polys)
+
+    # Test Oresund point (12.6°E, 55.68°N) near Copenhagen
+    lon_or, lat_or = create_regular_grid(
+        NX=3, NY=3, LON_START=12.5, LON_END=12.7, LAT_START=55.6, LAT_END=55.76
+    )
+    mask_or = np.ones_like(lon_or, dtype=int)
+    cleaned_or = clean_mask(lon_or, lat_or, mask_or, [oresund_poly])
+    assert cleaned_or[1, 1] == 0
 
 
 def test_waddenzee_polygons_loading_and_masking() -> None:
@@ -357,7 +406,7 @@ def test_waddenzee_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 93
+    assert len(all_polys) == 94
 
     poly_east = all_polys[14]
     poly_north = all_polys[15]
@@ -388,7 +437,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 77
+    assert len(active_polys) == 78
 
     japan_names = [
         "Japan: Uchiura Bay",
@@ -423,7 +472,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 93
+    assert len(all_polys) == 94
 
     norway_names = [
         "Norway: Oslofjord",
@@ -469,7 +518,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
         assert len(p["x"]) >= 10, f"Polygon '{p['name']}' must have at least 10 points (has {len(p['x'])})"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 77
+    assert len(active_polys) == 78
 
     # Check active switches: 6 Norway active, 8 UK active (Irish Sea disabled)
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
