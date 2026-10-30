@@ -9,88 +9,89 @@
  9 0 	 Sea of Azov
 10 0 	 Baltic Sea
 11 1 	 The Gulf of Riga and Moonsund
-12 1 	 The Aland Islands and Turku Archipelago
-13 1 	 Denmark: Store and Lille Belt, The Kieler Bucht and the waters West of Samso
-14 1 	 Denmark - Oresund
-15 1 	 Netherlands - Wester Schelde
-16 1 	 Waddenzee East of the Elbe River
-17 1 	 Waddenzee North of the Elbe River
-18 1 	 Norway: Oslofjord
-19 1 	 Norway: Hardangerfjord
-20 1 	 Norway: Sognefjord
-21 1 	 Norway: Trondheimsfjord
-22 0 	 Norway: Vestfjorden
-23 1 	 Norway: Varangerfjorden
-24 1 	 Norway: Northern Fjords (Andenes to Russian border)
-25 1 	 UK: Firth of Forth
-26 1 	 UK: Moray Firth
-27 1 	 UK: Solway Firth
-28 1 	 UK: The Wash
-29 1 	 UK: Thames Estuary
-30 1 	 UK: Bristol Channel
-31 0 	 UK: Irish Sea
-32 1 	 UK: Orkney Islands
-33 1 	 UK: Shetland Islands
-34 1 	 UK: Hebrides
-35 1 	 Faroe Islands
-36 1 	 White Sea
-37 0 	 Red Sea
-38 0 	 Persian Gulf
-39 0 	 Gulf of Aden
-40 0 	 Gulf of Oman
-41 0 	 Sea of Okhotsk
-42 1 	 Sea of Okhotsk - Penzhina Bay
-43 1 	 Sea of Okhotsk - Gizhigin Bay
-44 1 	 Sea of Okhotsk - Taui Bay
-45 1 	 Sea of Okhotsk - Udskaya Guba
-46 1 	 Sea of Okhotsk - Guba Yakshina
-47 1 	 Sea of Okhotsk - Zaliv Akademii
-48 0 	 Sea of Japan
-49 1 	 Japan: Uchiura Bay
-50 1 	 Japan: Mutsu Bay
-51 1 	 Japan: Tokyo Bay
-52 1 	 Japan: Ise Bay
-53 1 	 Japan: Osaka Bay
-54 1 	 Japan: Seto Inland Sea
-55 1 	 Japan: Yamaguchi Bay
-56 1 	 Japan: Ariake Sea
-57 1 	 Japan: Kagoshima Bay
-58 1 	 Japan: Omura Bay
-59 1 	 USA East Coast - Long Island Sound
-60 1 	 USA East Coast - Delaware Bay
-61 1 	 USA East Coast - Atlantic City
-62 1 	 USA East Coast - Chesapeake Bay + Ocean City
-63 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
-64 1 	 USA East Coast - Cape Canaveral (Florida)
-65 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
-66 1 	 USA Gulf Coast - Tampa Bay (Florida)
-67 1 	 USA Gulf Coast - Panama City (Florida)
-68 1 	 USA Gulf Coast - Mobile Bay (Alabama)
-69 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
-70 1 	 USA Gulf Coast - Grand Isle (New Orleans)
-71 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
-72 1 	 USA Gulf Coast - Galveston Bay (Texas)
-73 1 	 USA Gulf Coast - Padre Island (Texas)
-74 1 	 Mexico Gulf Coast - Laguna Madre
-75 1 	 Mexico Gulf Coast - Tamiahua
-76 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
-77 1 	 Mexico Gulf Coast - Belize (Yukatan)
-78 1 	 Honduras Gulf Coast - Laguna Caratasca
-79 1 	 Nicaragua Gulf Coast
-80 1 	 Panama Gulf Coast
-81 1 	 Columbia Gulf Coast
-82 1 	 Venezuela Gulf Coast - Lago de Maracaibo
-83 1 	 Venezuela Gulf Coast - Gulf of Paria
-84 1 	 Brazil East Coast - Amazon Delta
-85 1 	 Alaska - Cook Inlet
-86 1 	 Alaska - Prince William Sound
-87 1 	 Alaska - Yakutat Bay
-88 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
-89 1 	 Canada West Coast
-90 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
-91 1 	 US West Coast - Columbia River Estuary
-92 1 	 US West Coast - San Francisco Harbor
-93 1 	 West Coast - Lake Ojo de Liebre (Baja California)
-94 1 	 West Coast - Laguna S. Ignacio (Baja California)
-95 1 	 West Coast - Bay of Magdalena (Baja California)
-96 0 	 West Coast - Gulf of California (Baja California)
+12 1 	 Baltic Sea - Gulf of Gdansk
+13 1 	 The Aland Islands and Turku Archipelago
+14 1 	 Denmark: Store and Lille Belt, The Kieler Bucht and the waters West of Samso
+15 1 	 Denmark - Oresund
+16 1 	 Netherlands - Wester Schelde
+17 1 	 Waddenzee East of the Elbe River
+18 1 	 Waddenzee North of the Elbe River
+19 1 	 Norway: Oslofjord
+20 1 	 Norway: Hardangerfjord
+21 1 	 Norway: Sognefjord
+22 1 	 Norway: Trondheimsfjord
+23 0 	 Norway: Vestfjorden
+24 1 	 Norway: Varangerfjorden
+25 1 	 Norway: Northern Fjords (Andenes to Russian border)
+26 1 	 UK: Firth of Forth
+27 1 	 UK: Moray Firth
+28 1 	 UK: Solway Firth
+29 1 	 UK: The Wash
+30 1 	 UK: Thames Estuary
+31 1 	 UK: Bristol Channel
+32 0 	 UK: Irish Sea
+33 1 	 UK: Orkney Islands
+34 1 	 UK: Shetland Islands
+35 1 	 UK: Hebrides
+36 1 	 Faroe Islands
+37 1 	 White Sea
+38 0 	 Red Sea
+39 0 	 Persian Gulf
+40 0 	 Gulf of Aden
+41 0 	 Gulf of Oman
+42 0 	 Sea of Okhotsk
+43 1 	 Sea of Okhotsk - Penzhina Bay
+44 1 	 Sea of Okhotsk - Gizhigin Bay
+45 1 	 Sea of Okhotsk - Taui Bay
+46 1 	 Sea of Okhotsk - Udskaya Guba
+47 1 	 Sea of Okhotsk - Guba Yakshina
+48 1 	 Sea of Okhotsk - Zaliv Akademii
+49 0 	 Sea of Japan
+50 1 	 Japan: Uchiura Bay
+51 1 	 Japan: Mutsu Bay
+52 1 	 Japan: Tokyo Bay
+53 1 	 Japan: Ise Bay
+54 1 	 Japan: Osaka Bay
+55 1 	 Japan: Seto Inland Sea
+56 1 	 Japan: Yamaguchi Bay
+57 1 	 Japan: Ariake Sea
+58 1 	 Japan: Kagoshima Bay
+59 1 	 Japan: Omura Bay
+60 1 	 USA East Coast - Long Island Sound
+61 1 	 USA East Coast - Delaware Bay
+62 1 	 USA East Coast - Atlantic City
+63 1 	 USA East Coast - Chesapeake Bay + Ocean City
+64 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
+65 1 	 USA East Coast - Cape Canaveral (Florida)
+66 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
+67 1 	 USA Gulf Coast - Tampa Bay (Florida)
+68 1 	 USA Gulf Coast - Panama City (Florida)
+69 1 	 USA Gulf Coast - Mobile Bay (Alabama)
+70 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
+71 1 	 USA Gulf Coast - Grand Isle (New Orleans)
+72 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
+73 1 	 USA Gulf Coast - Galveston Bay (Texas)
+74 1 	 USA Gulf Coast - Padre Island (Texas)
+75 1 	 Mexico Gulf Coast - Laguna Madre
+76 1 	 Mexico Gulf Coast - Tamiahua
+77 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
+78 1 	 Mexico Gulf Coast - Belize (Yukatan)
+79 1 	 Honduras Gulf Coast - Laguna Caratasca
+80 1 	 Nicaragua Gulf Coast
+81 1 	 Panama Gulf Coast
+82 1 	 Columbia Gulf Coast
+83 1 	 Venezuela Gulf Coast - Lago de Maracaibo
+84 1 	 Venezuela Gulf Coast - Gulf of Paria
+85 1 	 Brazil East Coast - Amazon Delta
+86 1 	 Alaska - Cook Inlet
+87 1 	 Alaska - Prince William Sound
+88 1 	 Alaska - Yakutat Bay
+89 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
+90 1 	 Canada West Coast
+91 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
+92 1 	 US West Coast - Columbia River Estuary
+93 1 	 US West Coast - San Francisco Harbor
+94 1 	 West Coast - Lake Ojo de Liebre (Baja California)
+95 1 	 West Coast - Laguna S. Ignacio (Baja California)
+96 1 	 West Coast - Bay of Magdalena (Baja California)
+97 0 	 West Coast - Gulf of California (Baja California)
