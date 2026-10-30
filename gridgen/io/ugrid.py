@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-28
+# @date Latest Update: 2026-10-30
 #
 # Code Heritage:
 # WAVEWATCH IV NetCDF-UGRID 1.0 format exporter module.
@@ -175,7 +175,9 @@ def create_ugrid_dataset(
         ),
     }
 
-    if ObsX is not None:
+    has_obstr = ObsX is not None and ObsY is not None
+
+    if has_obstr:
         data_vars["ObsX"] = (
             ("nMesh2_face",),
             ObsX.ravel().astype(np.float32),
@@ -196,8 +198,6 @@ def create_ugrid_dataset(
                 "coordinates": "grid_lon grid_lat",
             },
         )
-
-    if ObsY is not None:
         data_vars["ObsY"] = (
             ("nMesh2_face",),
             ObsY.ravel().astype(np.float32),
@@ -284,6 +284,7 @@ def create_ugrid_dataset(
             "grid_type": grid_type,
             "coord_type": coord_type,
             "global_closure": "true" if str(global_closure).lower() in ("true", "1") else "false",
+            "has_obstructions": "true" if has_obstr else "false",
             "bathy_source": bathy_source,
             "bound_source": bound_source or "",
             "history": f"Created {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",

@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-10-30
 #
 # Code Heritage:
 # Converted from nc_ww3_grdwrite.m originally authored by Kelsey Jordahl
@@ -92,7 +92,9 @@ def nc_ww3_grdwrite(
             },
         )
 
-    if ObsX is not None:
+    has_obstr = ObsX is not None and ObsY is not None
+
+    if has_obstr:
         data_vars["ObsX"] = (
             ("lat", "lon"),
             ObsX.astype(np.float32),
@@ -104,8 +106,6 @@ def nc_ww3_grdwrite(
                 "actual_range": [float(np.nanmin(ObsX)), float(np.nanmax(ObsX))],
             },
         )
-
-    if ObsY is not None:
         data_vars["ObsY"] = (
             ("lat", "lon"),
             ObsY.astype(np.float32),
@@ -147,6 +147,7 @@ def nc_ww3_grdwrite(
             "grid_type": grid_type,
             "coord_type": coord_type,
             "global_closure": "true" if str(global_closure).lower() in ("true", "1") else "false",
+            "has_obstructions": "true" if has_obstr else "false",
             "bathy_source": bathy_source,
             "bound_source": bound_source or "",
             "history": "File written by WAVEWATCH IV Python gridgen package",

@@ -105,6 +105,7 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithObstructions) {
     EXPECT_EQ(grid.global_attrs.at("grid_type"), "regular");
     EXPECT_EQ(grid.global_attrs.at("coord_type"), "spherical");
     EXPECT_EQ(grid.global_attrs.at("global_closure"), "true");
+    EXPECT_EQ(grid.global_attrs.at("has_obstructions"), "true");
 
     // Verify obstruction flags
     EXPECT_TRUE(grid.has_obsx);
@@ -151,6 +152,7 @@ TEST_F(UgridReaderTest, ReadUgridNcFileWithoutObstructions) {
     EXPECT_EQ(grid.grid_type, "stereographic");
     EXPECT_EQ(grid.coord_type, "cartesian");
     EXPECT_EQ(grid.global_closure, "false");
+    EXPECT_EQ(grid.global_attrs.at("has_obstructions"), "false");
 
     EXPECT_FALSE(grid.has_obsx);
     EXPECT_FALSE(grid.has_obsy);

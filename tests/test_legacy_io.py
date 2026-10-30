@@ -100,7 +100,23 @@ def test_nc_ww3_grdwrite(tmp_path):
     assert ds.attrs["grid_type"] == "regular"
     assert ds.attrs["coord_type"] == "spherical"
     assert ds.attrs["global_closure"] == "true"
+    assert ds.attrs["has_obstructions"] == "true"
     ds.close()
+
+
+def test_create_ugrid_dataset_no_obstructions():
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    z = np.ones((3, 3), dtype=float) * 10.0
+    mask = np.ones((3, 3), dtype=int)
+
+    ds = create_ugrid_dataset(lon, lat, z, mask, ObsX=None, ObsY=None)
+    assert "ObsX" not in ds
+    assert "ObsY" not in ds
+    assert "grid_ObsX" not in ds
+    assert "grid_ObsY" not in ds
+    assert ds.attrs["has_obstructions"] == "false"
 
 
 def test_create_ugrid_dataset_full_grid(tmp_path):
