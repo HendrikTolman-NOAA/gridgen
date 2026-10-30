@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 74 active polygons set to 1 out of 90 total
-    assert len(active_polys) == 74
+    # user_polygons.flag has 77 active polygons set to 1 out of 93 total
+    assert len(active_polys) == 77
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 74 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 77 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -278,7 +278,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 90 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 93 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -288,7 +288,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 90
+    assert len(all_polys) == 93
 
     # Caspian Sea is now Polygon 1
     caspian_poly = None
@@ -322,7 +322,7 @@ def test_netherlands_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 90
+    assert len(all_polys) == 93
 
     ij_poly = all_polys[1]
     ws_poly = all_polys[13]
@@ -357,7 +357,7 @@ def test_waddenzee_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 90
+    assert len(all_polys) == 93
 
     poly_east = all_polys[14]
     poly_north = all_polys[15]
@@ -388,7 +388,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 74
+    assert len(active_polys) == 77
 
     japan_names = [
         "Japan: Uchiura Bay",
@@ -418,12 +418,12 @@ def test_japan_polygons_loading_and_masking() -> None:
 
 
 def test_norway_and_uk_polygons_loading_and_masking() -> None:
-    """Test loading, active switches, and masking for Norway and UK coastal polygons."""
+    """Test loading, active switches, and masking for Norway, UK coastal polygons, and island group polygons."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 90
+    assert len(all_polys) == 93
 
     norway_names = [
         "Norway: Oslofjord",
@@ -442,25 +442,44 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
         "UK: Thames Estuary",
         "UK: Bristol Channel",
         "UK: Irish Sea",
+        "UK: Orkney Islands",
+        "UK: Shetland Islands",
+    ]
+
+    island_names = [
+        "UK: Orkney Islands",
+        "UK: Shetland Islands",
+        "Faroe Islands",
     ]
 
     norway_polys = [p for p in all_polys if any(name in p.get("name", "") for name in norway_names)]
     uk_polys = [p for p in all_polys if any(name in p.get("name", "") for name in uk_names)]
+    island_polys = [p for p in all_polys if any(name in p.get("name", "") for name in island_names)]
 
     assert len(norway_polys) == 6
-    assert len(uk_polys) == 7
+    assert len(uk_polys) == 9
+    assert len(island_polys) == 3
+
+    # Ensure all 16 new polygons have >= 10 points each
+    new_polys_16 = norway_polys + uk_polys + [p for p in island_polys if "Faroe" in p.get("name", "")]
+    # remove duplicate references from uk_polys and island_polys overlap
+    unique_new = {p["name"]: p for p in new_polys_16}.values()
+    assert len(unique_new) == 16
+    for p in unique_new:
+        assert len(p["x"]) >= 10, f"Polygon '{p['name']}' must have at least 10 points (has {len(p['x'])})"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 74
+    assert len(active_polys) == 77
 
-    # Check active switches: 6 Norway active, 6 UK active (Irish Sea disabled)
+    # Check active switches: 6 Norway active, 8 UK active (Irish Sea disabled)
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
     active_uk = [p for p in active_polys if any(name in p.get("name", "") for name in uk_names)]
 
     assert len(active_norway) == 6
-    assert len(active_uk) == 6
+    assert len(active_uk) == 8
 
     irish_sea = next(p for p in uk_polys if "Irish Sea" in p.get("name", ""))
+    assert irish_sea["name"] != ""
     assert not any("Irish Sea" in p.get("name", "") for p in active_polys)
 
     # Test masking for Norway: Oslofjord (10.6°E, 59.5°N)
