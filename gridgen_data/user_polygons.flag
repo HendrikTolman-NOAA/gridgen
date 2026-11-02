@@ -51,60 +51,61 @@
 51 1 	 Iceland - Bakkaflói
 52 1 	 Iceland - Skjálfandi
 53 1 	 Iceland - Öxnafjörður
-54 0 	 Sea of Okhotsk
-55 1 	 Sea of Okhotsk - Penzhina Bay
-56 1 	 Sea of Okhotsk - Gizhigin Bay
-57 1 	 Sea of Okhotsk - Taui Bay
-58 1 	 Sea of Okhotsk - Udskaya Guba
-59 1 	 Sea of Okhotsk - Guba Yakshina
-60 1 	 Sea of Okhotsk - Zaliv Akademii
-61 0 	 Sea of Japan
-62 1 	 Japan - Uchiura Bay
-63 1 	 Japan - Mutsu Bay
-64 1 	 Japan - Tokyo Bay
-65 1 	 Japan - Ise Bay
-66 1 	 Japan - Osaka Bay
-67 1 	 Japan - Seto Inland Sea
-68 1 	 Japan - Yamaguchi Bay
-69 1 	 Japan - Ariake Sea
-70 1 	 Japan - Kagoshima Bay
-71 1 	 Japan - Omura Bay
-72 1 	 USA East Coast - Long Island Sound
-73 1 	 USA East Coast - Delaware Bay
-74 1 	 USA East Coast - Atlantic City
-75 1 	 USA East Coast - Chesapeake Bay + Ocean City
-76 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
-77 1 	 USA East Coast - Cape Canaveral (Florida)
-78 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
-79 1 	 USA Gulf Coast - Tampa Bay (Florida)
-80 1 	 USA Gulf Coast - Panama City (Florida)
-81 1 	 USA Gulf Coast - Mobile Bay (Alabama)
-82 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
-83 1 	 USA Gulf Coast - Grand Isle (New Orleans)
-84 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
-85 1 	 USA Gulf Coast - Galveston Bay (Texas)
-86 1 	 USA Gulf Coast - Padre Island (Texas)
-87 1 	 Mexico Gulf Coast - Laguna Madre
-88 1 	 Mexico Gulf Coast - Tamiahua
-89 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
-90 1 	 Mexico Gulf Coast - Belize (Yukatan)
-91 1 	 Honduras Gulf Coast - Laguna Caratasca
-92 1 	 Nicaragua Gulf Coast
-93 1 	 Panama Gulf Coast
-94 1 	 Columbia Gulf Coast
-95 1 	 Venezuela Gulf Coast - Lago de Maracaibo
-96 1 	 Venezuela Gulf Coast - Gulf of Paria
-97 1 	 Brazil East Coast - Amazon Delta
-98 1 	 Alaska - Cook Inlet
-99 1 	 Alaska - Prince William Sound
-100 1 	 Alaska - Yakutat Bay
-101 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
-102 1 	 Canada West Coast
-103 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
-104 1 	 US West Coast - Columbia River Estuary
-105 1 	 US West Coast - San Francisco Harbor
-106 1 	 West Coast - Lake Ojo de Liebre (Baja California)
-107 1 	 West Coast - Laguna S. Ignacio (Baja California)
-108 1 	 West Coast - Bay of Magdalena (Baja California)
-109 0 	 West Coast - Gulf of California (Baja California)
-110 1 	 White Sea
+54 1 	 Iceland - Vopnafjörður
+55 0 	 Sea of Okhotsk
+56 1 	 Sea of Okhotsk - Penzhina Bay
+57 1 	 Sea of Okhotsk - Gizhigin Bay
+58 1 	 Sea of Okhotsk - Taui Bay
+59 1 	 Sea of Okhotsk - Udskaya Guba
+60 1 	 Sea of Okhotsk - Guba Yakshina
+61 1 	 Sea of Okhotsk - Zaliv Akademii
+62 0 	 Sea of Japan
+63 1 	 Japan - Uchiura Bay
+64 1 	 Japan - Mutsu Bay
+65 1 	 Japan - Tokyo Bay
+66 1 	 Japan - Ise Bay
+67 1 	 Japan - Osaka Bay
+68 1 	 Japan - Seto Inland Sea
+69 1 	 Japan - Yamaguchi Bay
+70 1 	 Japan - Ariake Sea
+71 1 	 Japan - Kagoshima Bay
+72 1 	 Japan - Omura Bay
+73 1 	 USA East Coast - Long Island Sound
+74 1 	 USA East Coast - Delaware Bay
+75 1 	 USA East Coast - Atlantic City
+76 1 	 USA East Coast - Chesapeake Bay + Ocean City
+77 1 	 USA East Coast - Pamlico Sound (Cape Hatteras)
+78 1 	 USA East Coast - Cape Canaveral (Florida)
+79 1 	 USA Gulf Coast - Charlotte Harbour (Florida)
+80 1 	 USA Gulf Coast - Tampa Bay (Florida)
+81 1 	 USA Gulf Coast - Panama City (Florida)
+82 1 	 USA Gulf Coast - Mobile Bay (Alabama)
+83 1 	 USA Gulf Coast - Lake Pontchartrain (New Orleans)
+84 1 	 USA Gulf Coast - Grand Isle (New Orleans)
+85 1 	 USA Gulf Coast - Sabine Lake (Louisiana)
+86 1 	 USA Gulf Coast - Galveston Bay (Texas)
+87 1 	 USA Gulf Coast - Padre Island (Texas)
+88 1 	 Mexico Gulf Coast - Laguna Madre
+89 1 	 Mexico Gulf Coast - Tamiahua
+90 1 	 Mexico Gulf Coast - Paso Real (Yukatan)
+91 1 	 Mexico Gulf Coast - Belize (Yukatan)
+92 1 	 Honduras Gulf Coast - Laguna Caratasca
+93 1 	 Nicaragua Gulf Coast
+94 1 	 Panama Gulf Coast
+95 1 	 Columbia Gulf Coast
+96 1 	 Venezuela Gulf Coast - Lago de Maracaibo
+97 1 	 Venezuela Gulf Coast - Gulf of Paria
+98 1 	 Brazil East Coast - Amazon Delta
+99 1 	 Alaska - Cook Inlet
+100 1 	 Alaska - Prince William Sound
+101 1 	 Alaska - Yakutat Bay
+102 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
+103 1 	 Canada West Coast
+104 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
+105 1 	 US West Coast - Columbia River Estuary
+106 1 	 US West Coast - San Francisco Harbor
+107 1 	 West Coast - Lake Ojo de Liebre (Baja California)
+108 1 	 West Coast - Laguna S. Ignacio (Baja California)
+109 1 	 West Coast - Bay of Magdalena (Baja California)
+110 0 	 West Coast - Gulf of California (Baja California)
+111 1 	 White Sea
