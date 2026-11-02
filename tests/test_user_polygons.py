@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 88 active polygons set to 1 out of 111 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled)
-    assert len(active_polys) == 88
+    # user_polygons.flag has 90 active polygons set to 1 out of 111 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled)
+    assert len(active_polys) == 90
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 88 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 90 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -387,7 +387,7 @@ def test_oresund_polygon_loading_and_masking() -> None:
     assert oresund_poly is not None, "Oresund polygon must be present"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 88
+    assert len(active_polys) == 90
     assert any("Oresund" in p.get("name", "") for p in active_polys)
 
     # Test Oresund point (12.6°E, 55.68°N) near Copenhagen
@@ -436,7 +436,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 88
+    assert len(active_polys) == 90
 
     japan_names = [
         "Japan - Uchiura Bay",
@@ -534,7 +534,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     assert len(aland_poly["x"]) >= 24, "Aland / Turku polygon must have >= 24 points"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 88
+    assert len(active_polys) == 90
 
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
     active_uk = [p for p in active_polys if any(name in p.get("name", "") for name in uk_names)]
@@ -578,9 +578,9 @@ def test_iceland_polygons_loading_and_masking() -> None:
     iceland_expected = [
         ("Iceland - Eyjafjörður", True, (-18.25, 65.95)),
         ("Iceland - Skagafjörður", True, (-19.6, 65.85)),
-        ("Iceland - Húnaflói", False, (-21.0, 65.7)),
+        ("Iceland - Húnaflói", True, (-21.14, 65.32)),
         ("Iceland - Ísafjarðardjúp", True, (-22.8, 66.0)),
-        ("Iceland - Breiðafjörður", False, (-23.0, 65.2)),
+        ("Iceland - Breiðafjörður", True, (-22.54, 65.36)),
         ("Iceland - Faxaflói", False, (-22.3, 64.3)),
         ("Iceland - Þistilfjörður", True, (-15.5, 66.3)),
         ("Iceland - Bakkaflói", True, (-14.9, 66.1)),
@@ -602,9 +602,9 @@ def test_iceland_polygons_loading_and_masking() -> None:
 
         # Verify specific bounding constraints
         if "Húnaflói" in name:
-            assert np.max(poly_entry["y"]) <= 65.900001, "Húnaflói polygon must go no further North than 65.9°N"
+            assert np.max(poly_entry["y"]) <= 65.500001, "Húnaflói polygon must go no further North than 65.5°N"
         elif "Breiðafjörður" in name:
-            assert np.min(poly_entry["x"]) >= -23.500001, "Breiðafjörður polygon must go no further West than 23.5°W"
+            assert np.min(poly_entry["x"]) >= -23.000001, "Breiðafjörður polygon must go no further West than 23.0°W"
         elif "Faxaflói" in name:
             assert np.min(poly_entry["x"]) >= -22.800001, "Faxaflói polygon must go no further West than 22.8°W"
 
