@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-22
-# @date Latest Update: 2026-10-23
+# @date Latest Update: 2026-11-02
 -->
 
 <p align="center">
@@ -26,7 +26,7 @@ This directory (`gridgen_data/`) contains internal polygon configuration dataset
 
 ### 1. Polygon Switch Control File (`user_polygons.flag`)
 * **Format**: Plain text (`.flag`)
-* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 100 predefined coastal feature polygons (e.g., Caspian Sea, Netherlands below sea level IJsselmeer, Markermeer, Noord/Zuid Holland, Utrecht, Aegean Sea, Adriatic, Sea of Azov, Gulf of Riga and Moonsund, Baltic Sea - Gulf of Gdansk, Baltic Sea - Kurisches Haff, Baltic Sea - Bay of Greifswald and waters around Rugen, Aland Islands and Turku Archipelago, Denmark inner seas, Denmark - Oresund, Wester Schelde, Waddenzee East/North of Elbe River, Norway: Oslofjord, Norway: Hardangerfjord, Norway: Sognefjord, Norway: Trondheimsfjord, Norway: Vestfjorden, Norway: Varangerfjorden, Norway: Northern Fjords, UK: Firth of Forth, UK: Moray Firth, UK: Solway Firth, UK: The Wash, UK: Thames Estuary, UK: Bristol Channel, UK: Irish Sea, UK: Orkney Islands, UK: Shetland Islands, UK: Hebrides, UK: Inner Hebrides, Firth of Clyde, and SW Islands, Faroe Islands, Hudson Bay, Mediterranean Sea, Chesapeake Bay, Japan: Uchiura Bay, Japan: Mutsu Bay, Japan: Tokyo Bay, Japan: Seto Inland Sea, Japan: Yamaguchi Bay, San Francisco Harbor).
+* **Description**: Contains binary toggle flags (`0` = ignore, `1` = include/mask) and regional name descriptions for 100 predefined coastal feature polygons (e.g., Caspian Sea, Netherlands below sea level IJsselmeer, Markermeer, Noord/Zuid Holland, Utrecht, Red Sea, Persian Gulf, Gulf of Aden, Gulf of Oman, Aegean Sea, Adriatic, Sea of Azov, Baltic Sea - The Gulf of Riga and Moonsund, Baltic Sea - Gulf of Gdansk, Baltic Sea - Kurisches Haff, Baltic Sea - Bay of Greifswald and waters around Rugen, Baltic Sea - The Aland Islands and Turku Archipelago, Denmark inner seas, Denmark - Oresund, Wester Schelde, Waddenzee East/North of Elbe River, Norway - Oslofjord, Norway - Hardangerfjord, Norway - Sognefjord, Norway - Trondheimsfjord, Norway - Vestfjorden, Norway - Varangerfjorden, Norway - Northern Fjords, UK - Firth of Forth, UK - Moray Firth, UK - Solway Firth, UK - The Wash, UK - Thames Estuary, UK - Bristol Channel, UK - Irish Sea, UK - Orkney Islands, UK - Shetland Islands, UK - Hebrides, UK - Inner Hebrides, Firth of Clyde, and SW Islands, Faroe Islands, Hudson Bay, Mediterranean Sea, Chesapeake Bay, Japan - Uchiura Bay, Japan - Mutsu Bay, Japan - Tokyo Bay, Japan - Seto Inland Sea, Japan - Yamaguchi Bay, San Francisco Harbor, White Sea).
 * **Usage**: Read by `gridgen.masking.load_user_polygons` to determine which user-defined optional coastal polygons should be active during land/sea mask cleaning (`clean_mask`) and subgrid obstruction generation (`create_obstr`).
 
 ### 2. Polygon Coordinate Database (`optional_coastal_polygons.txt`)
