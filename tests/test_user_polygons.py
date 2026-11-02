@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-20
+# @date Latest Update: 2026-11-02
 
 """Unit tests for user-defined optional coastal polygon loading."""
 
@@ -439,16 +439,16 @@ def test_japan_polygons_loading_and_masking() -> None:
     assert len(active_polys) == 79
 
     japan_names = [
-        "Japan: Uchiura Bay",
-        "Japan: Mutsu Bay",
-        "Japan: Tokyo Bay",
-        "Japan: Ise Bay",
-        "Japan: Osaka Bay",
-        "Japan: Seto Inland Sea",
-        "Japan: Yamaguchi Bay",
-        "Japan: Ariake Sea",
-        "Japan: Kagoshima Bay",
-        "Japan: Omura Bay",
+        "Japan - Uchiura Bay",
+        "Japan - Mutsu Bay",
+        "Japan - Tokyo Bay",
+        "Japan - Ise Bay",
+        "Japan - Osaka Bay",
+        "Japan - Seto Inland Sea",
+        "Japan - Yamaguchi Bay",
+        "Japan - Ariake Sea",
+        "Japan - Kagoshima Bay",
+        "Japan - Omura Bay",
     ]
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
@@ -474,33 +474,33 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     assert len(all_polys) == 100
 
     norway_names = [
-        "Norway: Oslofjord",
-        "Norway: Hardangerfjord",
-        "Norway: Sognefjord",
-        "Norway: Trondheimsfjord",
-        "Norway: Vestfjorden",
-        "Norway: Varangerfjorden",
-        "Norway: Northern Fjords",
+        "Norway - Oslofjord",
+        "Norway - Hardangerfjord",
+        "Norway - Sognefjord",
+        "Norway - Trondheimsfjord",
+        "Norway - Vestfjorden",
+        "Norway - Varangerfjorden",
+        "Norway - Northern Fjords",
     ]
 
     uk_names = [
-        "UK: Firth of Forth",
-        "UK: Moray Firth",
-        "UK: Solway Firth",
-        "UK: The Wash",
-        "UK: Thames Estuary",
-        "UK: Bristol Channel",
-        "UK: Irish Sea",
-        "UK: Orkney Islands",
-        "UK: Shetland Islands",
-        "UK: Hebrides",
-        "UK: Inner Hebrides",
+        "UK - Firth of Forth",
+        "UK - Moray Firth",
+        "UK - Solway Firth",
+        "UK - The Wash",
+        "UK - Thames Estuary",
+        "UK - Bristol Channel",
+        "UK - Irish Sea",
+        "UK - Orkney Islands",
+        "UK - Shetland Islands",
+        "UK - Hebrides",
+        "UK - Inner Hebrides",
     ]
 
     island_names = [
-        "UK: Orkney Islands",
-        "UK: Shetland Islands",
-        "UK: Hebrides",
+        "UK - Orkney Islands",
+        "UK - Shetland Islands",
+        "UK - Hebrides",
         "Faroe Islands",
     ]
 
@@ -553,7 +553,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     assert irish_sea["name"] != ""
     assert not any("Irish Sea" in p.get("name", "") for p in active_polys)
 
-    # Test masking for Norway: Oslofjord (10.6°E, 59.5°N)
+    # Test masking for Norway - Oslofjord (10.6°E, 59.5°N)
     oslo_poly = next(p for p in norway_polys if "Oslofjord" in p.get("name", ""))
     lon_os, lat_os = create_regular_grid(
         NX=3, NY=3, LON_START=10.5, LON_END=10.7, LAT_START=59.4, LAT_END=59.6
