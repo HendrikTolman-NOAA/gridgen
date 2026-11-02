@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 79 active polygons set to 1 out of 100 total (Orkney enabled; Shetland, Faroe, Hebrides disabled)
-    assert len(active_polys) == 79
+    # user_polygons.flag has 80 active polygons set to 1 out of 100 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled)
+    assert len(active_polys) == 80
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 79 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 80 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -387,7 +387,7 @@ def test_oresund_polygon_loading_and_masking() -> None:
     assert oresund_poly is not None, "Oresund polygon must be present"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 79
+    assert len(active_polys) == 80
     assert any("Oresund" in p.get("name", "") for p in active_polys)
 
     # Test Oresund point (12.6°E, 55.68°N) near Copenhagen
@@ -436,7 +436,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 79
+    assert len(active_polys) == 80
 
     japan_names = [
         "Japan - Uchiura Bay",
@@ -529,25 +529,26 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     greifswald_poly = next(p for p in all_polys if "Greifswald" in p.get("name", ""))
     assert greifswald_poly is not None
 
-    # Verify Aland / Turku polygon has tripled points (>= 30 points)
+    # Verify Aland / Turku polygon has tightened points (~25 points)
     aland_poly = next(p for p in all_polys if "Aland" in p.get("name", ""))
-    assert len(aland_poly["x"]) >= 30, "Aland / Turku polygon must have >= 30 points"
+    assert len(aland_poly["x"]) >= 24, "Aland / Turku polygon must have >= 24 points"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 79
+    assert len(active_polys) == 80
 
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
     active_uk = [p for p in active_polys if any(name in p.get("name", "") for name in uk_names)]
 
     assert len(active_norway) == 6
-    # Irish Sea, Shetland, Hebrides (both outer & inner) disabled; Orkney enabled in UK set (7 active out of 11)
-    assert len(active_uk) == 7
+    # Irish Sea, Shetland, outer Hebrides disabled; Orkney and Inner Hebrides enabled in UK set (8 active out of 11)
+    assert len(active_uk) == 8
 
-    # Ensure Orkney is active, while Shetland, Faroe, and Hebrides are disabled
+    # Ensure Orkney and Inner Hebrides are active, while Shetland, Faroe, and outer Hebrides are disabled
     assert any("Orkney" in p.get("name", "") for p in active_polys)
+    assert any("Inner Hebrides" in p.get("name", "") for p in active_polys)
     assert not any("Shetland" in p.get("name", "") for p in active_polys)
     assert not any("Faroe" in p.get("name", "") for p in active_polys)
-    assert not any("Hebrides" in p.get("name", "") for p in active_polys)
+    assert not any(p.get("name", "") == "UK - Hebrides" for p in active_polys)
 
     irish_sea = next(p for p in uk_polys if "Irish Sea" in p.get("name", ""))
     assert irish_sea["name"] != ""
