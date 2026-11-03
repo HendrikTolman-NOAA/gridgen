@@ -198,6 +198,7 @@ gridgen/
    - Integrates user-defined coastal polygon filters (`load_user_polygons`, `clean_mask`).
    - Removes enclosed lakes and isolated water bodies (`remove_lake`).
    - Extracts domain boundary contours (`compute_boundary`), splits boundaries into directional segments (`split_boundary`), and assigns input boundary cells (`define_boundary_points` / `modify_mask`).
+   - Supports active computation polygons (`load_active_polygon`) marking external cells as excluded points (`mask == 3`) and defining internal input boundary points (`mask == 2`).
 
 6. **`gridgen.obstructions` (Sub-Grid Obstruction Computation)**
    - Computes directional sub-grid obstruction factors $\text{ObsX}$ and $\text{ObsY}$ (`create_obstr`) by calculating line-polygon intersections between grid cell edges and shoreline vector polygons (`coastal_bound_*.mat`).

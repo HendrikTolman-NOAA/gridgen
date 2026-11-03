@@ -209,6 +209,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). `[Optional]` |
 | `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
 | `--bathy-source SOURCE` | Bathymetry dataset identifier or NetCDF prefix (e.g. `etopo1`, `etopo2`, `ETOPO_2022_v1_60s_N90W180_bed`) (default: `etopo2`). `[Optional]` |
+| `--active-file FILE` | Path to 2-column ASCII file (`lon lat`) defining the perimeter of the active computational polygon (e.g. `examples/alaska_10minzone.ascii`). Points outside this polygon are marked as excluded cells (`mask == 3`), and adjacent water cells are defined as boundary cells (`mask == 2`). `[Optional]` |
 | `--boundary-points` | Define input boundary cells (mask value 2) along regional grid boundaries. `[Optional]` |
 | `--local-polygons` | Use user coastal polygon files from local directory (`.`) instead of `gridgen_data`. Local polygon files in root clone directory are not tracked in Git. `[Optional]` |
 | `--no-user-polygons` | Disable loading user coastal polygons (loaded automatically by default). `[Optional]` |
@@ -238,6 +239,14 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 1. **Legacy WW3 ASCII grid**: `.depth_ascii`, `.maskorig_ascii`, `.obstr_lev1`, `.meta`
 2. **Legacy GMT/NetCDF COARDS grid**: `_coards.nc`
 3. **WW4 NetCDF-UGRID 1.0 grid**: `_ugrid.nc`
+
+#### Mask Cell Classifications
+
+The integer land/sea/boundary mask (`mask` in NetCDF and `.maskorig_ascii` in ASCII) classifies grid points into:
+- `0`: Land / dry cell (rendered in dark green `#1b4332`).
+- `1`: Active wet cell (open water / ocean).
+- `2`: Input boundary cell (where boundary wave spectra are passed; rendered in magenta `#ff00ff`).
+- `3`: Excluded / inactive cell (excluded from model computation by active polygon or nesting; rendered in gray `#808080`).
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
@@ -271,7 +280,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 
 ---
 
-**Last updated:** October 28, 2026
+**Last updated:** November 3, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">

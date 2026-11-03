@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-10-29
+# @date Latest Update: 2026-11-03
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -42,6 +42,7 @@ NY="601"
 GLOBAL_CLOSURE=0
 CUSTOM_GRID=""
 BATHY_SOURCE="etopo2"
+ACTIVE_FILE=""
 BOUNDARY_POINTS=0
 BOUNDARY_RANGE=()
 BOUND_FILE="coastal_bound_low.mat"
@@ -73,6 +74,9 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
   -g, --grid-type TYPE   Grid type: regular, stereographic, custom
                          (default: regular) [Optional]
   --bathy-source SOURCE  Bathymetry reference source (default: etopo2) [Optional]
+  --active-file FILE     Path to 2-column ASCII file (lon lat) defining active
+                         computation polygon. Points outside polygon are marked as
+                         excluded cells (mask value 3) [Optional]
   --boundary-points [LON_MIN LON_MAX LAT_MIN LAT_MAX]
                          Define input boundary cells (mask value 2), optionally
                          specifying allowed range [LON_MIN LON_MAX LAT_MIN LAT_MAX]
@@ -321,6 +325,14 @@ while [[ $# -gt 0 ]]; do
       BATHY_SOURCE="${1#*=}"
       shift 1
       ;;
+    --active-file)
+      ACTIVE_FILE="$2"
+      shift 2
+      ;;
+    --active-file=*)
+      ACTIVE_FILE="${1#*=}"
+      shift 1
+      ;;
     --boundary-points|--boundary-points=*)
       BOUNDARY_POINTS=1
       BOUNDARY_RANGE=()
@@ -478,6 +490,7 @@ printf "  %-22s : %s\n" "Grid Type" "${GRID_TYPE}"
 printf "  %-22s : %s\n" "Output Directory" "${OUT_DIR}"
 printf "  %-22s : %s\n" "Reference Directory" "${REF_DIR}"
 printf "  %-22s : %s\n" "Bathymetry Source" "${BATHY_SOURCE}"
+if [ -n "$ACTIVE_FILE" ]; then printf "  %-22s : %s\n" "Active Polygon File" "${ACTIVE_FILE}"; fi
 if [ -n "$NX" ]; then printf "  %-22s : %s\n" "NX (Lon/X Points)" "${NX}"; fi
 if [ -n "$NY" ]; then printf "  %-22s : %s\n" "NY (Lat/Y Points)" "${NY}"; fi
 
@@ -589,6 +602,7 @@ if [ -n "$NX" ]; then CMD_ARGS+=(--nx "$NX"); fi
 if [ -n "$NY" ]; then CMD_ARGS+=(--ny "$NY"); fi
 if [ -n "$CUSTOM_GRID" ]; then CMD_ARGS+=(--custom-grid "$CUSTOM_GRID"); fi
 if [ "$GLOBAL_CLOSURE" -eq 1 ]; then CMD_ARGS+=(--global-closure); fi
+if [ -n "$ACTIVE_FILE" ]; then CMD_ARGS+=(--active-file "$ACTIVE_FILE"); fi
 if [ "$BOUNDARY_POINTS" -eq 1 ]; then
   if [ "${#BOUNDARY_RANGE[@]}" -eq 4 ]; then
     CMD_ARGS+=(--boundary-points "${BOUNDARY_RANGE[@]}")

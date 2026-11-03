@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-29
+# @date Latest Update: 2026-11-03
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -378,10 +378,13 @@ def plot_grid(
     zoom_parsed = parse_zoom_args(zoom)
 
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
-    bathymetry_mask = (depth <= 0) & (mask != 0) if show_mask else (depth <= 0)
-    orography_mask = (depth > 0) & (depth < 999999.0) & (mask == 1) if show_mask else ((depth > 0) & (depth < 999999.0) & (mask != 2))
+    # Cells with mask == 0 are dry land; mask == 2 are boundary cells; mask == 3 are excluded cells.
+    bathymetry_mask = (depth <= 0) & (mask != 0) & (mask != 3) if show_mask else ((depth <= 0) & (mask != 3))
+    orography_mask = (depth > 0) & (depth < 999999.0) & (mask == 1) if show_mask else ((depth > 0) & (depth < 999999.0) & (mask != 2) & (mask != 3))
     boundary_mask = (mask == 2)
     has_boundary = bool(np.any(boundary_mask))
+    excluded_mask = (mask == 3)
+    has_excluded = bool(np.any(excluded_mask))
 
     depth_bathy = np.where(bathymetry_mask, depth, np.nan)
     depth_orog = np.where(orography_mask, np.clip(depth, 0.0, vmax_orog), np.nan)
@@ -404,18 +407,21 @@ def plot_grid(
             depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
             depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
             boundary_plot = np.hstack([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
+            excluded_plot = np.hstack([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
         else:
             lon_plot = np.concatenate([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
             lat_plot = np.concatenate([lat, lat, lat, lat, lat])
             depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
             depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
             boundary_plot = np.concatenate([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
+            excluded_plot = np.concatenate([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
     else:
         lon_plot = lon
         lat_plot = lat
         depth_bathy_plot = depth_bathy
         depth_orog_plot = depth_orog
         boundary_plot = boundary_mask
+        excluded_plot = excluded_mask
 
     if lon_plot.ndim == 2:
         pcm1 = ax1.pcolormesh(
@@ -427,6 +433,19 @@ def plot_grid(
     else:
         pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
         pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
+
+    if has_excluded:
+        excl_display = np.where(excluded_plot, 1.0, np.nan)
+        gray_color = "#808080"  # Gray color for excluded / inactive cells (mask value 3)
+        cmap_excl = matplotlib.colors.ListedColormap([gray_color])
+        if lon_plot.ndim == 2:
+            ax1.pcolormesh(
+                lon_plot, lat_plot, excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5, shading="nearest"
+            )
+        else:
+            ax1.scatter(
+                lon_plot, lat_plot, c=excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5
+            )
 
     if has_boundary:
         bnd_display = np.where(boundary_plot, 1.0, np.nan)

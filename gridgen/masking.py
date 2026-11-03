@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-28
+# @date Latest Update: 2026-11-03
 #
 # Code Heritage:
 # Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m,
@@ -951,6 +951,45 @@ def load_mat_polygons(mat_path: str, ref_dir: str = "reference_data") -> list[di
             continue
 
     return polygons
+
+
+def load_active_polygon(filepath: str) -> tuple[np.ndarray, np.ndarray]:
+    """Load active computation polygon coordinates from a 2-column ASCII file.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the ASCII file containing longitude and latitude polygon vertices.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        Tuple of (px, py) coordinate arrays defining the polygon perimeter.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the specified polygon file does not exist.
+    ValueError
+        If the file does not contain valid 2-column numeric coordinates or has fewer than 3 vertices.
+    """
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Active polygon file not found: {filepath}")
+
+    data = np.loadtxt(filepath, dtype=np.float64)
+    if data.ndim != 2 or data.shape[1] < 2:
+        raise ValueError(
+            f"Active polygon file '{filepath}' must contain at least 2 columns (lon, lat), got shape {data.shape}"
+        )
+
+    px = data[:, 0]
+    py = data[:, 1]
+    if len(px) < 3:
+        raise ValueError(
+            f"Active polygon file '{filepath}' must contain at least 3 vertices, got {len(px)}"
+        )
+
+    return px, py
 
 
 # Backward compatibility alias

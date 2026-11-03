@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-08
+# @date Latest Update: 2026-11-03
 #
 # Code Heritage:
 # Converted from MATLAB gridgen suite originally authored by NCEP/NOAA
@@ -30,6 +30,7 @@ from .masking import (
     clean_mask,
     compute_boundary,
     define_boundary_points,
+    load_active_polygon,
     load_user_polygons,
     modify_mask,
     remove_lake,
@@ -47,6 +48,7 @@ __all__ = [
     "create_rotated_pole_grid",
     "create_stereographic_grid",
     "define_boundary_points",
+    "load_active_polygon",
     "load_user_polygons",
     "modify_mask",
     "remove_lake",
