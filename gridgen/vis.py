@@ -437,7 +437,7 @@ def plot_grid(
 
     if has_excluded:
         excl_display = np.where(excluded_plot, 1.0, np.nan)
-        gray_color = "#808080"  # Gray color for excluded / inactive cells (mask value 3)
+        gray_color = "#d3d3d3"  # Lighter grey color for excluded / inactive cells (mask value 3)
         cmap_excl = matplotlib.colors.ListedColormap([gray_color])
         if lon_plot.ndim == 2:
             ax1.pcolormesh(
@@ -471,8 +471,8 @@ def plot_grid(
         else:
             Obs_plot = Obs_max
 
-        # Mask out values < 0.01 so nothing is plotted for obstructions < 0.01
-        Obs_plot = np.where(Obs_plot >= 0.01, Obs_plot, np.nan)
+        # Mask out values < 0.01 and excluded cells (mask == 3) so nothing is plotted for obstructions on excluded points
+        Obs_plot = np.where((Obs_plot >= 0.01) & (~excluded_plot), Obs_plot, np.nan)
 
         if lon_plot.ndim == 2:
             pcm_Obs = ax1.pcolormesh(

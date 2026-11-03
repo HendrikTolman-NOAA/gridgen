@@ -389,16 +389,17 @@ def test_cli_active_file(tmp_path) -> None:
 
 
 def test_gulf_and_caribbean_active_file() -> None:
-    """Verify gridgen_data/Gulf_and_Caribbean loads and accurately separates Pacific from Gulf/Caribbean."""
+    """Verify gridgen_data/Gulf_and_Caribbean.active loads and accurately separates Pacific from Gulf/Caribbean."""
     from pathlib import Path
 
     from shapely.geometry import Point, Polygon
 
-    poly_file = Path(__file__).parent.parent / "gridgen_data" / "Gulf_and_Caribbean"
+    poly_file = Path(__file__).parent.parent / "gridgen_data" / "Gulf_and_Caribbean.active"
     assert poly_file.exists(), f"File {poly_file} must exist"
 
     px, py = load_active_polygon(str(poly_file))
-    assert len(px) >= 500, f"Expected detailed polygon with many points, got {len(px)}"
+    # Reduced by at least a factor of 4 from 4061 (fewer than 1000 vertices, e.g. ~280)
+    assert 50 <= len(px) <= 1000, f"Expected reduced point polygon, got {len(px)}"
     assert np.all(px >= -110.0001) and np.all(px <= -49.9999)
     assert np.all(py >= -0.0001) and np.all(py <= 35.0001)
 

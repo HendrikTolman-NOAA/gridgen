@@ -782,7 +782,7 @@ def test_vis_boundary_points(tmp_path: Path):
 
 
 def test_vis_excluded_points(tmp_path: Path):
-    """Verify excluded points (mask == 3) are rendered in gray (#808080) and masked properly."""
+    """Verify excluded points (mask == 3) are rendered in lighter grey (#d3d3d3) and no obstructions on them."""
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)

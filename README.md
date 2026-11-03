@@ -246,7 +246,7 @@ The integer land/sea/boundary mask (`mask` in NetCDF and `.maskorig_ascii` in AS
 - `0`: Land / dry cell (rendered in dark green `#1b4332`).
 - `1`: Active wet cell (open water / ocean).
 - `2`: Input boundary cell (where boundary wave spectra are passed; rendered in magenta `#ff00ff`).
-- `3`: Excluded / inactive cell (excluded from model computation by active polygon or nesting; rendered in gray `#808080`).
+- `3`: Excluded / inactive cell (excluded from model computation by active polygon or nesting; rendered in lighter grey `#d3d3d3`).
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
