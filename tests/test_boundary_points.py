@@ -8,16 +8,17 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-28
+# @date Latest Update: 2026-11-03
 
 """Unit tests for defining input boundary points in regional grids."""
 
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from gridgen.coordinates import create_regular_grid
-from gridgen.masking import define_boundary_points, modify_mask
+from gridgen.masking import define_boundary_points, load_active_polygon, modify_mask
 
 
 def test_define_boundary_points_edges() -> None:
@@ -283,3 +284,105 @@ def test_cli_real_value_parameters(tmp_path) -> None:
     res = subprocess.run(cmd, capture_output=True, text=True, check=False)
     assert res.returncode == 0
     assert (out_dir / "real_val_grid_ugrid.nc").exists()
+
+
+def test_load_active_polygon(tmp_path) -> None:
+    """Test loading active polygon coordinates from 2-column ASCII file."""
+    # 1. Valid polygon file
+    poly_file = tmp_path / "valid_poly.ascii"
+    poly_file.write_text("10.0 20.0\n15.0 20.0\n15.0 25.0\n10.0 25.0\n10.0 20.0\n")
+    px, py = load_active_polygon(str(poly_file))
+    assert len(px) == 5
+    assert len(py) == 5
+    assert px[0] == 10.0
+    assert py[2] == 25.0
+
+    # 2. File not found
+    with pytest.raises(FileNotFoundError):
+        load_active_polygon(str(tmp_path / "nonexistent.ascii"))
+
+    # 3. Invalid columns
+    bad_file = tmp_path / "bad_cols.ascii"
+    bad_file.write_text("10.0\n20.0\n")
+    with pytest.raises(ValueError, match="at least 2 columns"):
+        load_active_polygon(str(bad_file))
+
+    # 4. Too few points
+    short_file = tmp_path / "too_few.ascii"
+    short_file.write_text("10.0 20.0\n15.0 20.0\n")
+    with pytest.raises(ValueError, match="at least 3 vertices"):
+        load_active_polygon(str(short_file))
+
+
+def test_cli_active_file(tmp_path) -> None:
+    """Test run_gridgen.sh with --active-file generating excluded points (mask value 3)."""
+    import subprocess
+    from pathlib import Path
+
+    import xarray as xr
+
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "run_gridgen.sh"
+
+    ref_dir = tmp_path / "ref_data"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+
+    lon_ref = np.linspace(10.0, 20.0, 11)
+    lat_ref = np.linspace(10.0, 20.0, 11)
+    z_ref = np.full((11, 11), -50.0)
+    ds = xr.Dataset(
+        data_vars={"z": (("y", "x"), z_ref)},
+        coords={"x": lon_ref, "y": lat_ref},
+    )
+    ds.to_netcdf(ref_dir / "etopo2.nc")
+
+    # Create active polygon covering central box [13.0, 17.0] x [13.0, 17.0]
+    poly_file = tmp_path / "active_zone.ascii"
+    poly_file.write_text(
+        "13.0 13.0\n"
+        "17.0 13.0\n"
+        "17.0 17.0\n"
+        "13.0 17.0\n"
+        "13.0 13.0\n"
+    )
+
+    out_nc = tmp_path / "active_grid_ugrid.nc"
+    res = subprocess.run(
+        [
+            str(script_path),
+            "-n",
+            "active_grid",
+            "--nx",
+            "11",
+            "--ny",
+            "11",
+            "--lon-start",
+            "10.0",
+            "--lat-start",
+            "10.0",
+            "--lon-end",
+            "20.0",
+            "--lat-end",
+            "20.0",
+            "-r",
+            str(ref_dir),
+            "-o",
+            str(tmp_path),
+            "--active-file",
+            str(poly_file),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res.returncode == 0
+    assert "Excluded points generated:" in res.stdout
+    assert "Active Polygon File" in res.stdout
+    assert out_nc.exists()
+
+    ds_out = xr.open_dataset(out_nc)
+    grid_mask = ds_out["grid_mask"].values
+    # Check that mask contains excluded points (3), boundary points (2), and active wet cells (1)
+    assert np.any(grid_mask == 3)
+    assert np.any(grid_mask == 2)
+    assert np.any(grid_mask == 1)

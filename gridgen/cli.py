@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-10-29
+# @date Latest Update: 2026-11-03
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -32,6 +32,7 @@ from .io.ugrid import create_ugrid_dataset, write_ugrid_nc
 from .masking import (
     clean_mask,
     define_boundary_points,
+    load_active_polygon,
     load_mat_polygons,
     load_user_polygons,
     remove_lake,
@@ -115,6 +116,16 @@ def main() -> None:
         default=None,
         metavar="RANGE",
         help="Define input boundary cells (mask value 2) along regional grid boundaries, optionally specifying allowed range [LON_MIN LON_MAX LAT_MIN LAT_MAX]",
+    )
+    gen_group.add_argument(
+        "--active-file",
+        "--active-poly",
+        "--active-zone",
+        dest="active_file",
+        type=str,
+        default=None,
+        metavar="FILE",
+        help="Active computation polygon 2-column ASCII file (lon lat points). Points outside this polygon are marked as excluded cells (mask value 3)",
     )
     gen_group.add_argument(
         "--bound-file",
@@ -367,16 +378,37 @@ def main() -> None:
         igl=0,
         lon=lon,
     )
-    if args.boundary_points is not None:
-        if len(args.boundary_points) in (0, 4):
-            b_range = tuple(args.boundary_points) if len(args.boundary_points) == 4 else None
-            m_mod = define_boundary_points(m_mod, lon, lat, bound_range=b_range)
-        else:
-            parser.error(
-                f"--boundary-points expects 0 arguments or 4 arguments [LON_MIN LON_MAX LAT_MIN LAT_MAX], got {len(args.boundary_points)}"
-            )
+    active_poly_coords = None
+    if args.active_file:
+        try:
+            px, py = load_active_polygon(args.active_file)
+            active_poly_coords = (px, py)
+            print(f"  Loaded active polygon from '{args.active_file}' with {len(px)} points.")
+        except (FileNotFoundError, ValueError, OSError) as e:
+            parser.error(f"Failed to load active polygon file '{args.active_file}': {e}")
+
+    if args.boundary_points is not None or active_poly_coords is not None:
+        b_range = None
+        if args.boundary_points is not None:
+            if len(args.boundary_points) in (0, 4):
+                b_range = tuple(args.boundary_points) if len(args.boundary_points) == 4 else None
+            else:
+                parser.error(
+                    f"--boundary-points expects 0 arguments or 4 arguments [LON_MIN LON_MAX LAT_MIN LAT_MAX], got {len(args.boundary_points)}"
+                )
+
+        m_mod = define_boundary_points(
+            m_mod,
+            lon,
+            lat,
+            active_poly=active_poly_coords,
+            bound_range=b_range,
+        )
 
     num_bnd = int(np.count_nonzero(m_mod == 2))
+    num_excl = int(np.count_nonzero(m_mod == 3))
+    if num_excl > 0:
+        print(f"  Excluded points generated: {num_excl} (mask value 3).")
     if num_bnd > 0:
         print(f"  Boundary points generated: {num_bnd} (mask value 2).")
     else:

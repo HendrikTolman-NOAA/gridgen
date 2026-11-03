@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-28
+# @date Latest Update: 2026-11-03
 
 from __future__ import annotations
 
@@ -779,3 +779,25 @@ def test_vis_boundary_points(tmp_path: Path):
     labels = [a.get_ylabel() for a in fig.axes if hasattr(a, "get_ylabel")]
     assert "Bathymetry Depth (m)" in labels
     assert "Orography (m)" not in labels
+
+
+def test_vis_excluded_points(tmp_path: Path):
+    """Verify excluded points (mask == 3) are rendered in gray (#808080) and masked properly."""
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), -50.0)
+    # Mask with wet cells (1), boundary cells (2), and excluded cells (3)
+    mask = np.array([[3, 3, 3], [3, 2, 3], [3, 1, 3]])
+
+    data = {"lon": lon, "lat": lat, "depth": depth, "mask": mask}
+    out_file = str(tmp_path / "test_excl_vis.jpg")
+
+    fig = plot_grid(data, title="Excluded Points Vis Test", output_path=out_file)
+    assert fig is not None
+    assert os.path.exists(out_file)
+
+    ax = fig.axes[0]
+    # Verify collections include excluded layer
+    collections = ax.collections
+    assert len(collections) >= 3

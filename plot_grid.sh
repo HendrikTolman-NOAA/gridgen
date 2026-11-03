@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-10-27
+# @date Latest Update: 2026-11-03
 #
 # Shell driver script to generate graphical grid bathymetry plots.
 
@@ -58,7 +58,9 @@ Options:
 
 Description:
   This script executes the Python grid visualization module (`gridgen.vis`)
-  to produce bathymetry depth plots in JPG, PNG, PDF, EPS, or GIF formats.
+  to produce bathymetry depth plots in JPG, PNG, PDF, EPS, or GIF formats,
+  rendering dry land in dark green, input boundary cells in magenta, and
+  excluded/inactive cells in gray.
 EOF
 }
 
