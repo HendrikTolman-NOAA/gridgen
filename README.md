@@ -246,7 +246,7 @@ The integer land/sea/boundary mask (`mask` in NetCDF and `.maskorig_ascii` in AS
 - `0`: Land / dry cell (rendered in dark green `#1b4332`).
 - `1`: Active wet cell (open water / ocean).
 - `2`: Input boundary cell (where boundary wave spectra are passed; rendered in magenta `#ff00ff`).
-- `3`: Excluded / inactive cell (excluded from model computation by active polygon or nesting; rendered in gray `#808080`).
+- `3`: Excluded / inactive cell (excluded from model computation by active polygon or nesting; rendered in lighter grey `#d3d3d3`).
 
 ### Grid & Obstruction Visualization (`plot_grid.sh`)
 
@@ -275,6 +275,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry, Orography, and Obstructions`). |
 | `--no-subtitle` | Disable figure subtitle. |
 | `--no-mask` | Disable land-sea mask display. |
+| `--no-labels` | Disable longitude and latitude axis labels. |
 | `--zoom LON LAT FACTOR` | Zoom view centered at central longitude and latitude with zoom factor (e.g. `--zoom -70 40 2`). |
 | `--max-depth DEPTH` | Maximum depth limit for color scale (default: `-8000`). |
 

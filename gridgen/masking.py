@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -973,10 +974,24 @@ def load_active_polygon(filepath: str) -> tuple[np.ndarray, np.ndarray]:
     ValueError
         If the file does not contain valid 2-column numeric coordinates or has fewer than 3 vertices.
     """
-    if not os.path.exists(filepath):
+    target_path = None
+    if os.path.exists(filepath):
+        target_path = filepath
+    elif os.path.exists(os.path.join(".", os.path.basename(filepath))):
+        target_path = os.path.join(".", os.path.basename(filepath))
+    elif os.path.exists(os.path.join("gridgen_data", os.path.basename(filepath))):
+        target_path = os.path.join("gridgen_data", os.path.basename(filepath))
+    else:
+        # Also check relative to repo root if current working directory is external
+        repo_root = Path(__file__).resolve().parent.parent
+        gd_candidate = repo_root / "gridgen_data" / os.path.basename(filepath)
+        if gd_candidate.exists():
+            target_path = str(gd_candidate)
+
+    if target_path is None or not os.path.exists(target_path):
         raise FileNotFoundError(f"Active polygon file not found: {filepath}")
 
-    data = np.loadtxt(filepath, dtype=np.float64)
+    data = np.loadtxt(target_path, dtype=np.float64)
     if data.ndim != 2 or data.shape[1] < 2:
         raise ValueError(
             f"Active polygon file '{filepath}' must contain at least 2 columns (lon, lat), got shape {data.shape}"

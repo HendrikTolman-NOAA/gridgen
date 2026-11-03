@@ -782,7 +782,7 @@ def test_vis_boundary_points(tmp_path: Path):
 
 
 def test_vis_excluded_points(tmp_path: Path):
-    """Verify excluded points (mask == 3) are rendered in gray (#808080) and masked properly."""
+    """Verify excluded points (mask == 3) are rendered in lighter grey (#d3d3d3) and no obstructions on them."""
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
@@ -801,3 +801,71 @@ def test_vis_excluded_points(tmp_path: Path):
     # Verify collections include excluded layer
     collections = ax.collections
     assert len(collections) >= 3
+
+
+def test_axis_numbers_and_labels_size_and_no_labels(tmp_path: Path):
+    """Verify axis numbers (ticks) and labels font sizes are reduced by factor 0.74, and --no-labels works."""
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), -50.0)
+    mask = np.ones((3, 3), dtype=int)
+    data = {"lon": lon, "lat": lat, "depth": depth, "mask": mask}
+
+    # Standard plot with labels
+    fig = plot_grid(data)
+    ax = fig.axes[0]
+    assert np.isclose(ax.xaxis.label.get_size(), 7.4)
+    assert np.isclose(ax.yaxis.label.get_size(), 7.4)
+    assert ax.xaxis.label.get_text() == "Longitude"
+    assert ax.yaxis.label.get_text() == "Latitude"
+    fig.canvas.draw()
+    assert np.isclose(ax.xaxis.get_major_ticks()[0].label1.get_size(), 7.4)
+    assert np.isclose(ax.yaxis.get_major_ticks()[0].label1.get_size(), 7.4)
+
+    # Plot with show_labels=False
+    fig_no_labels = plot_grid(data, show_labels=False)
+    ax_no_labels = fig_no_labels.axes[0]
+    assert ax_no_labels.xaxis.label.get_text() == ""
+    assert ax_no_labels.yaxis.label.get_text() == ""
+
+
+def test_plot_grid_script_no_labels(tmp_path: Path):
+    """Verify plot_grid.sh with --no-labels runs successfully and disables axis labels."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    # Create dummy netcdf dataset
+    import xarray as xr
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon2d, lat2d = np.meshgrid(lon1d, lat1d)
+    depth2d = np.full((3, 3), -50.0)
+    mask2d = np.ones((3, 3), dtype=np.int32)
+    ds = xr.Dataset(
+        data_vars={
+            "grid_depth": (("ny", "nx"), depth2d),
+            "grid_mask": (("ny", "nx"), mask2d),
+        },
+        coords={
+            "grid_lon": (("ny", "nx"), lon2d),
+            "grid_lat": (("ny", "nx"), lat2d),
+        },
+    )
+    test_nc = tmp_path / "dummy_grid_ugrid.nc"
+    ds.to_netcdf(test_nc)
+
+    out_file = tmp_path / "test_out_no_labels.jpg"
+    res = subprocess.run(
+        [
+            str(script_path),
+            "-i", str(test_nc),
+            "-o", str(out_file),
+            "--no-labels",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res.returncode == 0, f"STDOUT: {res.stdout}\nSTDERR: {res.stderr}"
+    assert out_file.exists()
