@@ -28,6 +28,7 @@ SUBTITLE="Bathymetry, Orography, and Obstructions"
 NO_TITLE=0
 NO_SUBTITLE=0
 MASK_FLAG=""
+LABELS_FLAG=""
 MAX_DEPTH="-8000"
 MAX_OROGRAPHY="10"
 ZOOM_ARGS=()
@@ -51,6 +52,7 @@ Options:
   --subtitle SUBTITLE    Custom figure subtitle (default: Bathymetry, Orography, and Obstructions)
   --no-subtitle          Disable figure subtitle
   --no-mask              Disable land-sea mask
+  --no-labels            Disable longitude and latitude axis labels
   --zoom LON LAT FACTOR  Zoom view centered at central longitude and latitude with zoom factor
   --max-depth DEPTH      Maximum depth limit for color scale (default: -8000)
   --max-orography OROG   Maximum orography limit for color scale in meters (default: 10)
@@ -99,6 +101,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-mask)
       MASK_FLAG="--no-mask"
+      shift 1
+      ;;
+    --no-labels)
+      LABELS_FLAG="--no-labels"
       shift 1
       ;;
     --zoom)
@@ -197,6 +203,10 @@ fi
 
 if [ -n "$MASK_FLAG" ]; then
   CMD_ARGS+=("$MASK_FLAG")
+fi
+
+if [ -n "$LABELS_FLAG" ]; then
+  CMD_ARGS+=("$LABELS_FLAG")
 fi
 
 if [ ${#ZOOM_ARGS[@]} -gt 0 ]; then

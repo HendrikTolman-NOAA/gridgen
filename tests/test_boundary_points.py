@@ -386,3 +386,35 @@ def test_cli_active_file(tmp_path) -> None:
     assert np.any(grid_mask == 3)
     assert np.any(grid_mask == 2)
     assert np.any(grid_mask == 1)
+
+
+def test_gulf_and_caribbean_active_file() -> None:
+    """Verify gridgen_data/Gulf_and_Caribbean loads and accurately separates Pacific from Gulf/Caribbean."""
+    from pathlib import Path
+
+    from shapely.geometry import Point, Polygon
+
+    poly_file = Path(__file__).parent.parent / "gridgen_data" / "Gulf_and_Caribbean"
+    assert poly_file.exists(), f"File {poly_file} must exist"
+
+    px, py = load_active_polygon(str(poly_file))
+    assert len(px) >= 500, f"Expected detailed polygon with many points, got {len(px)}"
+    assert np.all(px >= -110.0001) and np.all(px <= -49.9999)
+    assert np.all(py >= -0.0001) and np.all(py <= 35.0001)
+
+    poly = Polygon(list(zip(px, py)))
+    assert poly.is_valid
+
+    # Check key active points (inside)
+    assert poly.contains(Point(-90.0, 25.0)), "Gulf of Mexico should be inside"
+    assert poly.contains(Point(-75.0, 15.0)), "Caribbean Sea should be inside"
+    assert poly.contains(Point(-80.0, 24.5)), "Florida Straits should be inside"
+    assert poly.contains(Point(-70.0, 25.0)), "Atlantic Bahamas should be inside"
+    assert poly.contains(Point(-79.5, 9.5)), "Caribbean coast of Panama should be inside"
+
+    # Check excluded Pacific points (outside)
+    assert not poly.contains(Point(-100.0, 15.0)), "Pacific off Acapulco should be outside"
+    assert not poly.contains(Point(-92.0, 12.0)), "Pacific off Guatemala should be outside"
+    assert not poly.contains(Point(-85.0, 8.0)), "Pacific off Costa Rica should be outside"
+    assert not poly.contains(Point(-79.5, 8.0)), "Pacific Gulf of Panama should be outside"
+    assert not poly.contains(Point(-82.2, 8.0)), "Pacific Gulf of Chiriqui should be outside"

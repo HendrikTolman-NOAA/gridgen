@@ -320,6 +320,7 @@ def plot_grid(
     zoom: tuple[float, float, float] | list[float] | str | None = None,
     bathy_source: str | None = None,
     bound_source: str | None = None,
+    show_labels: bool = True,
 ) -> matplotlib.figure.Figure:
     """Graphically display resulting grid bathymetry, orography, and obstructions plot.
 
@@ -507,15 +508,23 @@ def plot_grid(
         else:
             sub_text = subtitle
 
-    if zoom_parsed is not None and zoom_parsed[2] > 1.0:
-        xlabel_str = "Longitude (zoom)"
-        ylabel_str = "Latitude (zoom)"
-    else:
-        xlabel_str = "Longitude"
-        ylabel_str = "Latitude"
+    # Reduce axis tick numbers size by factor 0.74 (standard size 10.0 * 0.74 = 7.4)
+    axis_font_size = 10.0 * 0.74
+    ax1.tick_params(axis="both", which="both", labelsize=axis_font_size)
 
-    ax1.set_xlabel(xlabel_str)
-    ax1.set_ylabel(ylabel_str)
+    if show_labels:
+        if zoom_parsed is not None and zoom_parsed[2] > 1.0:
+            xlabel_str = "Longitude (zoom)"
+            ylabel_str = "Latitude (zoom)"
+        else:
+            xlabel_str = "Longitude"
+            ylabel_str = "Latitude"
+
+        ax1.set_xlabel(xlabel_str, fontsize=axis_font_size)
+        ax1.set_ylabel(ylabel_str, fontsize=axis_font_size)
+    else:
+        ax1.set_xlabel("")
+        ax1.set_ylabel("")
 
     ax1.grid(True, linestyle="--", alpha=0.5)
 
@@ -831,6 +840,13 @@ def main() -> None:
         help="Maximum orography limit for land color scale in meters (default: 10.0)",
     )
     parser.add_argument(
+        "--no-labels",
+        dest="labels",
+        action="store_false",
+        default=True,
+        help="Disable longitude and latitude axis labels",
+    )
+    parser.add_argument(
         "--display",
         dest="display",
         action="store_true",
@@ -878,6 +894,7 @@ def main() -> None:
         zoom=args.zoom,
         bathy_source=args.bathy_source,
         bound_source=args.bound_source,
+        show_labels=args.labels,
     )
 
 

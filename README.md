@@ -275,6 +275,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 | `--subtitle SUBTITLE` | Custom figure subtitle (default: `Bathymetry, Orography, and Obstructions`). |
 | `--no-subtitle` | Disable figure subtitle. |
 | `--no-mask` | Disable land-sea mask display. |
+| `--no-labels` | Disable longitude and latitude axis labels. |
 | `--zoom LON LAT FACTOR` | Zoom view centered at central longitude and latitude with zoom factor (e.g. `--zoom -70 40 2`). |
 | `--max-depth DEPTH` | Maximum depth limit for color scale (default: `-8000`). |
 
