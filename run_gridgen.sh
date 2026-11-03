@@ -325,11 +325,11 @@ while [[ $# -gt 0 ]]; do
       BATHY_SOURCE="${1#*=}"
       shift 1
       ;;
-    --active-file|--active-poly|--active-zone)
+    --active-file)
       ACTIVE_FILE="$2"
       shift 2
       ;;
-    --active-file=*|--active-poly=*|--active-zone=*)
+    --active-file=*)
       ACTIVE_FILE="${1#*=}"
       shift 1
       ;;

@@ -119,8 +119,6 @@ def main() -> None:
     )
     gen_group.add_argument(
         "--active-file",
-        "--active-poly",
-        "--active-zone",
         dest="active_file",
         type=str,
         default=None,
