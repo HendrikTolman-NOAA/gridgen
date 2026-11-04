@@ -869,3 +869,50 @@ def test_plot_grid_script_no_labels(tmp_path: Path):
     )
     assert res.returncode == 0, f"STDOUT: {res.stdout}\nSTDERR: {res.stderr}"
     assert out_file.exists()
+
+
+def test_plot_grid_crossing_prime_meridian_no_pcolormesh_warning(tmp_path: Path):
+    """Verify plot_grid on a rotated grid crossing 0°/360° meridian raises no pcolormesh UserWarning."""
+    import warnings
+
+    import matplotlib.pyplot as plt
+
+    from gridgen.coordinates import create_rotated_pole_grid
+
+    # Create rotated pole grid crossing the 0°/360° meridian
+    lon2d, lat2d = create_rotated_pole_grid(
+        POLE_LON=105.0,
+        POLE_LAT=70.0,
+        LON_START=-100.0,
+        LON_END=-55.0,
+        LAT_START=7.0,
+        LAT_END=32.0,
+        NX=54,
+        NY=30,
+    )
+    depth2d = np.full(lon2d.shape, -100.0)
+    mask2d = np.ones(lon2d.shape, dtype=int)
+
+    data = {
+        "lon": lon2d,
+        "lat": lat2d,
+        "depth": depth2d,
+        "mask": mask2d,
+        "filename": "rotated_grid_ugrid.nc",
+        "global_closure": False,
+    }
+
+    out_file = tmp_path / "test_rotated_nowarning.jpg"
+    with warnings.catch_warnings(record=True) as captured_warnings:
+        warnings.simplefilter("always")
+        fig = plot_grid(data, output_path=out_file, show_labels=False, subtitle="")
+        plt.close(fig)
+
+        pcolormesh_warnings = [
+            w for w in captured_warnings
+            if issubclass(w.category, UserWarning) and "monotonically" in str(w.message)
+        ]
+        assert len(pcolormesh_warnings) == 0, (
+            f"Expected no pcolormesh monotonicity UserWarnings, got: {[str(w.message) for w in pcolormesh_warnings]}"
+        )
+    assert out_file.exists()
