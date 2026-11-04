@@ -57,6 +57,77 @@ def fmt_lat(y: float, pos: Any = None) -> str:
         return f"{lat_deg:g}°N"
 
 
+def compute_cell_edges_2d(
+    lon: np.ndarray, lat: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Calculate explicit (NY+1, NX+1) cell boundary corners from (NY, NX) cell centers.
+
+    Supplying explicit cell corner boundaries to `pcolormesh` eliminates matplotlib
+    warnings about non-monotonic cell coordinates for rotated-pole and curvilinear grids.
+
+    Parameters
+    ----------
+    lon : np.ndarray
+        2D array of cell center longitudes of shape (NY, NX).
+    lat : np.ndarray
+        2D array of cell center latitudes of shape (NY, NX).
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        2D arrays of cell edges (lon_edges, lat_edges) of shape (NY+1, NX+1).
+    """
+    ny, nx = lon.shape
+    lon_edges = np.zeros((ny + 1, nx + 1), dtype=np.float64)
+    lat_edges = np.zeros((ny + 1, nx + 1), dtype=np.float64)
+
+    # Interior vertices: average of 4 surrounding cell centers
+    lon_edges[1:ny, 1:nx] = 0.25 * (
+        lon[:-1, :-1] + lon[1:, :-1] + lon[:-1, 1:] + lon[1:, 1:]
+    )
+    lat_edges[1:ny, 1:nx] = 0.25 * (
+        lat[:-1, :-1] + lat[1:, :-1] + lat[:-1, 1:] + lat[1:, 1:]
+    )
+
+    # Top and bottom boundaries (extrapolate 1 row)
+    lon_edges[0, 1:nx] = (
+        2.0 * lon_edges[1, 1:nx] - lon_edges[2, 1:nx] if ny > 1 else lon[0, :-1]
+    )
+    lon_edges[ny, 1:nx] = (
+        2.0 * lon_edges[ny - 1, 1:nx] - lon_edges[ny - 2, 1:nx]
+        if ny > 1
+        else lon[0, 1:]
+    )
+    lat_edges[0, 1:nx] = (
+        2.0 * lat_edges[1, 1:nx] - lat_edges[2, 1:nx] if ny > 1 else lat[0, :-1]
+    )
+    lat_edges[ny, 1:nx] = (
+        2.0 * lat_edges[ny - 1, 1:nx] - lat_edges[ny - 2, 1:nx]
+        if ny > 1
+        else lat[0, 1:]
+    )
+
+    # Left and right boundaries (extrapolate 1 col)
+    lon_edges[:, 0] = (
+        2.0 * lon_edges[:, 1] - lon_edges[:, 2] if nx > 1 else lon_edges[:, 1]
+    )
+    lon_edges[:, nx] = (
+        2.0 * lon_edges[:, nx - 1] - lon_edges[:, nx - 2]
+        if nx > 1
+        else lon_edges[:, nx - 1]
+    )
+    lat_edges[:, 0] = (
+        2.0 * lat_edges[:, 1] - lat_edges[:, 2] if nx > 1 else lat_edges[:, 1]
+    )
+    lat_edges[:, nx] = (
+        2.0 * lat_edges[:, nx - 1] - lat_edges[:, nx - 2]
+        if nx > 1
+        else lat_edges[:, nx - 1]
+    )
+
+    return lon_edges, lat_edges
+
+
 def unwrap_grid_lon(lon: np.ndarray, global_closure: bool = False) -> np.ndarray:
     """Unwrap grid longitude coordinates to ensure continuity across coordinate boundaries.
 
@@ -465,12 +536,17 @@ def plot_grid(
         boundary_plot = boundary_mask
         excluded_plot = excluded_mask
 
+    if lon_plot.ndim == 2:
+        lon_mesh, lat_mesh = compute_cell_edges_2d(lon_plot, lat_plot)
+    else:
+        lon_mesh, lat_mesh = lon_plot, lat_plot
+
     if has_land:
         land_display = np.where(land_plot, 1.0, np.nan)
         cmap_land = matplotlib.colors.ListedColormap([dark_green])
         if lon_plot.ndim == 2:
             ax1.pcolormesh(
-                lon_plot, lat_plot, land_display, cmap=cmap_land, vmin=0.5, vmax=1.5, shading="nearest"
+                lon_mesh, lat_mesh, land_display, cmap=cmap_land, vmin=0.5, vmax=1.5
             )
         else:
             ax1.scatter(
@@ -479,10 +555,10 @@ def plot_grid(
 
     if lon_plot.ndim == 2:
         pcm1 = ax1.pcolormesh(
-            lon_plot, lat_plot, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy, shading="nearest"
+            lon_mesh, lat_mesh, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy
         )
         pcm2 = ax1.pcolormesh(
-            lon_plot, lat_plot, depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog, shading="nearest"
+            lon_mesh, lat_mesh, depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog
         )
     else:
         pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
@@ -494,7 +570,7 @@ def plot_grid(
         cmap_excl = matplotlib.colors.ListedColormap([gray_color])
         if lon_plot.ndim == 2:
             ax1.pcolormesh(
-                lon_plot, lat_plot, excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5, shading="nearest"
+                lon_mesh, lat_mesh, excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5
             )
         else:
             ax1.scatter(
@@ -507,7 +583,7 @@ def plot_grid(
         cmap_bnd = matplotlib.colors.ListedColormap([magenta_color])
         if lon_plot.ndim == 2:
             ax1.pcolormesh(
-                lon_plot, lat_plot, bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5, shading="nearest"
+                lon_mesh, lat_mesh, bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5
             )
         else:
             ax1.scatter(
@@ -529,7 +605,7 @@ def plot_grid(
 
         if lon_plot.ndim == 2:
             pcm_Obs = ax1.pcolormesh(
-                lon_plot, lat_plot, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0, shading="nearest"
+                lon_mesh, lat_mesh, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0
             )
         else:
             pcm_Obs = ax1.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
