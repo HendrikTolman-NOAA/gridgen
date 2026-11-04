@@ -65,7 +65,9 @@ def test_vis_orography_and_mask(tmp_path):
     assert os.path.exists(out_file)
 
     ax = fig.axes[0]
-    assert ax.get_facecolor() == (0.10588235294117647, 0.2627450980392157, 0.19607843137254902, 1.0)  # #1b4332 in RGBA
+    # Check that pcolormesh collections exist for land mask, bathymetry, and orography
+    collections = ax.collections
+    assert len(collections) >= 3
 
 
 def test_vis_orography_scale_when_no_orography(tmp_path):

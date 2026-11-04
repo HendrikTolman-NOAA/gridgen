@@ -407,9 +407,7 @@ def plot_grid(
 
     fig, ax1 = plt.subplots(figsize=(8, 5))
 
-    dark_green = "#1b4332"  # Dark green background for land/sea mask
-    if show_mask:
-        ax1.set_facecolor(dark_green)
+    dark_green = "#1b4332"  # Dark green color for dry land cells
 
     depth_limit = -abs(max_depth) if max_depth is not None else -8000.0
     vmax_orog = max_orography if max_orography is not None else 10.0
@@ -420,6 +418,8 @@ def plot_grid(
     # Cells with mask == 0 are dry land; mask == 2 are boundary cells; mask == 3 are excluded cells.
     bathymetry_mask = (depth <= 0) & (mask != 0) & (mask != 3) if show_mask else ((depth <= 0) & (mask != 3))
     orography_mask = (depth > 0) & (depth < 999999.0) & (mask == 1) if show_mask else ((depth > 0) & (depth < 999999.0) & (mask != 2) & (mask != 3))
+    land_mask = (mask == 0) if show_mask else np.zeros_like(mask, dtype=bool)
+    has_land = bool(np.any(land_mask))
     boundary_mask = (mask == 2)
     has_boundary = bool(np.any(boundary_mask))
     excluded_mask = (mask == 3)
@@ -445,6 +445,7 @@ def plot_grid(
             lat_plot = np.hstack([lat, lat, lat, lat, lat])
             depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
             depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
+            land_plot = np.hstack([land_mask, land_mask, land_mask, land_mask, land_mask])
             boundary_plot = np.hstack([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
             excluded_plot = np.hstack([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
         else:
@@ -452,6 +453,7 @@ def plot_grid(
             lat_plot = np.concatenate([lat, lat, lat, lat, lat])
             depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
             depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
+            land_plot = np.concatenate([land_mask, land_mask, land_mask, land_mask, land_mask])
             boundary_plot = np.concatenate([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
             excluded_plot = np.concatenate([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
     else:
@@ -459,8 +461,21 @@ def plot_grid(
         lat_plot = lat
         depth_bathy_plot = depth_bathy
         depth_orog_plot = depth_orog
+        land_plot = land_mask
         boundary_plot = boundary_mask
         excluded_plot = excluded_mask
+
+    if has_land:
+        land_display = np.where(land_plot, 1.0, np.nan)
+        cmap_land = matplotlib.colors.ListedColormap([dark_green])
+        if lon_plot.ndim == 2:
+            ax1.pcolormesh(
+                lon_plot, lat_plot, land_display, cmap=cmap_land, vmin=0.5, vmax=1.5, shading="nearest"
+            )
+        else:
+            ax1.scatter(
+                lon_plot, lat_plot, c=land_display, cmap=cmap_land, vmin=0.5, vmax=1.5
+            )
 
     if lon_plot.ndim == 2:
         pcm1 = ax1.pcolormesh(
