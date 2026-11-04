@@ -25,6 +25,8 @@ from .coordinates import (
     create_regular_grid,
     create_rotated_pole_grid,
     create_stereographic_grid,
+    geo_to_rotated_coords,
+    rotated_to_geo_coords,
 )
 from .masking import (
     clean_mask,
@@ -47,6 +49,8 @@ __all__ = [
     "create_regular_grid",
     "create_rotated_pole_grid",
     "create_stereographic_grid",
+    "geo_to_rotated_coords",
+    "rotated_to_geo_coords",
     "define_boundary_points",
     "load_active_polygon",
     "load_user_polygons",

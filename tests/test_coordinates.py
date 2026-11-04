@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-19
+# @date Latest Update: 2026-11-04
 
 """Unit tests for grid coordinate generation routines."""
 
@@ -23,7 +23,9 @@ from gridgen.coordinates import (
     create_regular_grid,
     create_rotated_pole_grid,
     create_stereographic_grid,
+    geo_to_rotated_coords,
     load_custom_grid,
+    rotated_to_geo_coords,
 )
 
 
@@ -396,3 +398,74 @@ def test_gridgen_grid_reexports() -> None:
     )
     assert np.allclose(lon, lon2)
     assert np.allclose(lat, lat2)
+
+
+def test_geo_rotated_coordinate_transforms_roundtrip() -> None:
+    """Test round-trip conversions between geographic and rotated coordinates."""
+    pole_lon = 180.0
+    pole_lat = 60.0
+
+    # 1. Scalar coordinate round-trip
+    orig_lon, orig_lat = 135.0, 35.0
+    rlon, rlat = geo_to_rotated_coords(orig_lon, orig_lat, pole_lon, pole_lat)
+    assert isinstance(rlon, float)
+    assert isinstance(rlat, float)
+
+    rec_lon, rec_lat = rotated_to_geo_coords(rlon, rlat, pole_lon, pole_lat)
+    assert isinstance(rec_lon, float)
+    assert isinstance(rec_lat, float)
+    assert np.isclose(rec_lon, orig_lon)
+    assert np.isclose(rec_lat, orig_lat)
+
+    # 2. Array coordinate round-trip
+    lons = np.array([0.0, 45.0, 180.0, 270.0])
+    lats = np.array([-30.0, 0.0, 45.0, 60.0])
+    rlons, rlats = geo_to_rotated_coords(lons, lats, pole_lon, pole_lat)
+    rec_lons, rec_lats = rotated_to_geo_coords(rlons, rlats, pole_lon, pole_lat)
+    assert np.allclose(rec_lons, lons)
+    assert np.allclose(rec_lats, lats)
+
+
+def test_create_regular_grid_rotated_pole_center_alignment() -> None:
+    """Test 4-step algorithm in create_regular_grid with rotated pole."""
+    pole_lon = 180.0
+    pole_lat = 60.0
+
+    lon_start, lon_end = 120.0, 140.0
+    lat_start, lat_end = 20.0, 40.0
+    nx, ny = 21, 21
+
+    lon, lat = create_regular_grid(
+        LON_START=lon_start,
+        LON_END=lon_end,
+        LAT_START=lat_start,
+        LAT_END=lat_end,
+        NX=nx,
+        NY=ny,
+        POLE_LON=pole_lon,
+        POLE_LAT=pole_lat,
+    )
+
+    assert lon.shape == (ny, nx)
+    assert lat.shape == (ny, nx)
+
+    # Verify center point in traditional lon-lat space matches the center of the generated grid
+    center_lon_expected = 0.5 * (lon_start + lon_end)
+    center_lat_expected = 0.5 * (lat_start + lat_end)
+
+    center_i = nx // 2
+    center_j = ny // 2
+
+    assert np.isclose(lon[center_j, center_i], center_lon_expected, atol=1e-5)
+    assert np.isclose(lat[center_j, center_i], center_lat_expected, atol=1e-5)
+
+    # Verify resolution in rotated coordinates matches expected SX and SY
+    rlon_all, rlat_all = geo_to_rotated_coords(lon, lat, pole_lon, pole_lat)
+    sx_expected = (lon_end - lon_start) / (nx - 1)
+    sy_expected = (lat_end - lat_start) / (ny - 1)
+
+    diff_rlon = np.diff(rlon_all, axis=1)
+    diff_rlat = np.diff(rlat_all, axis=0)
+
+    assert np.allclose(diff_rlon, sx_expected, atol=1e-5)
+    assert np.allclose(diff_rlat, sy_expected, atol=1e-5)

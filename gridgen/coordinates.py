@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-10-19
+# @date Latest Update: 2026-11-04
 
 """Grid coordinate generation module for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4).
 
@@ -24,6 +24,122 @@ import inspect
 from pathlib import Path
 
 import numpy as np
+
+
+def geo_to_rotated_coords(
+    lon: float | np.ndarray,
+    lat: float | np.ndarray,
+    pole_lon: float,
+    pole_lat: float,
+) -> tuple[float | np.ndarray, float | np.ndarray]:
+    """Convert traditional geographic coordinates (lon, lat) to rotated-pole coordinates.
+
+    Parameters
+    ----------
+    lon : float or np.ndarray
+        Geographic longitude in degrees.
+    lat : float or np.ndarray
+        Geographic latitude in degrees.
+    pole_lon : float
+        Geographic longitude of the rotated North Pole in degrees.
+    pole_lat : float
+        Geographic latitude of the rotated North Pole in degrees.
+
+    Returns
+    -------
+    rlon : float or np.ndarray
+        Rotated-pole longitude in degrees [-180, 180].
+    rlat : float or np.ndarray
+        Rotated-pole latitude in degrees [-90, 90].
+    """
+    is_scalar = np.isscalar(lon) and np.isscalar(lat)
+    lon_arr = np.asarray(lon, dtype=np.float64)
+    lat_arr = np.asarray(lat, dtype=np.float64)
+
+    lon_rad = np.radians(lon_arr)
+    lat_rad = np.radians(lat_arr)
+    p_lon_rad = np.radians(pole_lon)
+    p_lat_rad = np.radians(pole_lat)
+
+    sin_plat = np.sin(p_lat_rad)
+    cos_plat = np.cos(p_lat_rad)
+    sin_lat = np.sin(lat_rad)
+    cos_lat = np.cos(lat_rad)
+    dlon_rad = lon_rad - p_lon_rad
+    sin_dlon = np.sin(dlon_rad)
+    cos_dlon = np.cos(dlon_rad)
+
+    z_rot = sin_plat * sin_lat + cos_plat * cos_lat * cos_dlon
+    x_rot = cos_plat * sin_lat - sin_plat * cos_lat * cos_dlon
+    y_rot = cos_lat * sin_dlon
+
+    rlat_rad = np.arcsin(np.clip(z_rot, -1.0, 1.0))
+    rlon_rad = np.arctan2(y_rot, x_rot)
+
+    rlon_out = np.degrees(rlon_rad)
+    rlat_out = np.degrees(rlat_rad)
+
+    if is_scalar:
+        return float(rlon_out), float(rlat_out)
+    return rlon_out, rlat_out
+
+
+def rotated_to_geo_coords(
+    rlon: float | np.ndarray,
+    rlat: float | np.ndarray,
+    pole_lon: float,
+    pole_lat: float,
+) -> tuple[float | np.ndarray, float | np.ndarray]:
+    """Convert rotated-pole coordinates (rlon, rlat) to traditional geographic coordinates.
+
+    Parameters
+    ----------
+    rlon : float or np.ndarray
+        Rotated-pole longitude in degrees.
+    rlat : float or np.ndarray
+        Rotated-pole latitude in degrees.
+    pole_lon : float
+        Geographic longitude of the rotated North Pole in degrees.
+    pole_lat : float
+        Geographic latitude of the rotated North Pole in degrees.
+
+    Returns
+    -------
+    lon : float or np.ndarray
+        Geographic longitude in degrees [0, 360).
+    lat : float or np.ndarray
+        Geographic latitude in degrees [-90, 90].
+    """
+    is_scalar = np.isscalar(rlon) and np.isscalar(rlat)
+    rlon_arr = np.asarray(rlon, dtype=np.float64)
+    rlat_arr = np.asarray(rlat, dtype=np.float64)
+
+    rlon_rad = np.radians(rlon_arr)
+    rlat_rad = np.radians(rlat_arr)
+    p_lon_rad = np.radians(pole_lon)
+    p_lat_rad = np.radians(pole_lat)
+
+    sin_plat = np.sin(p_lat_rad)
+    cos_plat = np.cos(p_lat_rad)
+    sin_rlat = np.sin(rlat_rad)
+    cos_rlat = np.cos(rlat_rad)
+    sin_rlon = np.sin(rlon_rad)
+    cos_rlon = np.cos(rlon_rad)
+
+    lat_rad = np.arcsin(
+        np.clip(sin_plat * sin_rlat + cos_plat * cos_rlat * cos_rlon, -1.0, 1.0)
+    )
+    lon_rad = p_lon_rad + np.arctan2(
+        cos_rlat * sin_rlon,
+        cos_plat * sin_rlat - sin_plat * cos_rlat * cos_rlon,
+    )
+
+    lon_out = np.mod(np.degrees(lon_rad), 360.0)
+    lat_out = np.degrees(lat_rad)
+
+    if is_scalar:
+        return float(lon_out), float(lat_out)
+    return lon_out, lat_out
 
 
 def create_regular_grid(
@@ -117,17 +233,40 @@ def create_regular_grid(
         lon, lat = np.meshgrid(lon1d, lat1d)
         return lon, lat
 
-    pole_lon = 0.0 if POLE_LON is None else POLE_LON
-    return create_rotated_pole_grid(
-        POLE_LON=pole_lon,
-        POLE_LAT=POLE_LAT,
-        LON_START=lon_start_val,
-        LON_END=lon_end_val,
-        LAT_START=lat_start_val,
-        LAT_END=lat_end_val,
-        NX=NX,
-        NY=NY,
+    pole_lon = 0.0 if POLE_LON is None else float(POLE_LON)
+    pole_lat = float(POLE_LAT)
+
+    # 1) Determine the center point of the grid in traditional lon-lat space
+    center_lon = 0.5 * (lon_start_val + lon_end_val)
+    center_lat = 0.5 * (lat_start_val + lat_end_val)
+
+    # 2) Determine coordinates of this point in rotated-pole lon-lat coordinates
+    c_rlon, c_rlat = geo_to_rotated_coords(center_lon, center_lat, pole_lon, pole_lat)
+
+    # 3) Determine SX and SY in rotated coordinates and create rotated grid centered on (c_rlon, c_rlat)
+    sx_rot = (
+        sx_val
+        if sx_val is not None
+        else ((lon_end_val - lon_start_val) / (NX - 1) if NX > 1 else 0.0)
     )
+    sy_rot = (
+        sy_val
+        if sy_val is not None
+        else ((lat_end_val - lat_start_val) / (NY - 1) if NY > 1 else 0.0)
+    )
+
+    rlon_start = c_rlon - 0.5 * (NX - 1) * sx_rot
+    rlon_end = c_rlon + 0.5 * (NX - 1) * sx_rot
+    rlat_start = c_rlat - 0.5 * (NY - 1) * sy_rot
+    rlat_end = c_rlat + 0.5 * (NY - 1) * sy_rot
+
+    rlon1d = np.linspace(rlon_start, rlon_end, NX)
+    rlat1d = np.linspace(rlat_start, rlat_end, NY)
+    rlon_grid, rlat_grid = np.meshgrid(rlon1d, rlat1d)
+
+    # 4) Map each of the grid points in the resulting grid back to traditional lon-lat coordinates
+    lon, lat = rotated_to_geo_coords(rlon_grid, rlat_grid, pole_lon, pole_lat)
+    return lon, lat
 
 
 def create_stereographic_grid(
