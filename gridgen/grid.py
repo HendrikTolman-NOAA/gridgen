@@ -44,9 +44,9 @@ __all__ = [
     "create_regular_grid",
     "create_rotated_pole_grid",
     "create_stereographic_grid",
+    "generate_grid",
     "geo_to_rotated_coords",
     "rotated_to_geo_coords",
-    "generate_grid",
     "validate_grid_parameters",
 ]
 
