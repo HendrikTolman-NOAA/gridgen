@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-11-03
+# @date Latest Update: 2026-11-04
 #
 # Code Heritage:
 # Converted from clean_mask.m, remove_lake.m, compute_boundary.m, split_boundary.m,
@@ -462,15 +462,34 @@ def define_boundary_points(
 
     # 1. Apply active computation polygon if provided
     if active_poly is not None:
-        px, py = active_poly
-        poly_coords = np.column_stack((px, py))
-        comp_poly = Polygon(poly_coords)
+        import shapely
 
-        for k in range(Ny):
-            for j in range(Nx):
-                pt = Point(float(lon[k, j]), float(lat[k, j]))
-                if not comp_poly.contains(pt):
-                    m_new[k, j] = 3
+        px = np.asarray(active_poly[0], dtype=np.float64)
+        py = np.asarray(active_poly[1], dtype=np.float64)
+        if len(px) >= 3:
+            gx_min = float(np.nanmin(lon))
+            gx_max = float(np.nanmax(lon))
+            p_west = float(np.min(px))
+            p_east = float(np.max(px))
+
+            k_min = int(np.floor((gx_min - p_east) / 360.0))
+            k_max = int(np.ceil((gx_max - p_west) / 360.0))
+
+            inside = np.zeros((Ny, Nx), dtype=bool)
+            for k in range(k_min, k_max + 1):
+                shift_x = k * 360.0
+                s_west = p_west + shift_x
+                s_east = p_east + shift_x
+                if s_east < gx_min or s_west > gx_max:
+                    continue
+                poly_coords = np.column_stack((px + shift_x, py))
+                comp_poly = Polygon(poly_coords)
+                if not comp_poly.is_valid:
+                    comp_poly = comp_poly.buffer(0)
+                if not comp_poly.is_empty:
+                    inside |= shapely.contains_xy(comp_poly, lon, lat)
+
+            m_new[~inside] = 3
 
     def has_wet_neighbor(r: int, c: int, m_check: np.ndarray) -> bool:
         up = r + 1 if r + 1 < Ny else None

@@ -419,3 +419,25 @@ def test_gulf_and_caribbean_active_file() -> None:
     assert not poly.contains(Point(-85.0, 8.0)), "Pacific off Costa Rica should be outside"
     assert not poly.contains(Point(-79.5, 8.0)), "Pacific Gulf of Panama should be outside"
     assert not poly.contains(Point(-82.2, 8.0)), "Pacific Gulf of Chiriqui should be outside"
+
+
+def test_define_boundary_points_active_poly_wrapping() -> None:
+    """Verify define_boundary_points handles active polygons when grid longitudes are wrapped [0, 360)."""
+    # Active polygon in negative longitudes [-100, -60] and latitudes [10, 30]
+    px = np.array([-100.0, -60.0, -60.0, -100.0, -100.0])
+    py = np.array([10.0, 10.0, 30.0, 30.0, 10.0])
+
+    # Grid in [260, 300] (which corresponds to [-100, -60]) and [10, 30]
+    lon_1d = np.linspace(250.0, 310.0, 7)
+    lat_1d = np.linspace(5.0, 35.0, 7)
+    lon, lat = np.meshgrid(lon_1d, lat_1d)
+    mask = np.ones(lon.shape, dtype=int)
+
+    m_out = define_boundary_points(mask, lon, lat, active_poly=(px, py))
+
+    # Center point (280, 20) -> (-80, 20) which is inside active polygon
+    center_r, center_c = 3, 3
+    assert m_out[center_r, center_c] in (1, 2), "Inside point should not be marked as excluded (3)"
+
+    # Outer corner (250, 5) -> (-110, 5) which is outside active polygon
+    assert m_out[0, 0] == 3, "Outside point should be marked as excluded (3)"
