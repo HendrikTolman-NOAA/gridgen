@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-03
+# @date Latest Update: 2026-11-04
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -55,6 +55,42 @@ def fmt_lat(y: float, pos: Any = None) -> str:
         return f"{abs(lat_deg):g}°S"
     else:
         return f"{lat_deg:g}°N"
+
+
+def unwrap_grid_lon(lon: np.ndarray, global_closure: bool = False) -> np.ndarray:
+    """Unwrap grid longitude coordinates to ensure continuity across coordinate boundaries.
+
+    Prevents discontinuous 0°/360° jumps along grid matrix axes that cause pcolormesh
+    to trigger non-monotonic cell center warnings.
+
+    Parameters
+    ----------
+    lon : np.ndarray
+        1D or 2D longitude array in degrees.
+    global_closure : bool, optional
+        Flag indicating if grid has global closure.
+
+    Returns
+    -------
+    np.ndarray
+        Continuous unwrapped longitude coordinates array.
+    """
+    lon_arr = np.asarray(lon, dtype=np.float64)
+    if lon_arr.ndim == 2:
+        u = np.unwrap(lon_arr, period=360.0, axis=1)
+        u = np.unwrap(u, period=360.0, axis=0)
+    elif lon_arr.ndim == 1:
+        u = np.unwrap(lon_arr, period=360.0)
+    else:
+        return lon_arr
+
+    span = float(np.nanmax(u) - np.nanmin(u))
+    if global_closure or span >= 350.0:
+        return u
+
+    mean_val = float(np.nanmean(u))
+    shift = round(mean_val / 360.0) * 360.0
+    return u - shift
 
 
 def extract_grid_name(filepath: str | Path) -> str:
@@ -350,7 +386,9 @@ def plot_grid(
     matplotlib.figure.Figure
         Created Matplotlib figure object.
     """
-    lon = data["lon"]
+    raw_lon = data["lon"]
+    global_flag = str(data.get("global_closure", "")).lower() in ("true", "1")
+    lon = unwrap_grid_lon(raw_lon, global_closure=global_flag)
     lat = data["lat"]
     depth = data["depth"].copy()
     mask = data["mask"]
@@ -549,7 +587,9 @@ def plot_grid(
                 c_lon = lon_min + (central_lon - lon_min) % 360.0
         else:
             # Normalize central longitude modulo 360 into base grid range [lon_min, lon_max]
-            c_lon = lon_min + (central_lon - lon_min) % 360.0
+            c_lon = (central_lon - lon_min) % 360.0 + lon_min
+            if c_lon > lon_max and abs((c_lon - 360.0) - (lon_min + lon_max) / 2.0) < abs(c_lon - (lon_min + lon_max) / 2.0):
+                c_lon -= 360.0
             if np.isclose(c_lon, lon_min) and abs(central_lon - lon_max) < abs(central_lon - lon_min):
                 c_lon = lon_max
 
