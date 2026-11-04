@@ -33,6 +33,8 @@ from .coordinates import (
     create_regular_grid,
     create_rotated_pole_grid,
     create_stereographic_grid,
+    geo_to_rotated_coords,
+    rotated_to_geo_coords,
     validate_grid_parameters,
 )
 from .geometry import compute_all_corners
@@ -43,6 +45,8 @@ __all__ = [
     "create_rotated_pole_grid",
     "create_stereographic_grid",
     "generate_grid",
+    "geo_to_rotated_coords",
+    "rotated_to_geo_coords",
     "validate_grid_parameters",
 ]
 

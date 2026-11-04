@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-03
+# @date Latest Update: 2026-11-04
 
 from __future__ import annotations
 
@@ -905,6 +905,53 @@ def test_plot_grid_crossing_prime_meridian_no_pcolormesh_warning(tmp_path: Path)
     }
 
     out_file = tmp_path / "test_rotated_nowarning.jpg"
+    with warnings.catch_warnings(record=True) as captured_warnings:
+        warnings.simplefilter("always")
+        fig = plot_grid(data, output_path=out_file, show_labels=False, subtitle="")
+        plt.close(fig)
+
+        pcolormesh_warnings = [
+            w for w in captured_warnings
+            if issubclass(w.category, UserWarning) and "monotonically" in str(w.message)
+        ]
+        assert len(pcolormesh_warnings) == 0, (
+            f"Expected no pcolormesh monotonicity UserWarnings, got: {[str(w.message) for w in pcolormesh_warnings]}"
+        )
+    assert out_file.exists()
+
+
+def test_plot_grid_rotated_pole_no_monotonicity_warning(tmp_path: Path):
+    """Verify plot_grid on a rotated pole curvilinear grid raises no monotonicity UserWarning."""
+    import warnings
+
+    import matplotlib.pyplot as plt
+
+    from gridgen.coordinates import create_regular_grid
+
+    # Create rotated pole curvilinear grid where cell centers curve
+    lon2d, lat2d = create_regular_grid(
+        LON_START=0.0,
+        LON_END=20.0,
+        LAT_START=30.0,
+        LAT_END=60.0,
+        NX=30,
+        NY=30,
+        POLE_LON=0.0,
+        POLE_LAT=40.0,
+    )
+    depth2d = np.full(lon2d.shape, -100.0)
+    mask2d = np.ones(lon2d.shape, dtype=int)
+
+    data = {
+        "lon": lon2d,
+        "lat": lat2d,
+        "depth": depth2d,
+        "mask": mask2d,
+        "filename": "rotated_curvilinear_ugrid.nc",
+        "global_closure": False,
+    }
+
+    out_file = tmp_path / "test_rotated_curvilinear_nowarning.jpg"
     with warnings.catch_warnings(record=True) as captured_warnings:
         warnings.simplefilter("always")
         fig = plot_grid(data, output_path=out_file, show_labels=False, subtitle="")
