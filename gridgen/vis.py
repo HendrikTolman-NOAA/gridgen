@@ -551,7 +551,7 @@ def plot_grid(
         # Add a grid of parallels (latitudes) with N / S labels
         lat_min, lat_max = float(np.nanmin(lat)), float(np.nanmax(lat))
         lat_span = lat_max - lat_min
-        step_lat = 10 if lat_span >= 15 else 5
+        step_lat = 5 if lat_span >= 15 else 2.5
         l_start = np.floor(lat_min / step_lat) * step_lat
         l_end = np.ceil(lat_max / step_lat) * step_lat
         lat_levels = np.arange(l_start, l_end + 0.1, step_lat)
@@ -562,7 +562,7 @@ def plot_grid(
                 x_centers, y_centers, lat, levels=lat_levels, colors="black", linestyles=":", linewidths=0.7
             )
             fmt_lat_dict = {
-                lvl: "0°" if abs(lvl) < 1e-4 else (f"{abs(round(lvl)):g}°S" if lvl < 0 else f"{round(lvl):g}°N")
+                lvl: "0°" if abs(lvl) < 1e-4 else (f"{abs(lvl):g}°S" if lvl < 0 else f"{lvl:g}°N")
                 for lvl in cs_lat.levels
             }
             ax1.clabel(cs_lat, cs_lat.levels, fmt=fmt_lat_dict, fontsize=6)
@@ -578,15 +578,15 @@ def plot_grid(
         lon_masked = np.ma.masked_where(mask_jump, lon_180)
         lon_min_val, lon_max_val = float(np.nanmin(lon_masked)), float(np.nanmax(lon_masked))
         lon_span = lon_max_val - lon_min_val
-        step_lon = 30 if lon_span >= 90 else (15 if lon_span >= 30 else 10)
+        step_lon = 15 if lon_span >= 90 else (7.5 if lon_span >= 30 else 5)
 
         lons_to_check = np.arange(-180, 181, step_lon)
 
         def fmt_lon_lbl(x_val: float) -> str:
             v = (x_val + 180.0) % 360.0 - 180.0
             if abs(v) < 1e-4 or abs(abs(v) - 180.0) < 1e-4:
-                return f"{round(abs(v))}°"
-            return f"{abs(round(v))}°W" if v < 0 else f"{round(v)}°E"
+                return f"{abs(v):g}°"
+            return f"{abs(v):g}°W" if v < 0 else f"{v:g}°E"
 
         # Separate levels: interior levels in (-180, 180) vs. 180 degree meridian
         levels_mid = [
