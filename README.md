@@ -222,10 +222,9 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `--sy SY` | Latitude grid increment in degrees. `[Mandatory if --lat-end omitted]` |
 | `--pole-lon LON` | Rotated north pole longitude in degrees. `[Optional for regular grid]` |
 | `--pole-lat LAT` | Rotated north pole latitude in degrees (reverts to regular grid when lat is 90.0). `[Optional for regular grid]` |
-| `--center-lon LON` | Center longitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
-| `--center-lat LAT` | Center latitude for stereographic projection in degrees. `[Mandatory for stereographic grid]` |
-| `--extent-km KM` | Half-width domain extent in km for stereographic grid. `[Mandatory if --extent-deg omitted]` |
-| `--extent-deg DEG` | Half-width domain extent in arc degrees for stereographic grid. `[Mandatory if --extent-km omitted]` |
+| `--center-lon LON` | Center longitude for stereographic projection in degrees (default: `0.0`). `[Optional for stereographic grid]` |
+| `--center-lat LAT` | Center latitude for stereographic projection in degrees (default: `90.0`). `[Optional for stereographic grid]` |
+| `--extent-deg DEG` | Half-width domain extent in arc degrees from center to edge along smaller grid dimension. `[Mandatory for stereographic grid]` |
 | `--rotation ROTATION` | Grid rotation angle in degrees on stereographic projection plane (default: `0.0`). `[Optional for stereographic grid]` |
 | `--custom-grid FILE` | Path to custom grid layout file (`.nc`, `.npz`, `.npy`, `.mat`, `.dat`, `.txt`, `.csv`). `[Mandatory for custom grid]` |
 | `-o, --out-dir DIR` | Output directory for generated grid files (default: `.`). `[Optional]` |

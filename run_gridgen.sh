@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-02
-# @date Latest Update: 2026-11-03
+# @date Latest Update: 2026-11-05
 #
 # Utility tool to manage running WAVEWATCH grid generation Python tools
 # after reference data files have been populated in reference_data/.
@@ -32,7 +32,6 @@ SX=""
 SY=""
 CENTER_LON=""
 CENTER_LAT=""
-EXTENT_KM=""
 EXTENT_DEG=""
 ROTATION=""
 POLE_LON=""
@@ -127,8 +126,8 @@ Utility script to manage and execute WAVEWATCH III / IV Python grid generation.
                          [Optional]
   --center-lat LAT       Projection center latitude in deg (default: 90.0)
                          [Optional]
-  --extent-km KM         Half-width extent in km (default: 1000.0) [Optional]
-  --extent-deg DEG       Half-width extent in deg [Optional]
+  --extent-deg DEG       Half-width extent in arc degrees from center to edge
+                         along smaller dimension [Mandatory for stereographic]
   --rotation DEG         Grid rotation angle in deg (default: 0.0) [Optional]
 
 4. Custom Grid Parameters (--grid-type custom):
@@ -231,14 +230,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --center-lat=*|--CENTER-LAT=*)
       CENTER_LAT="${1#*=}"
-      shift 1
-      ;;
-    --extent-km|--EXTENT-KM)
-      EXTENT_KM="$2"
-      shift 2
-      ;;
-    --extent-km=*|--EXTENT-KM=*)
-      EXTENT_KM="${1#*=}"
       shift 1
       ;;
     --extent-deg|--EXTENT-DEG)
@@ -538,7 +529,6 @@ case "${GRID_TYPE}" in
   stereographic)
     if [ -n "$CENTER_LON" ]; then printf "  %-22s : %s deg\n" "CENTER_LON (Proj)" "${CENTER_LON}"; fi
     if [ -n "$CENTER_LAT" ]; then printf "  %-22s : %s deg\n" "CENTER_LAT (Proj)" "${CENTER_LAT}"; fi
-    if [ -n "$EXTENT_KM" ]; then printf "  %-22s : %s km\n" "EXTENT_KM" "${EXTENT_KM}"; fi
     if [ -n "$EXTENT_DEG" ]; then printf "  %-22s : %s deg\n" "EXTENT_DEG" "${EXTENT_DEG}"; fi
     if [ -n "$ROTATION" ]; then printf "  %-22s : %s deg\n" "ROTATION" "${ROTATION}"; fi
     ;;
@@ -593,7 +583,6 @@ if [ -n "$SX" ]; then CMD_ARGS+=(--sx "$SX"); fi
 if [ -n "$SY" ]; then CMD_ARGS+=(--sy "$SY"); fi
 if [ -n "$CENTER_LON" ]; then CMD_ARGS+=(--center-lon "$CENTER_LON"); fi
 if [ -n "$CENTER_LAT" ]; then CMD_ARGS+=(--center-lat "$CENTER_LAT"); fi
-if [ -n "$EXTENT_KM" ]; then CMD_ARGS+=(--extent-km "$EXTENT_KM"); fi
 if [ -n "$EXTENT_DEG" ]; then CMD_ARGS+=(--extent-deg "$EXTENT_DEG"); fi
 if [ -n "$ROTATION" ]; then CMD_ARGS+=(--rotation "$ROTATION"); fi
 if [ -n "$POLE_LON" ]; then CMD_ARGS+=(--pole-lon "$POLE_LON"); fi
