@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-03
+# @date Latest Update: 2026-11-05
 #
 # Shell driver script to generate graphical grid bathymetry plots.
 
@@ -185,6 +185,19 @@ if ! python3 -c "import numpy, matplotlib, xarray" &> /dev/null; then
   echo "  pip install -e ." >&2
   exit 1
 fi
+
+# Detect grid type (regular vs. stereographic)
+DETECTED_GRID_TYPE=$(python3 -c "
+import sys
+from gridgen.vis import load_grid_data
+try:
+    data = load_grid_data('${INPUT_FILE}')
+    print(data.get('grid_type', 'regular'))
+except Exception:
+    print('regular')
+" 2>/dev/null || echo "regular")
+
+echo "  Detected grid type: ${DETECTED_GRID_TYPE}"
 
 # Build argument list
 CMD_ARGS=(--input "$INPUT_FILE" --format "$FORMAT" --no-display)

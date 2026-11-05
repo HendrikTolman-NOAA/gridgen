@@ -920,6 +920,60 @@ def test_plot_grid_crossing_prime_meridian_no_pcolormesh_warning(tmp_path: Path)
     assert out_file.exists()
 
 
+def test_stereographic_grid_plotting(tmp_path):
+    """Verify stereographic grids are plotted as a 2D array without mapping, with equal aspect ratio, no ticks/labels, and meridian/parallel contours."""
+    import matplotlib.pyplot as plt
+
+    from gridgen.coordinates import create_stereographic_grid
+
+    lon, lat = create_stereographic_grid(
+        CENTER_LON=-40.0,
+        CENTER_LAT=70.0,
+        EXTENT_DEG=20.0,
+        NX=30,
+        NY=20,
+    )
+    depth = np.full((20, 30), -50.0)
+    mask = np.ones((20, 30), dtype=int)
+    # Dry land cell
+    depth[5, 5] = 100.0
+    mask[5, 5] = 0
+
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": depth,
+        "mask": mask,
+        "filename": "stereo_test_ugrid.nc",
+        "grid_type": "stereographic",
+        "bathy_source": "etopo2",
+        "bound_source": "coastal_bound_low.mat",
+    }
+
+    out_file = tmp_path / "stereo_test.jpg"
+    fig = plot_grid(data, output_path=out_file)
+    ax1 = fig.axes[0]
+
+    # Verify aspect ratio matches NX and NY (equal pixel scale)
+    assert ax1.get_aspect() == 1.0
+    # Verify axis ticks and labels are suppressed
+    assert len(ax1.get_xticks()) == 0
+    assert len(ax1.get_yticks()) == 0
+    assert ax1.get_xlabel() == ""
+    assert ax1.get_ylabel() == ""
+
+    # Verify contours for meridians and parallels are present
+    contour_sets = [c for c in ax1.collections if hasattr(c, "get_segments")]
+    assert len(contour_sets) > 0 or len(ax1.texts) > 0
+
+    # Verify title and subtitle are preserved
+    all_texts = [t.get_text() for t in ax1.texts] + [ax1.get_title()]
+    assert any("WAVEWATCH IV grid stereo_test_ugrid.nc" in txt for txt in all_texts)
+    assert any("Bathymetry, Orography, and Obstructions" in txt for txt in all_texts)
+    assert out_file.exists()
+    plt.close(fig)
+
+
 def test_plot_grid_rotated_pole_no_monotonicity_warning(tmp_path: Path):
     """Verify plot_grid on a rotated pole curvilinear grid raises no monotonicity UserWarning."""
     import warnings

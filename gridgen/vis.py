@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-04
+# @date Latest Update: 2026-11-05
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -269,6 +269,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
 
         bathy_src = str(ds.attrs.get("bathy_source", ds.attrs.get("source", "etopo2")))
         bound_src = str(ds.attrs.get("bound_source", ds.attrs.get("bound_file", ds.attrs.get("coast_file", ""))))
+        grid_type = str(ds.attrs.get("grid_type", "regular")).lower()
         ds.close()
         return {
             "lon": lon,
@@ -278,6 +279,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "ObsX": ObsX,
             "ObsY": ObsY,
             "filename": path.name,
+            "grid_type": grid_type,
             "bathy_source": bathy_src,
             "bound_source": bound_src,
         }
@@ -319,6 +321,7 @@ def load_grid_data(filepath: str | Path) -> dict[str, Any]:
             "ObsX": ObsX,
             "ObsY": ObsY,
             "filename": path.name,
+            "grid_type": "regular",
             "bathy_source": "etopo2",
             "bound_source": "coastal_bound_low.mat",
         }
@@ -465,6 +468,8 @@ def plot_grid(
     mask = data["mask"]
     ObsX = data.get("ObsX", data.get("sx", None))
     ObsY = data.get("ObsY", data.get("sy", None))
+    grid_type = str(data.get("grid_type", "regular")).lower()
+    is_stereographic = (grid_type == "stereographic")
 
     # Compute combined maximum obstruction map: Obs = max(ObsX, ObsY)
     Obs_max = None
@@ -502,116 +507,285 @@ def plot_grid(
     vmin_bathy = depth_limit
     vmax_bathy = 0.0
 
-    lon_min, lon_max = float(np.nanmin(lon)), float(np.nanmax(lon))
-    lat_min, lat_max = float(np.nanmin(lat)), float(np.nanmax(lat))
+    if is_stereographic and lon.ndim == 2:
+        ny, nx = lon.shape
+        x_mesh, y_mesh = np.meshgrid(np.arange(nx + 1), np.arange(ny + 1))
+        x_centers, y_centers = np.meshgrid(np.arange(nx) + 0.5, np.arange(ny) + 0.5)
 
-    span_lon_raw = lon_max - lon_min if lon_max > lon_min else 1.0
-    span_lat_raw = lat_max - lat_min if lat_max > lat_min else 1.0
+        if has_land:
+            land_display = np.where(land_mask, 1.0, np.nan)
+            cmap_land = matplotlib.colors.ListedColormap([dark_green])
+            ax1.pcolormesh(x_mesh, y_mesh, land_display, cmap=cmap_land, vmin=0.5, vmax=1.5)
 
-    is_global = bool(span_lon_raw >= 350.0)
+        pcm1 = ax1.pcolormesh(x_mesh, y_mesh, depth_bathy, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
+        pcm2 = ax1.pcolormesh(x_mesh, y_mesh, depth_orog, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
 
-    if is_global:
-        if lon.ndim == 2:
-            lon_plot = np.hstack([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
-            lat_plot = np.hstack([lat, lat, lat, lat, lat])
-            depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
-            depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
-            land_plot = np.hstack([land_mask, land_mask, land_mask, land_mask, land_mask])
-            boundary_plot = np.hstack([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
-            excluded_plot = np.hstack([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
-        else:
-            lon_plot = np.concatenate([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
-            lat_plot = np.concatenate([lat, lat, lat, lat, lat])
-            depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
-            depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
-            land_plot = np.concatenate([land_mask, land_mask, land_mask, land_mask, land_mask])
-            boundary_plot = np.concatenate([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
-            excluded_plot = np.concatenate([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
+        if has_excluded:
+            excl_display = np.where(excluded_mask, 1.0, np.nan)
+            gray_color = "#d3d3d3"
+            cmap_excl = matplotlib.colors.ListedColormap([gray_color])
+            ax1.pcolormesh(x_mesh, y_mesh, excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5)
+
+        if has_boundary:
+            bnd_display = np.where(boundary_mask, 1.0, np.nan)
+            magenta_color = "#ff00ff"
+            cmap_bnd = matplotlib.colors.ListedColormap([magenta_color])
+            ax1.pcolormesh(x_mesh, y_mesh, bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5)
+
+        pcm_Obs = None
+        if has_obstr:
+            Obs_plot = np.where((Obs_max >= 0.01) & (~excluded_mask), Obs_max, np.nan)
+            pcm_Obs = ax1.pcolormesh(x_mesh, y_mesh, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+
+        # Set aspect ratio corresponding to NX and NY (equal pixel scale in array space)
+        ax1.set_aspect("equal")
+        ax1.set_xlim(0, nx)
+        ax1.set_ylim(0, ny)
+
+        # Do not provide axis ticks and labels
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        ax1.set_xlabel("")
+        ax1.set_ylabel("")
+
+        # Add a grid of parallels (latitudes) with N / S labels
+        lat_min, lat_max = float(np.nanmin(lat)), float(np.nanmax(lat))
+        lat_span = lat_max - lat_min
+        step_lat = 10 if lat_span >= 15 else 5
+        l_start = np.floor(lat_min / step_lat) * step_lat
+        l_end = np.ceil(lat_max / step_lat) * step_lat
+        lat_levels = np.arange(l_start, l_end + 0.1, step_lat)
+        lat_levels = lat_levels[(lat_levels > lat_min + 0.1) & (lat_levels < lat_max - 0.1)]
+
+        if len(lat_levels) > 0:
+            cs_lat = ax1.contour(
+                x_centers, y_centers, lat, levels=lat_levels, colors="black", linestyles=":", linewidths=0.7
+            )
+            fmt_lat_dict = {
+                lvl: "0°" if abs(lvl) < 1e-4 else (f"{abs(round(lvl)):g}°S" if lvl < 0 else f"{round(lvl):g}°N")
+                for lvl in cs_lat.levels
+            }
+            ax1.clabel(cs_lat, cs_lat.levels, fmt=fmt_lat_dict, fontsize=6)
+
+        # Add a grid of meridians (longitudes) with E / W labels
+        lon_180 = (lon + 180.0) % 360.0 - 180.0
+        jump_x = np.abs(np.diff(lon_180, axis=1, prepend=lon_180[:, :1])) > 180
+        jump_x |= np.abs(np.diff(lon_180, axis=1, append=lon_180[:, -1:])) > 180
+        jump_y = np.abs(np.diff(lon_180, axis=0, prepend=lon_180[:1, :])) > 180
+        jump_y |= np.abs(np.diff(lon_180, axis=0, append=lon_180[-1:, :])) > 180
+        mask_jump = jump_x | jump_y
+
+        lon_masked = np.ma.masked_where(mask_jump, lon_180)
+        lon_min_val, lon_max_val = float(np.nanmin(lon_masked)), float(np.nanmax(lon_masked))
+        lon_span = lon_max_val - lon_min_val
+        step_lon = 30 if lon_span >= 90 else (15 if lon_span >= 30 else 10)
+
+        lons_to_check = np.arange(-180, 181, step_lon)
+        lon_levels = [lvl for lvl in lons_to_check if np.any(np.abs(lon_masked - lvl) < step_lon)]
+
+        if len(lon_levels) > 0:
+            cs_lon = ax1.contour(
+                x_centers, y_centers, lon_masked, levels=lon_levels, colors="black", linestyles=":", linewidths=0.7
+            )
+
+            def fmt_lon_lbl(x_val: float) -> str:
+                v = (x_val + 180.0) % 360.0 - 180.0
+                if abs(v) < 1e-4 or abs(abs(v) - 180.0) < 1e-4:
+                    return f"{round(abs(v))}°"
+                return f"{abs(round(v))}°W" if v < 0 else f"{round(v)}°E"
+
+            fmt_lon_dict = {lvl: fmt_lon_lbl(lvl) for lvl in cs_lon.levels}
+            ax1.clabel(cs_lon, cs_lon.levels, fmt=fmt_lon_dict, fontsize=6)
+
     else:
-        lon_plot = lon
-        lat_plot = lat
-        depth_bathy_plot = depth_bathy
-        depth_orog_plot = depth_orog
-        land_plot = land_mask
-        boundary_plot = boundary_mask
-        excluded_plot = excluded_mask
+        lon_min, lon_max = float(np.nanmin(lon)), float(np.nanmax(lon))
+        lat_min, lat_max = float(np.nanmin(lat)), float(np.nanmax(lat))
 
-    if lon_plot.ndim == 2:
-        lon_mesh, lat_mesh = compute_cell_edges_2d(lon_plot, lat_plot)
-    else:
-        lon_mesh, lat_mesh = lon_plot, lat_plot
+        span_lon_raw = lon_max - lon_min if lon_max > lon_min else 1.0
+        span_lat_raw = lat_max - lat_min if lat_max > lat_min else 1.0
 
-    if has_land:
-        land_display = np.where(land_plot, 1.0, np.nan)
-        cmap_land = matplotlib.colors.ListedColormap([dark_green])
-        if lon_plot.ndim == 2:
-            ax1.pcolormesh(
-                lon_mesh, lat_mesh, land_display, cmap=cmap_land, vmin=0.5, vmax=1.5
-            )
-        else:
-            ax1.scatter(
-                lon_plot, lat_plot, c=land_display, cmap=cmap_land, vmin=0.5, vmax=1.5
-            )
+        is_global = bool(span_lon_raw >= 350.0)
 
-    if lon_plot.ndim == 2:
-        pcm1 = ax1.pcolormesh(
-            lon_mesh, lat_mesh, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy
-        )
-        pcm2 = ax1.pcolormesh(
-            lon_mesh, lat_mesh, depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog
-        )
-    else:
-        pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
-        pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
-
-    if has_excluded:
-        excl_display = np.where(excluded_plot, 1.0, np.nan)
-        gray_color = "#d3d3d3"  # Lighter grey color for excluded / inactive cells (mask value 3)
-        cmap_excl = matplotlib.colors.ListedColormap([gray_color])
-        if lon_plot.ndim == 2:
-            ax1.pcolormesh(
-                lon_mesh, lat_mesh, excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5
-            )
-        else:
-            ax1.scatter(
-                lon_plot, lat_plot, c=excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5
-            )
-
-    if has_boundary:
-        bnd_display = np.where(boundary_plot, 1.0, np.nan)
-        magenta_color = "#ff00ff"  # Magenta color for input boundary cells (mask value 2)
-        cmap_bnd = matplotlib.colors.ListedColormap([magenta_color])
-        if lon_plot.ndim == 2:
-            ax1.pcolormesh(
-                lon_mesh, lat_mesh, bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5
-            )
-        else:
-            ax1.scatter(
-                lon_plot, lat_plot, c=bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5
-            )
-
-    pcm_Obs = None
-    if has_obstr:
         if is_global:
-            if Obs_max.ndim == 2:
-                Obs_plot = np.hstack([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+            if lon.ndim == 2:
+                lon_plot = np.hstack([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
+                lat_plot = np.hstack([lat, lat, lat, lat, lat])
+                depth_bathy_plot = np.hstack([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
+                depth_orog_plot = np.hstack([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
+                land_plot = np.hstack([land_mask, land_mask, land_mask, land_mask, land_mask])
+                boundary_plot = np.hstack([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
+                excluded_plot = np.hstack([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
             else:
-                Obs_plot = np.concatenate([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+                lon_plot = np.concatenate([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
+                lat_plot = np.concatenate([lat, lat, lat, lat, lat])
+                depth_bathy_plot = np.concatenate([depth_bathy, depth_bathy, depth_bathy, depth_bathy, depth_bathy])
+                depth_orog_plot = np.concatenate([depth_orog, depth_orog, depth_orog, depth_orog, depth_orog])
+                land_plot = np.concatenate([land_mask, land_mask, land_mask, land_mask, land_mask])
+                boundary_plot = np.concatenate([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
+                excluded_plot = np.concatenate([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
         else:
-            Obs_plot = Obs_max
-
-        # Mask out values < 0.01 and excluded cells (mask == 3) so nothing is plotted for obstructions on excluded points
-        Obs_plot = np.where((Obs_plot >= 0.01) & (~excluded_plot), Obs_plot, np.nan)
+            lon_plot = lon
+            lat_plot = lat
+            depth_bathy_plot = depth_bathy
+            depth_orog_plot = depth_orog
+            land_plot = land_mask
+            boundary_plot = boundary_mask
+            excluded_plot = excluded_mask
 
         if lon_plot.ndim == 2:
-            pcm_Obs = ax1.pcolormesh(
-                lon_mesh, lat_mesh, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0
+            lon_mesh, lat_mesh = compute_cell_edges_2d(lon_plot, lat_plot)
+        else:
+            lon_mesh, lat_mesh = lon_plot, lat_plot
+
+        if has_land:
+            land_display = np.where(land_plot, 1.0, np.nan)
+            cmap_land = matplotlib.colors.ListedColormap([dark_green])
+            if lon_plot.ndim == 2:
+                ax1.pcolormesh(
+                    lon_mesh, lat_mesh, land_display, cmap=cmap_land, vmin=0.5, vmax=1.5
+                )
+            else:
+                ax1.scatter(
+                    lon_plot, lat_plot, c=land_display, cmap=cmap_land, vmin=0.5, vmax=1.5
+                )
+
+        if lon_plot.ndim == 2:
+            pcm1 = ax1.pcolormesh(
+                lon_mesh, lat_mesh, depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy
+            )
+            pcm2 = ax1.pcolormesh(
+                lon_mesh, lat_mesh, depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog
             )
         else:
-            pcm_Obs = ax1.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+            pcm1 = ax1.scatter(lon_plot, lat_plot, c=depth_bathy_plot, cmap="Blues_r", vmin=vmin_bathy, vmax=vmax_bathy)
+            pcm2 = ax1.scatter(lon_plot, lat_plot, c=depth_orog_plot, cmap="YlGn", vmin=0.0, vmax=vmax_orog)
 
-    ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
-    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
+        if has_excluded:
+            excl_display = np.where(excluded_plot, 1.0, np.nan)
+            gray_color = "#d3d3d3"  # Lighter grey color for excluded / inactive cells (mask value 3)
+            cmap_excl = matplotlib.colors.ListedColormap([gray_color])
+            if lon_plot.ndim == 2:
+                ax1.pcolormesh(
+                    lon_mesh, lat_mesh, excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5
+                )
+            else:
+                ax1.scatter(
+                    lon_plot, lat_plot, c=excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5
+                )
+
+        if has_boundary:
+            bnd_display = np.where(boundary_plot, 1.0, np.nan)
+            magenta_color = "#ff00ff"  # Magenta color for input boundary cells (mask value 2)
+            cmap_bnd = matplotlib.colors.ListedColormap([magenta_color])
+            if lon_plot.ndim == 2:
+                ax1.pcolormesh(
+                    lon_mesh, lat_mesh, bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5
+                )
+            else:
+                ax1.scatter(
+                    lon_plot, lat_plot, c=bnd_display, cmap=cmap_bnd, vmin=0.5, vmax=1.5
+                )
+
+        pcm_Obs = None
+        if has_obstr:
+            if is_global:
+                if Obs_max.ndim == 2:
+                    Obs_plot = np.hstack([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+                else:
+                    Obs_plot = np.concatenate([Obs_max, Obs_max, Obs_max, Obs_max, Obs_max])
+            else:
+                Obs_plot = Obs_max
+
+            # Mask out values < 0.01 and excluded cells (mask == 3) so nothing is plotted for obstructions on excluded points
+            Obs_plot = np.where((Obs_plot >= 0.01) & (~excluded_plot), Obs_plot, np.nan)
+
+            if lon_plot.ndim == 2:
+                pcm_Obs = ax1.pcolormesh(
+                    lon_mesh, lat_mesh, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0
+                )
+            else:
+                pcm_Obs = ax1.scatter(lon_plot, lat_plot, c=Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
+
+        ax1.xaxis.set_major_formatter(mticker.FuncFormatter(fmt_lon))
+        ax1.yaxis.set_major_formatter(mticker.FuncFormatter(fmt_lat))
+
+        # Reduce axis tick numbers size by factor 0.74 (standard size 10.0 * 0.74 = 7.4)
+        axis_font_size = 10.0 * 0.74
+        ax1.tick_params(axis="both", which="both", labelsize=axis_font_size)
+
+        if show_labels:
+            if zoom_parsed is not None and zoom_parsed[2] > 1.0:
+                xlabel_str = "Longitude (zoom)"
+                ylabel_str = "Latitude (zoom)"
+            else:
+                xlabel_str = "Longitude"
+                ylabel_str = "Latitude"
+
+            ax1.set_xlabel(xlabel_str, fontsize=axis_font_size)
+            ax1.set_ylabel(ylabel_str, fontsize=axis_font_size)
+        else:
+            ax1.set_xlabel("")
+            ax1.set_ylabel("")
+
+        ax1.grid(True, linestyle="--", alpha=0.5)
+
+        if zoom_parsed is not None:
+            central_lon, central_lat, zoom_factor = zoom_parsed
+            zoom_factor = max(zoom_factor, 1.0)
+
+            if is_global:
+                # For global grids, lon_plot spans 5 tiles [lon_min - 720, lon_max + 720]
+                # Keep user central_lon if inside valid plot range [-720, 720], otherwise normalize modulo 360
+                if (lon_min - 720.0) <= central_lon <= (lon_max + 720.0):
+                    c_lon = central_lon
+                else:
+                    c_lon = lon_min + (central_lon - lon_min) % 360.0
+            else:
+                # Normalize central longitude modulo 360 into base grid range [lon_min, lon_max]
+                c_lon = (central_lon - lon_min) % 360.0 + lon_min
+                if c_lon > lon_max and abs((c_lon - 360.0) - (lon_min + lon_max) / 2.0) < abs(c_lon - (lon_min + lon_max) / 2.0):
+                    c_lon -= 360.0
+                if np.isclose(c_lon, lon_min) and abs(central_lon - lon_max) < abs(central_lon - lon_min):
+                    c_lon = lon_max
+
+            new_span_lat = span_lat_raw / zoom_factor
+            if new_span_lat >= span_lat_raw:
+                ylim = (lat_min, lat_max)
+            else:
+                ymin = central_lat - new_span_lat / 2.0
+                ymax = central_lat + new_span_lat / 2.0
+                if ymin < lat_min:
+                    ymin = lat_min
+                    ymax = lat_min + new_span_lat
+                if ymax > lat_max:
+                    ymax = lat_max
+                    ymin = lat_max - new_span_lat
+                ylim = (ymin, ymax)
+
+            if is_global:
+                new_span_lon = 360.0 / zoom_factor
+                xlim = (c_lon - new_span_lon / 2.0, c_lon + new_span_lon / 2.0)
+            else:
+                new_span_lon = span_lon_raw / zoom_factor
+                if new_span_lon >= span_lon_raw:
+                    xlim = (lon_min, lon_max)
+                else:
+                    xmin = c_lon - new_span_lon / 2.0
+                    xmax = c_lon + new_span_lon / 2.0
+                    if xmin < lon_min:
+                        xmin = lon_min
+                        xmax = lon_min + new_span_lon
+                    if xmax > lon_max:
+                        xmax = lon_max
+                        xmin = lon_max - new_span_lon
+                    xlim = (xmin, xmax)
+
+            ax1.set_xlim(xlim)
+            ax1.set_ylim(ylim)
+            print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
+        elif is_global:
+            ax1.set_xlim(lon_min, lon_max)
+            ax1.set_ylim(lat_min, lat_max)
 
     if title is not None:
         main_title = title
@@ -637,26 +811,6 @@ def plot_grid(
         else:
             sub_text = subtitle
 
-    # Reduce axis tick numbers size by factor 0.74 (standard size 10.0 * 0.74 = 7.4)
-    axis_font_size = 10.0 * 0.74
-    ax1.tick_params(axis="both", which="both", labelsize=axis_font_size)
-
-    if show_labels:
-        if zoom_parsed is not None and zoom_parsed[2] > 1.0:
-            xlabel_str = "Longitude (zoom)"
-            ylabel_str = "Latitude (zoom)"
-        else:
-            xlabel_str = "Longitude"
-            ylabel_str = "Latitude"
-
-        ax1.set_xlabel(xlabel_str, fontsize=axis_font_size)
-        ax1.set_ylabel(ylabel_str, fontsize=axis_font_size)
-    else:
-        ax1.set_xlabel("")
-        ax1.set_ylabel("")
-
-    ax1.grid(True, linestyle="--", alpha=0.5)
-
     if main_title and sub_text:
         ax1.set_title(sub_text, fontsize=10, fontweight="normal", pad=6)
         ax1.text(0.5, 1.08, main_title, transform=ax1.transAxes, ha="center", va="bottom", fontsize=14, fontweight="bold")
@@ -664,64 +818,6 @@ def plot_grid(
         ax1.set_title(main_title, fontsize=14, fontweight="bold", pad=10)
     elif sub_text:
         ax1.set_title(sub_text, fontsize=10, fontweight="normal", pad=10)
-
-    if zoom_parsed is not None:
-        central_lon, central_lat, zoom_factor = zoom_parsed
-        zoom_factor = max(zoom_factor, 1.0)
-
-        if is_global:
-            # For global grids, lon_plot spans 5 tiles [lon_min - 720, lon_max + 720]
-            # Keep user central_lon if inside valid plot range [-720, 720], otherwise normalize modulo 360
-            if (lon_min - 720.0) <= central_lon <= (lon_max + 720.0):
-                c_lon = central_lon
-            else:
-                c_lon = lon_min + (central_lon - lon_min) % 360.0
-        else:
-            # Normalize central longitude modulo 360 into base grid range [lon_min, lon_max]
-            c_lon = (central_lon - lon_min) % 360.0 + lon_min
-            if c_lon > lon_max and abs((c_lon - 360.0) - (lon_min + lon_max) / 2.0) < abs(c_lon - (lon_min + lon_max) / 2.0):
-                c_lon -= 360.0
-            if np.isclose(c_lon, lon_min) and abs(central_lon - lon_max) < abs(central_lon - lon_min):
-                c_lon = lon_max
-
-        new_span_lat = span_lat_raw / zoom_factor
-        if new_span_lat >= span_lat_raw:
-            ylim = (lat_min, lat_max)
-        else:
-            ymin = central_lat - new_span_lat / 2.0
-            ymax = central_lat + new_span_lat / 2.0
-            if ymin < lat_min:
-                ymin = lat_min
-                ymax = lat_min + new_span_lat
-            if ymax > lat_max:
-                ymax = lat_max
-                ymin = lat_max - new_span_lat
-            ylim = (ymin, ymax)
-
-        if is_global:
-            new_span_lon = 360.0 / zoom_factor
-            xlim = (c_lon - new_span_lon / 2.0, c_lon + new_span_lon / 2.0)
-        else:
-            new_span_lon = span_lon_raw / zoom_factor
-            if new_span_lon >= span_lon_raw:
-                xlim = (lon_min, lon_max)
-            else:
-                xmin = c_lon - new_span_lon / 2.0
-                xmax = c_lon + new_span_lon / 2.0
-                if xmin < lon_min:
-                    xmin = lon_min
-                    xmax = lon_min + new_span_lon
-                if xmax > lon_max:
-                    xmax = lon_max
-                    xmin = lon_max - new_span_lon
-                xlim = (xmin, xmax)
-
-        ax1.set_xlim(xlim)
-        ax1.set_ylim(ylim)
-        print(f"Applying zoom centered at ({c_lon:.4f}°, {central_lat:.4f}°) with zoom factor {zoom_factor:g}")
-    elif is_global:
-        ax1.set_xlim(lon_min, lon_max)
-        ax1.set_ylim(lat_min, lat_max)
 
     fig.tight_layout()
 

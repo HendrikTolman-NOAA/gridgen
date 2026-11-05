@@ -120,19 +120,18 @@ def test_create_regular_grid_auto_global_closure_nx_sx() -> None:
     with pytest.raises(ValueError, match="Missing mandatory parameter '--custom-grid'"):
         create_grid_coordinates("custom")
 
-    # 3. Stereographic grid works with defaults when center and extent are omitted
-    lon_ste, lat_ste = create_grid_coordinates("stereographic")
-    assert lon_ste.shape == (601, 1440)
-    assert lat_ste.shape == (601, 1440)
+    # 3. Stereographic grid raises error if mandatory EXTENT_DEG is missing
+    with pytest.raises(ValueError, match="EXTENT_DEG"):
+        create_grid_coordinates("stereographic")
 
 
 def test_create_stereographic_grid() -> None:
-    """Test general stereographic grid generation using km and arc degree options over discrete dimensions."""
-    # 1. Polar center with km option
+    """Test general stereographic grid generation using mandatory EXTENT_DEG over discrete dimensions."""
+    # 1. Polar center with mandatory arc degree option
     lon1, lat1 = create_stereographic_grid(
         CENTER_LON=0.0,
         CENTER_LAT=90.0,
-        EXTENT_KM=500.0,
+        EXTENT_DEG=4.5,
         NX=11,
         NY=11,
     )
@@ -140,24 +139,33 @@ def test_create_stereographic_grid() -> None:
     assert lat1.shape == (11, 11)
     cy, cx = lon1.shape[0] // 2, lon1.shape[1] // 2
     assert np.isclose(lat1[cy, cx], 90.0, atol=1e-3)
+    # Distance from center (cy, cx) to edges: (0, cx), (NY-1, cx), (cy, 0), (cy, NX-1)
+    # Center is at lat 90.0, so edge latitude should be 90.0 - EXTENT_DEG = 85.5
+    assert np.isclose(lat1[0, cx], 90.0 - 4.5, atol=1e-3)
+    assert np.isclose(lat1[10, cx], 90.0 - 4.5, atol=1e-3)
+    assert np.isclose(lat1[cy, 0], 90.0 - 4.5, atol=1e-3)
+    assert np.isclose(lat1[cy, 10], 90.0 - 4.5, atol=1e-3)
 
-    # 2. Polar center with arc degree option
-    lon_deg, lat_deg = create_stereographic_grid(
+    # 2. Non-square grid (NY < NX): extent applies to smaller dimension NY
+    lon_rect, lat_rect = create_stereographic_grid(
         CENTER_LON=0.0,
         CENTER_LAT=90.0,
-        EXTENT_DEG=4.4966,  # ~500 km
-        NX=11,
+        EXTENT_DEG=10.0,
+        NX=21,
         NY=11,
     )
-    assert lon_deg.shape == lon1.shape
-    assert lat_deg.shape == lat1.shape
-    assert np.isclose(lat_deg[cy, cx], 90.0, atol=1e-3)
+    assert lon_rect.shape == (11, 21)
+    cy_r, cx_r = 5, 10
+    assert np.isclose(lat_rect[cy_r, cx_r], 90.0, atol=1e-3)
+    # The smaller dimension is NY (11), so from center to top/bottom edge is exactly 10.0 deg
+    assert np.isclose(lat_rect[0, cx_r], 80.0, atol=1e-3)
+    assert np.isclose(lat_rect[10, cx_r], 80.0, atol=1e-3)
 
     # 3. Oblique center
     lon2, lat2 = create_stereographic_grid(
         CENTER_LON=-75.0,
         CENTER_LAT=40.0,
-        EXTENT_KM=300.0,
+        EXTENT_DEG=5.0,
         NX=13,
         NY=13,
     )
@@ -169,7 +177,7 @@ def test_create_stereographic_grid() -> None:
     lon_rot, lat_rot = create_stereographic_grid(
         CENTER_LON=0.0,
         CENTER_LAT=90.0,
-        EXTENT_KM=500.0,
+        EXTENT_DEG=4.5,
         NX=11,
         NY=11,
         ROTATION=45.0,
@@ -177,6 +185,10 @@ def test_create_stereographic_grid() -> None:
     assert lon_rot.shape == (11, 11)
     assert lat_rot.shape == (11, 11)
     assert np.isclose(lat_rot[cy, cx], 90.0, atol=1e-3)
+
+    # 5. Missing EXTENT_DEG raises ValueError
+    with pytest.raises(ValueError, match="EXTENT_DEG is mandatory"):
+        create_stereographic_grid(CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_DEG=None)
 
 
 def test_create_rotated_pole_grid() -> None:
@@ -222,14 +234,7 @@ def test_create_grid_coordinates_unified() -> None:
     assert lon_rot.shape == (11, 11)
     assert lat_rot.shape == (11, 11)
 
-    # 3. General Stereographic in km
-    lon2, lat2 = create_grid_coordinates(
-        "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_KM=200, NX=11, NY=11
-    )
-    assert lon2.shape == (11, 11)
-    assert lat2.shape == (11, 11)
-
-    # 4. General Stereographic in arc degrees
+    # 3. General Stereographic in arc degrees
     lon3, lat3 = create_grid_coordinates(
         "stereographic", CENTER_LON=0.0, CENTER_LAT=90.0, EXTENT_DEG=2.0, NX=11, NY=11
     )

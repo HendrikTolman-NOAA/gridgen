@@ -92,7 +92,7 @@ flowchart TD
   - Ensures `reference_data/` contains bathymetry datasets before invoking `python3 -m gridgen.cli`, managing execution and grid coordinate generation options (`run_gridgen.sh Grid Coordinate Generation`).
 
 - **Run Step 2: Core Grid Processing Pipeline (`gridgen.coordinates`, `gridgen.grid`, `gridgen.masking`, `gridgen.obstructions`)**
-  - **Grid Coordinate Generation:** Creates initial 2D longitude and latitude coordinate arrays (`create_grid_coordinates`) for the specified grid projection/layout (regular lon-lat with optional rotated pole, stereographic in km or arc degrees, or custom grid layout files).
+  - **Grid Coordinate Generation:** Creates initial 2D longitude and latitude coordinate arrays (`create_grid_coordinates`) for the specified grid projection/layout (regular lon-lat with optional rotated pole, stereographic in arc degrees, or custom grid layout files).
   - **Bathymetry Extraction:** Computes target grid cell corner polygons (`compute_cellcorner`), extracts/averages sub-grid base bathymetry depths or performs bilinear interpolation, and assigns dry values (`999999.0`) to cells above cut-off depth.
   - **Masking & Lake Removal:** Constructs initial binary land/sea mask based on depth values, cleans disconnected water bodies, and applies lake tolerance rules (`remove_lake`).
   - **Sub-grid Obstruction Calculation:** Intersects cell boundary faces with shoreline polygons to produce directional sub-grid obstruction factors `ObsX` and `ObsY` (`create_obstr`).

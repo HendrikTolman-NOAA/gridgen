@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-11-04
+# @date Latest Update: 2026-11-05
 
 """Grid coordinate generation module for WAVEWATCH III (WW3) / WAVEWATCH IV (WW4).
 
@@ -272,7 +272,6 @@ def create_regular_grid(
 def create_stereographic_grid(
     CENTER_LON: float = 0.0,
     CENTER_LAT: float = 90.0,
-    EXTENT_KM: float | None = 1000.0,
     EXTENT_DEG: float | None = None,
     NX: int | None = 1440,
     NY: int | None = 601,
@@ -281,20 +280,18 @@ def create_stereographic_grid(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate 2D geographic coordinates for a general stereographic grid.
 
-    Supports domain size definition either in kilometers (EXTENT_KM)
-    or in arc degrees (EXTENT_DEG) over discrete dimensions (NX, NY) with optional
-    planar rotation angle ROTATION in degrees.
+    Domain size is defined by EXTENT_DEG, which specifies the distance from the
+    center of the grid to the edge of the grid in arc degrees along the smaller of
+    the discrete dimensions NX and NY, with optional planar rotation angle ROTATION in degrees.
 
     Parameters
     ----------
     CENTER_LON : float
-        Central meridian of projection in degrees.
+        Central meridian of projection in degrees (default: 0.0).
     CENTER_LAT : float
-        Central latitude of projection in degrees (-90 to +90).
-    EXTENT_KM : float | None
-        Half-width extent of domain in kilometers.
-    EXTENT_DEG : float | None
-        Half-width extent of domain in arc degrees.
+        Central latitude of projection in degrees (-90 to +90, default: 90.0).
+    EXTENT_DEG : float
+        [Mandatory] Half-width extent of domain in arc degrees from center to edge.
     NX : int | None
         Number of grid points in x direction (default: 1440).
     NY : int | None
@@ -311,21 +308,34 @@ def create_stereographic_grid(
     lat : np.ndarray
         2D latitude grid array of shape (NY, NX) in degrees [-90, 90].
     """
-    radius_earth = 6371000.0  # meters
-    deg_to_km = (radius_earth / 1000.0) * (np.pi / 180.0)  # ~111.1949266 km/deg
+    if EXTENT_DEG is None:
+        raise ValueError(
+            "EXTENT_DEG is mandatory for stereographic grid."
+        )
 
-    if EXTENT_KM is None:
-        if EXTENT_DEG is not None:
-            EXTENT_KM = EXTENT_DEG * deg_to_km
-        else:
-            raise ValueError(
-                "Either EXTENT_KM or EXTENT_DEG must be provided for stereographic grid."
-            )
+    radius_earth = 6371000.0  # meters
 
     nx_val = NX if NX is not None else 1440
     ny_val = NY if NY is not None else 601
-    x1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, nx_val)
-    y1d = np.linspace(-EXTENT_KM * 1000.0, EXTENT_KM * 1000.0, ny_val)
+
+    if nx_val <= 1 or ny_val <= 1:
+        raise ValueError(
+            f"NX and NY must be greater than 1, got NX={nx_val}, NY={ny_val}"
+        )
+
+    # Physical radial distance from center to edge on stereographic projection plane
+    c_extent = np.radians(float(EXTENT_DEG))
+    rho_extent = 2.0 * k0 * radius_earth * np.tan(c_extent / 2.0)
+
+    # Apply the extent to the smaller of NX and NY to determine grid spacing d
+    n_min = min(nx_val, ny_val)
+    d = (2.0 * rho_extent) / (n_min - 1)
+
+    half_x = 0.5 * (nx_val - 1) * d
+    half_y = 0.5 * (ny_val - 1) * d
+
+    x1d = np.linspace(-half_x, half_x, nx_val)
+    y1d = np.linspace(-half_y, half_y, ny_val)
 
     x, y = np.meshgrid(x1d, y1d)
 
@@ -618,7 +628,14 @@ def validate_grid_parameters(grid_type: str, kwargs: dict) -> None:
     if ny is not None and int(ny) <= 0:
         raise ValueError(f"Grid dimension NY must be positive, got {ny}")
 
-    if gtype in ("regular", "stereographic"):
+    if gtype == "stereographic":
+        extent_deg = kwargs.get("EXTENT_DEG") if kwargs.get("EXTENT_DEG") is not None else kwargs.get("extent_deg")
+        if extent_deg is None:
+            raise ValueError(
+                "Missing mandatory parameter '--extent-deg' (EXTENT_DEG) for stereographic grid."
+            )
+        return
+    elif gtype == "regular":
         return
     else:
         raise ValueError(
@@ -638,7 +655,7 @@ def create_grid_coordinates(
     grid_type : str
         Grid projection or layout type. Supported options:
         - 'regular': Regular 2D lon-lat grid (with optional rotated pole via POLE_LON, POLE_LAT).
-        - 'stereographic': General stereographic grid (via EXTENT_KM/RESOLUTION_KM or EXTENT_DEG/RESOLUTION_DEG).
+        - 'stereographic': General stereographic grid (via EXTENT_DEG).
         - 'custom': Custom grid loaded from a layout file specified via custom_grid/filepath parameter.
     **kwargs
         Parameters passed to the specific grid generator or custom_grid filepath.

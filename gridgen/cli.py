@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-09-22
-# @date Latest Update: 2026-11-03
+# @date Latest Update: 2026-11-05
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Command Line Interface module.
@@ -268,18 +268,11 @@ def main() -> None:
         help="Projection center latitude in degrees (default: 90.0)",
     )
     ste_group.add_argument(
-        "--extent-km",
-        type=float,
-        default=1000.0,
-        metavar="EXTENT_KM",
-        help="Half-width domain extent in kilometers (default: 1000.0)",
-    )
-    ste_group.add_argument(
         "--extent-deg",
         type=float,
         default=None,
         metavar="EXTENT_DEG",
-        help="Half-width domain extent in arc degrees (default: None)",
+        help="[Mandatory for stereographic grid] Half-width domain extent in arc degrees from center to edge along smaller grid dimension",
     )
     ste_group.add_argument(
         "--rotation",
@@ -300,6 +293,9 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+
+    if args.grid_type == "stereographic" and args.extent_deg is None:
+        parser.error("--extent-deg is mandatory when --grid-type is 'stereographic'")
 
     # Step 1: Create 2D grid coordinates array
     print(f"[Step 1/5] Generating 2D '{args.grid_type}' grid coordinates for '{args.name}'...")
