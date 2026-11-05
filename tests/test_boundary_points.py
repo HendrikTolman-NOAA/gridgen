@@ -435,7 +435,7 @@ def test_arctic_active_file() -> None:
     px, py = load_active_polygon(str(poly_file))
     assert 20 <= len(px) <= 500, f"Expected active polygon points, got {len(px)}"
     assert np.all(px >= -180.0001) and np.all(px <= 180.0001)
-    assert np.all(py >= 59.9999) and np.all(py <= 90.0001)
+    assert np.all(py >= 57.7999) and np.all(py <= 90.0001)
 
     poly = Polygon(list(zip(px, py)))
     assert poly.is_valid
@@ -448,10 +448,13 @@ def test_arctic_active_file() -> None:
     assert poly.contains(Point(130.0, 75.0)), "Laptev Sea should be inside"
     assert poly.contains(Point(0.0, 68.0)), "Norwegian Sea should be inside"
     assert poly.contains(Point(-30.0, 65.0)), "Atlantic north of 60N should be inside"
+    assert poly.contains(Point(-73.0, 62.5)), "Hudson Strait should be inside"
+    assert poly.contains(Point(-68.0, 59.5)), "Ungava Bay should be inside"
 
     # Check excluded points (outside Arctic Ocean basin)
     assert not poly.contains(Point(-168.5, 64.0)), "Pacific south of Bering Strait should be outside"
-    assert not poly.contains(Point(-85.0, 58.0)), "Hudson Bay should be outside"
+    assert not poly.contains(Point(-85.0, 58.0)), "Central Hudson Bay should be outside"
+    assert not poly.contains(Point(-80.0, 53.0)), "James Bay / Southern Hudson Bay should be outside"
     assert not poly.contains(Point(-30.0, 55.0)), "Atlantic south of 60N should be outside"
     assert not poly.contains(Point(50.0, 55.0)), "Eurasian mainland south of Arctic should be outside"
 
