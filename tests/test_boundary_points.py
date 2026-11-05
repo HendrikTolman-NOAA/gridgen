@@ -440,6 +440,11 @@ def test_arctic_active_file() -> None:
     poly = Polygon(list(zip(px, py)))
     assert poly.is_valid
 
+    # Check that Atlantic crossing stays at 60.0N all the way to Canada (-64.5W to 5.0E)
+    atl_points = [(x, y) for x, y in zip(px, py) if -64.5001 <= x <= 5.0001 and abs(y - 60.0) < 1e-4]
+    assert len(atl_points) >= 8, f"Expected Atlantic crossing points at 60N, got {len(atl_points)}"
+    assert any(abs(x - (-64.5)) < 1e-4 for x, y in atl_points), "Should reach Canada coast at -64.5W, 60N"
+
     # Check key active points (inside Arctic Ocean basin)
     assert poly.contains(Point(0.0, 89.9)), "North Pole should be inside"
     assert poly.contains(Point(-140.0, 73.0)), "Beaufort Sea should be inside"
