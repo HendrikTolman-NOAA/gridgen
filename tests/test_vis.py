@@ -974,6 +974,34 @@ def test_stereographic_grid_plotting(tmp_path):
     plt.close(fig)
 
 
+def test_stereographic_grid_180_meridian():
+    """Verify that stereographic grid covering 180° longitude displays the 180° meridian line."""
+    import matplotlib.pyplot as plt
+
+    from gridgen.coordinates import create_stereographic_grid
+
+    lon, lat = create_stereographic_grid(
+        CENTER_LON=0.0,
+        CENTER_LAT=90.0,
+        EXTENT_DEG=30.0,
+        NX=60,
+        NY=50,
+    )
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": np.full((50, 60), -50.0),
+        "mask": np.ones((50, 60), dtype=int),
+        "filename": "polar_stereo_ugrid.nc",
+        "grid_type": "stereographic",
+    }
+    fig = plot_grid(data)
+    ax1 = fig.axes[0]
+    texts = [t.get_text() for t in ax1.texts]
+    assert any("180°" in t for t in texts)
+    plt.close(fig)
+
+
 def test_plot_grid_rotated_pole_no_monotonicity_warning(tmp_path: Path):
     """Verify plot_grid on a rotated pole curvilinear grid raises no monotonicity UserWarning."""
     import warnings

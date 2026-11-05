@@ -581,21 +581,42 @@ def plot_grid(
         step_lon = 30 if lon_span >= 90 else (15 if lon_span >= 30 else 10)
 
         lons_to_check = np.arange(-180, 181, step_lon)
-        lon_levels = [lvl for lvl in lons_to_check if np.any(np.abs(lon_masked - lvl) < step_lon)]
 
-        if len(lon_levels) > 0:
+        def fmt_lon_lbl(x_val: float) -> str:
+            v = (x_val + 180.0) % 360.0 - 180.0
+            if abs(v) < 1e-4 or abs(abs(v) - 180.0) < 1e-4:
+                return f"{round(abs(v))}°"
+            return f"{abs(round(v))}°W" if v < 0 else f"{round(v)}°E"
+
+        # Separate levels: interior levels in (-180, 180) vs. 180 degree meridian
+        levels_mid = [
+            lvl for lvl in lons_to_check
+            if abs(abs(lvl) - 180.0) > 1e-4 and np.any(np.abs(lon_masked - lvl) < step_lon)
+        ]
+        has_180 = any(abs(abs(lvl) - 180.0) < 1e-4 for lvl in lons_to_check)
+
+        if len(levels_mid) > 0:
             cs_lon = ax1.contour(
-                x_centers, y_centers, lon_masked, levels=lon_levels, colors="black", linestyles=":", linewidths=0.7
+                x_centers, y_centers, lon_masked, levels=levels_mid, colors="black", linestyles=":", linewidths=0.7
             )
-
-            def fmt_lon_lbl(x_val: float) -> str:
-                v = (x_val + 180.0) % 360.0 - 180.0
-                if abs(v) < 1e-4 or abs(abs(v) - 180.0) < 1e-4:
-                    return f"{round(abs(v))}°"
-                return f"{abs(round(v))}°W" if v < 0 else f"{round(v)}°E"
-
             fmt_lon_dict = {lvl: fmt_lon_lbl(lvl) for lvl in cs_lon.levels}
             ax1.clabel(cs_lon, cs_lon.levels, fmt=fmt_lon_dict, fontsize=6)
+
+        # Draw 180 degree meridian using [0, 360) where field is continuous across 180
+        if has_180:
+            lon_360 = lon % 360.0
+            jump_360 = (np.abs(np.diff(lon_360, axis=1, prepend=lon_360[:, :1])) > 180)
+            jump_360 |= (np.abs(np.diff(lon_360, axis=1, append=lon_360[:, -1:])) > 180)
+            jump_360 |= (np.abs(np.diff(lon_360, axis=0, prepend=lon_360[:1, :])) > 180)
+            jump_360 |= (np.abs(np.diff(lon_360, axis=0, append=lon_360[-1:, :])) > 180)
+            lon_360_masked = np.ma.masked_where(jump_360, lon_360)
+
+            if np.any(np.abs(lon_360_masked - 180.0) < step_lon):
+                cs_180 = ax1.contour(
+                    x_centers, y_centers, lon_360_masked, levels=[180.0], colors="black", linestyles=":", linewidths=0.7
+                )
+                if len(cs_180.levels) > 0 and len(cs_180.allsegs[0]) > 0:
+                    ax1.clabel(cs_180, cs_180.levels, fmt={180.0: "180°"}, fontsize=6)
 
     else:
         lon_min, lon_max = float(np.nanmin(lon)), float(np.nanmax(lon))
