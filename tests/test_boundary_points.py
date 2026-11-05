@@ -421,6 +421,67 @@ def test_gulf_and_caribbean_active_file() -> None:
     assert not poly.contains(Point(-82.2, 8.0)), "Pacific Gulf of Chiriqui should be outside"
 
 
+def test_arctic_active_file() -> None:
+    """Verify gridgen_data/Arctic.active loads and accurately encloses the Arctic Ocean basin."""
+    from pathlib import Path
+
+    from shapely.geometry import Point, Polygon
+
+    from gridgen.coordinates import create_stereographic_grid
+
+    poly_file = Path(__file__).parent.parent / "gridgen_data" / "Arctic.active"
+    assert poly_file.exists(), f"File {poly_file} must exist"
+
+    px, py = load_active_polygon(str(poly_file))
+    assert 20 <= len(px) <= 500, f"Expected active polygon points, got {len(px)}"
+    assert np.all(px >= -180.0001) and np.all(px <= 180.0001)
+    assert np.all(py >= 57.7999) and np.all(py <= 90.0001)
+
+    poly = Polygon(list(zip(px, py)))
+    assert poly.is_valid
+
+    # Check that Atlantic crossing stays at 60.0N all the way to Canada (-64.5W to 5.0E)
+    atl_points = [(x, y) for x, y in zip(px, py) if -64.5001 <= x <= 5.0001 and abs(y - 60.0) < 1e-4]
+    assert len(atl_points) >= 8, f"Expected Atlantic crossing points at 60N, got {len(atl_points)}"
+    assert any(abs(x - (-64.5)) < 1e-4 for x, y in atl_points), "Should reach Canada coast at -64.5W, 60N"
+
+    # Check key active points (inside Arctic Ocean basin)
+    assert poly.contains(Point(0.0, 89.9)), "North Pole should be inside"
+    assert poly.contains(Point(-140.0, 73.0)), "Beaufort Sea should be inside"
+    assert poly.contains(Point(40.0, 75.0)), "Barents Sea should be inside"
+    assert poly.contains(Point(-170.0, 70.0)), "Chukchi Sea should be inside"
+    assert poly.contains(Point(130.0, 75.0)), "Laptev Sea should be inside"
+    assert poly.contains(Point(0.0, 68.0)), "Norwegian Sea should be inside"
+    assert poly.contains(Point(-30.0, 65.0)), "Atlantic north of 60N should be inside"
+    assert poly.contains(Point(-73.0, 62.5)), "Hudson Strait should be inside"
+    assert poly.contains(Point(-68.0, 59.5)), "Ungava Bay should be inside"
+    assert poly.contains(Point(-80.0, 65.0)), "Foxe Channel should be inside"
+
+    # Check excluded points (outside Arctic Ocean basin)
+    assert not poly.contains(Point(-168.5, 64.0)), "Pacific south of Bering Strait should be outside"
+    assert not poly.contains(Point(-85.0, 58.0)), "Central Hudson Bay should be outside"
+    assert not poly.contains(Point(-80.0, 53.0)), "James Bay / Southern Hudson Bay should be outside"
+    assert not poly.contains(Point(-87.0, 64.5)), "Roes Welcome Sound should be outside"
+    assert not poly.contains(Point(-86.25, 66.52)), "Repulse Bay should be outside"
+    assert not poly.contains(Point(-84.5, 66.0)), "Frozen Strait should be outside"
+    assert not poly.contains(Point(-30.0, 55.0)), "Atlantic south of 60N should be outside"
+    assert not poly.contains(Point(50.0, 55.0)), "Eurasian mainland south of Arctic should be outside"
+
+    # Verify define_boundary_points applies Arctic.active to stereographic polar grid
+    lon, lat = create_stereographic_grid(
+        CENTER_LON=0.0,
+        CENTER_LAT=90.0,
+        EXTENT_DEG=30.0,
+        NX=30,
+        NY=30,
+    )
+    mask = np.ones(lon.shape, dtype=int)
+    m_out = define_boundary_points(mask, lon, lat, active_poly=(px, py))
+    assert 1 in m_out, "Active wet cells (1) must exist"
+    assert 2 in m_out, "Boundary cells (2) must exist"
+    assert 3 in m_out, "Excluded cells (3) must exist"
+
+
 def test_define_boundary_points_active_poly_wrapping() -> None:
     """Verify define_boundary_points handles active polygons when grid longitudes are wrapped [0, 360)."""
     # Active polygon in negative longitudes [-100, -60] and latitudes [10, 30]

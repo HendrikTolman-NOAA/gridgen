@@ -962,9 +962,14 @@ def test_stereographic_grid_plotting(tmp_path):
     assert ax1.get_xlabel() == ""
     assert ax1.get_ylabel() == ""
 
-    # Verify contours for meridians and parallels are present
+    # Verify contours for meridians and parallels are present with doubled grid line density
     contour_sets = [c for c in ax1.collections if hasattr(c, "get_segments")]
     assert len(contour_sets) > 0 or len(ax1.texts) > 0
+
+    # Verify doubled grid lines: 5-degree parallel step and 15-degree meridian step
+    txts = [t.get_text() for t in ax1.texts]
+    assert any("55°N" in t or "65°N" in t for t in txts), "Should have 5-degree intermediate parallels"
+    assert any("15°W" in t or "45°W" in t or "105°W" in t for t in txts), "Should have 15-degree intermediate meridians"
 
     # Verify title and subtitle are preserved
     all_texts = [t.get_text() for t in ax1.texts] + [ax1.get_title()]
