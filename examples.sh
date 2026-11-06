@@ -18,8 +18,8 @@
 set -euo pipefail
 
 # Configuration: Bathy source, accuracy level of coastal polygons and output file directory
-BATHY_SOURCE="gebco_2024"
-COASTAL_BOUND="full"
+BATHY_SOURCE="etopo2"
+COASTAL_BOUND="coarse"
 OUT_DIR="gridgen_grids"
 
 # Ensure target output directory exists
