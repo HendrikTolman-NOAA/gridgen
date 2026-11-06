@@ -60,7 +60,6 @@ version = {attr = "gridgen.__version__"}
 [tool.ruff]
 line-length = 88
 target-version = "py39"
-exclude = ["externals"]
 
 [tool.ruff.lint]
 extend-select = ["E402"]
