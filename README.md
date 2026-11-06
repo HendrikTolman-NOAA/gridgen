@@ -54,10 +54,10 @@ It may be handy to add the root `gridgen` directory to your Python search path (
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 ```
 
-Additionally, to execute utility scripts and binaries directly from any directory, you can add the root `gridgen` directory and its `bin/` sub-directory to your general shell search path (`PATH`):
+Additionally, to execute utility scripts directly from any directory, you can add the root `gridgen` directory to your general shell search path (`PATH`):
 
 ```bash
-export PATH="${PATH}:$(pwd):$(pwd)/bin"
+export PATH="${PATH}:$(pwd)"
 ```
 
 ## Reference Data Population
@@ -126,7 +126,7 @@ Once the reference data directory is populated, you can generate WAVEWATCH III a
 | `-n, --name NAME` | Grid prefix identifier (default: `ww4_grid`). `[Optional]` |
 | `-g, --grid-type TYPE` | Grid coordinate projection/layout type: `regular`, `stereographic`, `custom` (default: `regular`). `[Optional]` |
 | `--bathy-source SOURCE` | Bathymetry dataset identifier or NetCDF prefix (e.g. `etopo1`, `etopo2`, `ETOPO_2022_v1_60s_N90W180_bed`) (default: `etopo2`). `[Optional]` |
-| `--active-file FILE` | Path to 2-column ASCII file (`lon lat`) defining the perimeter of the active computational polygon (e.g. `examples/alaska_10minzone.ascii`). Points outside this polygon are marked as excluded cells (`mask == 3`), and adjacent water cells are defined as boundary cells (`mask == 2`). `[Optional]` |
+| `--active-file FILE` | Path to 2-column ASCII file (`lon lat`) defining the perimeter of the active computational polygon (e.g. `gridgen_data/Gulf_and_Caribbean.active` or `gridgen_data/Arctic.active`). Points outside this polygon are marked as excluded cells (`mask == 3`), and adjacent water cells are defined as boundary cells (`mask == 2`). `[Optional]` |
 | `--boundary-points` | Define input boundary cells (mask value 2) along regional grid boundaries. `[Optional]` |
 | `--local-polygons` | Use user coastal polygon files from local directory (`.`) instead of `gridgen_data`. Local polygon files in root clone directory are not tracked in Git. `[Optional]` |
 | `--no-user-polygons` | Disable loading user coastal polygons (loaded automatically by default). `[Optional]` |
@@ -175,7 +175,7 @@ A graphical display shell driver script is provided in the repository root direc
 Or via the utility binary or installed package CLI entry point:
 
 ```bash
-./bin/plot_grid.py -i ww4_grid_ugrid.nc -f jpg -o ww4_grid.jpg
+./gridgen/plot_grid.py -i ww4_grid_ugrid.nc -f jpg -o ww4_grid.jpg
 ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 ```
 

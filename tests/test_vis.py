@@ -342,27 +342,27 @@ def test_plot_grid_show_in_headless_env(tmp_path: Path):
 
 
 
-def test_bin_plot_grid_py_from_external_directory(tmp_path: Path):
-    """Verify bin/plot_grid.py executed from external directory runs correctly and places output as specified."""
+def test_gridgen_plot_grid_py_from_external_directory(tmp_path: Path):
+    """Verify gridgen/plot_grid.py executed from external directory runs correctly and places output as specified."""
     repo_root = Path(__file__).parent.parent
-    bin_script = repo_root / "bin" / "plot_grid.py"
+    plot_script = repo_root / "gridgen" / "plot_grid.py"
 
     lon1d = np.array([10.0, 11.0, 12.0])
     lat1d = np.array([20.0, 21.0, 22.0])
     lon, lat = np.meshgrid(lon1d, lat1d)
     depth = np.full((3, 3), 10.0)
     mask = np.ones((3, 3), dtype=int)
-    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Bin Plot Test")
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Plot Script Test")
 
-    nc_file = tmp_path / "bin_plot_input_ugrid.nc"
+    nc_file = tmp_path / "plot_script_input_ugrid.nc"
     write_ugrid_nc(ds, str(nc_file))
 
-    out_jpg = "bin_ext_plot.jpg"
+    out_jpg = "gridgen_ext_plot.jpg"
 
     result = subprocess.run(
         [
             "python3",
-            str(bin_script),
+            str(plot_script),
             "-i",
             str(nc_file),
             "-o",

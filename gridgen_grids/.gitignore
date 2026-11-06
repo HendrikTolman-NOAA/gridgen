@@ -1,0 +1,3 @@
+# Ignore all contents of gridgen_grids directory except this .gitignore
+*
+!.gitignore
