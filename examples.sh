@@ -18,8 +18,8 @@
 set -euo pipefail
 
 # Configuration: Bathy source, accuracy level of coastal polygons and output file directory
-BATHY_SOURCE="etopo2"
-COASTAL_BOUND="coarse"
+BATHY_SOURCE="gebco_2024"
+COASTAL_BOUND="full"
 OUT_DIR="gridgen_grids"
 
 # Ensure target output directory exists
@@ -29,15 +29,15 @@ mkdir -p "${OUT_DIR}"
 
 # Gulf and Caribbean on regular grid
 
-# run_gridgen.sh -n Gulf_Caribbean_regular -o $OUT_DIR --nx 361 --lon-start -100 --lon-end -55. --ny 201 --lat-start 7. --lat-end 32. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points
+  run_gridgen.sh -n Gulf_Caribbean_regular -o $OUT_DIR --nx 361 --lon-start -100 --lon-end -55. --ny 201 --lat-start 7. --lat-end 32. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points
 
 # Gulf and Caribbean on regular grid with pole rotation in mapping 
 
-# run_gridgen.sh -n Gulf_Caribbean_rotated -o $OUT_DIR --nx 541 --lon-start -100 --lon-end -55. --ny 301 --lat-start 7. --lat-end 32. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points --pole-lon 102.5 --pole-lat 80.5
+  run_gridgen.sh -n Gulf_Caribbean_rotated -o $OUT_DIR --nx 541 --lon-start -100 --lon-end -55. --ny 301 --lat-start 7. --lat-end 32. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points --pole-lon 102.5 --pole-lat 80.5
 
 # Gulf and Caribbean on stereographic grid
 
-# run_gridgen.sh --grid-type stereographic -o $OUT_DIR --nx 601 --ny 401 --center-lon -77. --center-lat 20.7  --extent-deg 14.35 --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points
+  run_gridgen.sh --grid-type stereographic -o $OUT_DIR --nx 601 --ny 401 --center-lon -77. --center-lat 20.7  --extent-deg 14.35 --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points
 
 # Alaska regional regular grid with pole rotation 
 
@@ -45,11 +45,11 @@ mkdir -p "${OUT_DIR}"
 
 # Arctic stereographic
 
-# run_gridgen.sh -n Arctic_stereo -o $OUT_DIR -g stereographic --nx 401 --ny 401 --center-lat 90. --center-lon 0. --extent-deg 30. --rotation -45. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --boundary-points --active-file Arctic.active
+  run_gridgen.sh -n Arctic_stereo -o $OUT_DIR -g stereographic --nx 401 --ny 401 --center-lat 90. --center-lon 0. --extent-deg 30. --rotation -45. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --boundary-points --active-file Arctic.active
 
 # Antarctic stereographic
 
-# run_gridgen.sh -n Antarctic_stereo -o $OUT_DIR -g stereographic --nx 401 --ny 401 --center-lat -90. --center-lon 0. --extent-deg 30. --rotation 30. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND
+  run_gridgen.sh -n Antarctic_stereo -o $OUT_DIR -g stereographic --nx 401 --ny 401 --center-lat -90. --center-lon 0. --extent-deg 30. --rotation 30. --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND
 
 # ---------------------------------------------------------------------------
 
