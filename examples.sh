@@ -8,7 +8,7 @@
 #
 # @author Hendrik Tolman
 # @date Initial: 2026-11-06
-# @date Latest Update: 2026-11-06
+# @date Latest Update: 2026-11-09
 #
 # @brief Example driver script for WAVEWATCH III / IV grid generation.
 # @details This script can be run directly to create a set of predefined grids,
@@ -37,7 +37,7 @@ mkdir -p "${OUT_DIR}"
 
 # Gulf and Caribbean on stereographic grid
 
-  run_gridgen.sh --grid-type stereographic -o $OUT_DIR --nx 601 --ny 401 --center-lon -77. --center-lat 20.7  --extent-deg 14.35 --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points
+  run_gridgen.sh -n Gulf_Caribbean_stereo --grid-type stereographic -o $OUT_DIR --nx 601 --ny 401 --center-lon -77. --center-lat 20.7  --extent-deg 14.35 --bathy-source $BATHY_SOURCE --bound-file $COASTAL_BOUND --active-file Gulf_and_Caribbean.active --boundary-points
 
 # Alaska regional regular grid with pole rotation 
 
