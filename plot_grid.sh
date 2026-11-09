@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-05
+# @date Latest Update: 2026-11-09
 #
 # Shell driver script to generate graphical grid bathymetry plots.
 
@@ -145,13 +145,19 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Resolve INPUT_FILE and OUTPUT_FILE relative to ORIG_DIR if explicitly specified by user input
+# Resolve INPUT_FILE relative to ORIG_DIR if explicitly specified by user input
 if [ "$INPUT_FILE_SPECIFIED" -eq 1 ] && [[ "$INPUT_FILE" != /* ]]; then
   INPUT_FILE="${ORIG_DIR}/${INPUT_FILE}"
 fi
 
-if [ "$OUTPUT_FILE_SPECIFIED" -eq 1 ] && [[ "$OUTPUT_FILE" != /* ]]; then
-  OUTPUT_FILE="${ORIG_DIR}/${OUTPUT_FILE}"
+# Resolve OUTPUT_FILE relative to ORIG_DIR, defaulting to ORIG_DIR if not explicitly specified
+if [ "$OUTPUT_FILE_SPECIFIED" -eq 1 ]; then
+  if [[ "$OUTPUT_FILE" != /* ]]; then
+    OUTPUT_FILE="${ORIG_DIR}/${OUTPUT_FILE}"
+  fi
+else
+  GRID_NAME=$(python3 -c "from gridgen.vis import extract_grid_name; print(extract_grid_name('${INPUT_FILE}'))" 2>/dev/null || echo "ww4_grid")
+  OUTPUT_FILE="${ORIG_DIR}/${GRID_NAME}.${FORMAT}"
 fi
 
 echo "========================================================================"

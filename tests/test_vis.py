@@ -245,7 +245,7 @@ def test_plot_grid_script_missing_input_file(tmp_path: Path):
 
 
 def test_plot_grid_from_external_directory_default_out(tmp_path: Path):
-    """Verify plot_grid.sh executed from an external working directory defaults output figure location to repo_root."""
+    """Verify plot_grid.sh executed from an external working directory defaults output figure location to caller's directory."""
     repo_root = Path(__file__).parent.parent
     script_path = repo_root / "plot_grid.sh"
 
@@ -271,10 +271,10 @@ def test_plot_grid_from_external_directory_default_out(tmp_path: Path):
         )
 
         assert result.returncode == 0
-        # Default output graphic should be placed in repo_root
-        expected_plot = repo_root / f"{grid_name}.jpg"
+        # Default output graphic should be placed in caller's directory (tmp_path), not repo_root
+        expected_plot = tmp_path / f"{grid_name}.jpg"
         assert expected_plot.exists()
-        assert not (tmp_path / f"{grid_name}.jpg").exists()
+        assert not (repo_root / f"{grid_name}.jpg").exists()
     finally:
         if nc_file.exists():
             nc_file.unlink()
