@@ -10,7 +10,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-05
+# @date Latest Update: 2026-11-09
 #
 # Code Heritage:
 # WAVEWATCH III (WW3) / WAVEWATCH IV (WW4) Grid and Obstruction Visualization module.
@@ -491,15 +491,17 @@ def plot_grid(
     zoom_parsed = parse_zoom_args(zoom)
 
     # Separate underwater bathymetry (depth <= 0) and land orography (depth > 0)
-    # Cells with mask == 0 are dry land; mask == 2 are boundary cells; mask == 3 are excluded cells.
-    bathymetry_mask = (depth <= 0) & (mask != 0) & (mask != 3) if show_mask else ((depth <= 0) & (mask != 3))
-    orography_mask = (depth > 0) & (depth < 999999.0) & (mask == 1) if show_mask else ((depth > 0) & (depth < 999999.0) & (mask != 2) & (mask != 3))
+    # Cells with mask == 0 are dry land; mask == 2 are boundary cells; mask == 3 are excluded cells; mask == 4 are halo cells.
+    bathymetry_mask = (depth <= 0) & (mask != 0) & (mask != 3) & (mask != 4) if show_mask else ((depth <= 0) & (mask != 3) & (mask != 4))
+    orography_mask = (depth > 0) & (depth < 999999.0) & (mask == 1) if show_mask else ((depth > 0) & (depth < 999999.0) & (mask != 2) & (mask != 3) & (mask != 4))
     land_mask = (mask == 0) if show_mask else np.zeros_like(mask, dtype=bool)
     has_land = bool(np.any(land_mask))
     boundary_mask = (mask == 2)
     has_boundary = bool(np.any(boundary_mask))
     excluded_mask = (mask == 3)
     has_excluded = bool(np.any(excluded_mask))
+    halo_mask = (mask == 4)
+    has_halo = bool(np.any(halo_mask))
 
     depth_bathy = np.where(bathymetry_mask, depth, np.nan)
     depth_orog = np.where(orography_mask, np.clip(depth, 0.0, vmax_orog), np.nan)
@@ -526,6 +528,12 @@ def plot_grid(
             cmap_excl = matplotlib.colors.ListedColormap([gray_color])
             ax1.pcolormesh(x_mesh, y_mesh, excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5)
 
+        if has_halo:
+            halo_display = np.where(halo_mask, 1.0, np.nan)
+            dark_gray_color = "#505050"  # Dark grey color for halo areas (mask value 4)
+            cmap_halo = matplotlib.colors.ListedColormap([dark_gray_color])
+            ax1.pcolormesh(x_mesh, y_mesh, halo_display, cmap=cmap_halo, vmin=0.5, vmax=1.5)
+
         if has_boundary:
             bnd_display = np.where(boundary_mask, 1.0, np.nan)
             magenta_color = "#ff00ff"
@@ -534,7 +542,7 @@ def plot_grid(
 
         pcm_Obs = None
         if has_obstr:
-            Obs_plot = np.where((Obs_max >= 0.01) & (~excluded_mask), Obs_max, np.nan)
+            Obs_plot = np.where((Obs_max >= 0.01) & (~excluded_mask) & (~halo_mask), Obs_max, np.nan)
             pcm_Obs = ax1.pcolormesh(x_mesh, y_mesh, Obs_plot, cmap="YlOrRd", vmin=0.0, vmax=1.0)
 
         # Set aspect ratio corresponding to NX and NY (equal pixel scale in array space)
@@ -636,6 +644,7 @@ def plot_grid(
                 land_plot = np.hstack([land_mask, land_mask, land_mask, land_mask, land_mask])
                 boundary_plot = np.hstack([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
                 excluded_plot = np.hstack([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
+                halo_plot = np.hstack([halo_mask, halo_mask, halo_mask, halo_mask, halo_mask])
             else:
                 lon_plot = np.concatenate([lon - 720.0, lon - 360.0, lon, lon + 360.0, lon + 720.0])
                 lat_plot = np.concatenate([lat, lat, lat, lat, lat])
@@ -644,6 +653,7 @@ def plot_grid(
                 land_plot = np.concatenate([land_mask, land_mask, land_mask, land_mask, land_mask])
                 boundary_plot = np.concatenate([boundary_mask, boundary_mask, boundary_mask, boundary_mask, boundary_mask])
                 excluded_plot = np.concatenate([excluded_mask, excluded_mask, excluded_mask, excluded_mask, excluded_mask])
+                halo_plot = np.concatenate([halo_mask, halo_mask, halo_mask, halo_mask, halo_mask])
         else:
             lon_plot = lon
             lat_plot = lat
@@ -652,6 +662,7 @@ def plot_grid(
             land_plot = land_mask
             boundary_plot = boundary_mask
             excluded_plot = excluded_mask
+            halo_plot = halo_mask
 
         if lon_plot.ndim == 2:
             lon_mesh, lat_mesh = compute_cell_edges_2d(lon_plot, lat_plot)
@@ -694,6 +705,19 @@ def plot_grid(
                     lon_plot, lat_plot, c=excl_display, cmap=cmap_excl, vmin=0.5, vmax=1.5
                 )
 
+        if has_halo:
+            halo_display = np.where(halo_plot, 1.0, np.nan)
+            dark_gray_color = "#505050"  # Dark grey color for halo areas (mask value 4)
+            cmap_halo = matplotlib.colors.ListedColormap([dark_gray_color])
+            if lon_plot.ndim == 2:
+                ax1.pcolormesh(
+                    lon_mesh, lat_mesh, halo_display, cmap=cmap_halo, vmin=0.5, vmax=1.5
+                )
+            else:
+                ax1.scatter(
+                    lon_plot, lat_plot, c=halo_display, cmap=cmap_halo, vmin=0.5, vmax=1.5
+                )
+
         if has_boundary:
             bnd_display = np.where(boundary_plot, 1.0, np.nan)
             magenta_color = "#ff00ff"  # Magenta color for input boundary cells (mask value 2)
@@ -717,8 +741,8 @@ def plot_grid(
             else:
                 Obs_plot = Obs_max
 
-            # Mask out values < 0.01 and excluded cells (mask == 3) so nothing is plotted for obstructions on excluded points
-            Obs_plot = np.where((Obs_plot >= 0.01) & (~excluded_plot), Obs_plot, np.nan)
+            # Mask out values < 0.01, excluded cells (mask == 3), and halo cells (mask == 4) so nothing is plotted for obstructions on them
+            Obs_plot = np.where((Obs_plot >= 0.01) & (~excluded_plot) & (~halo_plot), Obs_plot, np.nan)
 
             if lon_plot.ndim == 2:
                 pcm_Obs = ax1.pcolormesh(

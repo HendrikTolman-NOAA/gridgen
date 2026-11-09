@@ -197,7 +197,7 @@ ww4plotgrid -i ww4_grid_ugrid.nc -f pdf -o ww4_grid.pdf
 
 ---
 
-**Last updated:** November 6, 2026
+**Last updated:** November 9, 2026
 
 <p align="right">
   <img src="https://github.com/NOAA-EMC/gridgen/wiki/images/noaa_logo.gif" alt="NOAA Logo" height="50" width="55">
