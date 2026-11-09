@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-04
+# @date Latest Update: 2026-11-09
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ import subprocess
 from pathlib import Path
 
 import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 
 # Force non-interactive Agg backend for testing
@@ -803,6 +804,87 @@ def test_vis_excluded_points(tmp_path: Path):
     # Verify collections include excluded layer
     collections = ax.collections
     assert len(collections) >= 3
+
+
+def test_vis_halo_points(tmp_path: Path):
+    """Verify halo points (mask == 4) are rendered in dark grey (#505050) and no obstructions on them."""
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), -50.0)
+    # Mask with wet cells (1), boundary cells (2), excluded cells (3), and halo cells (4)
+    mask = np.array([[4, 4, 4], [4, 1, 4], [3, 2, 4]])
+    ObsX = np.full((3, 3), 0.5)
+    ObsY = np.full((3, 3), 0.5)
+
+    data = {"lon": lon, "lat": lat, "depth": depth, "mask": mask, "ObsX": ObsX, "ObsY": ObsY}
+    out_file = str(tmp_path / "test_halo_vis.jpg")
+
+    fig = plot_grid(data, title="Halo Points Vis Test", output_path=out_file)
+    assert fig is not None
+    assert os.path.exists(out_file)
+
+    ax = fig.axes[0]
+    # Verify collections include halo layer
+    collections = ax.collections
+    assert len(collections) >= 3
+
+    # Check colors used in collections: halo layer uses dark grey #505050
+    has_halo_color = False
+    for col in collections:
+        cmap = col.get_cmap()
+        if hasattr(cmap, "colors"):
+            for c in cmap.colors:
+                hex_c = matplotlib.colors.to_hex(c)
+                if hex_c.lower() == "#505050":
+                    has_halo_color = True
+    assert has_halo_color, "Collection with dark grey (#505050) halo colormap must be present"
+    plt.close(fig)
+
+
+def test_vis_halo_points_stereographic(tmp_path: Path):
+    """Verify halo points (mask == 4) on stereographic grid are rendered in dark grey (#505050)."""
+    from gridgen.coordinates import create_stereographic_grid
+
+    lon, lat = create_stereographic_grid(
+        CENTER_LON=0.0,
+        CENTER_LAT=90.0,
+        EXTENT_DEG=20.0,
+        NX=10,
+        NY=10,
+    )
+    depth = np.full((10, 10), -50.0)
+    mask = np.ones((10, 10), dtype=int)
+    # Set outer ring as halo cells (mask == 4)
+    mask[0, :] = 4
+    mask[-1, :] = 4
+    mask[:, 0] = 4
+    mask[:, -1] = 4
+
+    data = {
+        "lon": lon,
+        "lat": lat,
+        "depth": depth,
+        "mask": mask,
+        "filename": "stereo_halo_ugrid.nc",
+        "grid_type": "stereographic",
+    }
+    out_file = str(tmp_path / "test_stereo_halo_vis.jpg")
+    fig = plot_grid(data, title="Stereographic Halo Test", output_path=out_file)
+    assert fig is not None
+    assert os.path.exists(out_file)
+
+    ax = fig.axes[0]
+    has_halo_color = False
+    for col in ax.collections:
+        cmap = col.get_cmap()
+        if hasattr(cmap, "colors"):
+            for c in cmap.colors:
+                hex_c = matplotlib.colors.to_hex(c)
+                if hex_c.lower() == "#505050":
+                    has_halo_color = True
+    assert has_halo_color, "Stereographic plot must render halo points in dark grey (#505050)"
+    plt.close(fig)
 
 
 def test_axis_numbers_and_labels_size_and_no_labels(tmp_path: Path):
