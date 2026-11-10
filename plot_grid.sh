@@ -9,7 +9,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-05
-# @date Latest Update: 2026-11-09
+# @date Latest Update: 2026-11-10
 #
 # Shell driver script to generate graphical grid bathymetry plots.
 
@@ -145,8 +145,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Resolve INPUT_FILE relative to ORIG_DIR if explicitly specified by user input
-if [ "$INPUT_FILE_SPECIFIED" -eq 1 ] && [[ "$INPUT_FILE" != /* ]]; then
+# Resolve INPUT_FILE relative to ORIG_DIR if relative path or filename alone is provided
+if [[ "$INPUT_FILE" != /* ]]; then
   INPUT_FILE="${ORIG_DIR}/${INPUT_FILE}"
 fi
 
