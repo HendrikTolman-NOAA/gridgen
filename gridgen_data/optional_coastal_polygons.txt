@@ -1,5 +1,5 @@
 # WAVEWATCH Optional Coastal Polygon Database (Plain Text Format)
-# Total Polygons: 117
+# Total Polygons: 118
 #
 # Polygon 1: Caspian Sea (Level: 1, Points: 17)
       49.800000      37.500000
@@ -1427,14 +1427,16 @@
      -61.104911      10.769653
      -61.439732      10.714808
 
-# Polygon 80: Brazil - Amazon Delta (Level: 1, Points: 7)
-     -58.537946       7.303473
-     -58.738839       6.535649
-     -58.776042       6.224863
-     -58.597470       6.151737
-     -58.284970       6.864717
-     -58.485863       7.248629
-     -58.537946       7.303473
+# Polygon 80: Brazil - Amazon Delta (Level: 1, Points: 9)
+     -49.900000       1.700000
+     -48.420000      -0.270000
+     -49.500000      -0.800000
+     -50.500000      -1.500000
+     -51.650000      -1.400000
+     -52.000000      -0.500000
+     -51.200000       0.050000
+     -50.600000       1.000000
+     -49.900000       1.700000
 
 # Polygon 81: Brazil - Baja do Marajo (Level: 1, Points: 10)
      -48.420000      -0.270000
@@ -1485,15 +1487,36 @@
      -43.260000     -22.880000
      -43.160000     -22.950000
 
-# Polygon 86: Brazil - Septiba Bay (Level: 1, Points: 6)
-     -44.020000     -23.080000
-     -43.600000     -23.060000
-     -43.620000     -22.950000
+# Polygon 86: Brazil - Septiba Bay (Level: 1, Points: 10)
+     -44.650000     -23.350000
+     -44.720000     -23.220000
+     -44.320000     -23.010000
+     -44.040000     -22.960000
      -43.850000     -22.900000
-     -44.050000     -22.950000
+     -43.600000     -23.060000
      -44.020000     -23.080000
+     -44.250000     -23.220000
+     -44.500000     -23.350000
+     -44.650000     -23.350000
 
-# Polygon 87: Alaska - Cook Inlet (Level: 1, Points: 28)
+# Polygon 87: Brazil - Lagoa dos Patos (Level: 1, Points: 13)
+     -52.050000     -32.100000
+     -51.500000     -31.700000
+     -50.800000     -31.100000
+     -50.450000     -30.400000
+     -50.600000     -30.150000
+     -51.200000     -30.050000
+     -51.350000     -30.350000
+     -51.400000     -30.800000
+     -51.800000     -31.300000
+     -52.000000     -31.500000
+     -52.200000     -31.800000
+     -52.150000     -32.100000
+     -52.050000     -32.100000
+
+
+
+# Polygon 88: Alaska - Cook Inlet (Level: 1, Points: 28)
     -149.603803      61.937500
     -150.871632      61.830357
     -152.028526      61.633929
@@ -1523,7 +1546,7 @@
     -148.652932      61.580357
     -149.603803      61.937500
 
-# Polygon 88: Alaska - Prince William Sound (Level: 1, Points: 30)
+# Polygon 89: Alaska - Prince William Sound (Level: 1, Points: 30)
     -148.470681      61.669643
     -148.676704      60.919643
     -148.740095      60.401786
@@ -1555,7 +1578,7 @@
     -145.412044      61.919643
     -148.470681      61.669643
 
-# Polygon 89: Alaska - Yakutat Bay (Level: 1, Points: 12)
+# Polygon 90: Alaska - Yakutat Bay (Level: 1, Points: 12)
     -140.079239      60.419643
     -140.301109      59.866071
     -140.348653      59.705357
@@ -1569,7 +1592,7 @@
     -139.033281      60.348214
     -140.079239      60.419643
 
-# Polygon 90: Alaska - Alexander Archipelago (Level: 1, Points: 48)
+# Polygon 91: Alaska - Alexander Archipelago (Level: 1, Points: 48)
     -137.107765      59.651786
     -137.393027      58.508929
     -137.107765      58.401786
@@ -1619,7 +1642,7 @@
     -134.936609      59.758929
     -137.107765      59.651786
 
-# Polygon 91: Canada West Coast (Level: 1, Points: 43)
+# Polygon 92: Canada West Coast (Level: 1, Points: 43)
     -129.920761      56.473214
     -130.332805      55.901786
     -130.412044      55.169643
@@ -1664,7 +1687,7 @@
     -129.270998      56.866071
     -129.920761      56.473214
 
-# Polygon 92: US/Canada West Coast - Strait of Juan de Fuca + Puget Sound (Level: 1, Points: 64)
+# Polygon 93: US/Canada West Coast - Strait of Juan de Fuca + Puget Sound (Level: 1, Points: 64)
     -126.188590      51.334821
     -126.664025      51.031250
     -127.408875      50.986607
@@ -1730,7 +1753,7 @@
     -126.251981      51.540179
     -126.188590      51.334821
 
-# Polygon 93: US West Coast - Columbia River Estuary (Level: 1, Points: 21)
+# Polygon 94: US West Coast - Columbia River Estuary (Level: 1, Points: 21)
     -124.183043      47.156250
     -124.159271      46.995536
     -124.167195      46.941964
@@ -1753,7 +1776,7 @@
     -124.072108      47.281250
     -124.183043      47.156250
 
-# Polygon 94: US West Coast - San Francisco Harbor (Level: 1, Points: 16)
+# Polygon 95: US West Coast - San Francisco Harbor (Level: 1, Points: 16)
     -122.801109      37.986607
     -122.721870      37.897321
     -122.618859      37.888393
@@ -1771,7 +1794,7 @@
     -122.698098      38.174107
     -122.801109      37.986607
 
-# Polygon 95: West Coast - Lake Ojo de Liebre (Level: 1, Points: 21)
+# Polygon 96: West Coast - Lake Ojo de Liebre (Level: 1, Points: 21)
     -113.993661      28.298214
     -114.088748      28.276786
     -114.101426      28.241071
@@ -1794,7 +1817,7 @@
     -113.736926      28.366071
     -113.993661      28.298214
 
-# Polygon 96: West Coast - Laguna S. Ignacio (Level: 1, Points: 39)
+# Polygon 97: West Coast - Laguna S. Ignacio (Level: 1, Points: 39)
     -113.272583      27.076786
     -113.621236      26.948214
     -113.729002      26.798214
@@ -1835,7 +1858,7 @@
     -112.812995      27.087500
     -113.272583      27.076786
 
-# Polygon 97: West Coast - Bay of Magdalena (Level: 1, Points: 34)
+# Polygon 98: West Coast - Bay of Magdalena (Level: 1, Points: 34)
     -111.961173      25.844643
     -112.103803      25.716071
     -112.111727      25.373214
@@ -1871,7 +1894,7 @@
     -111.739303      25.812500
     -111.961173      25.844643
 
-# Polygon 98: West Coast - Gulf of California (Level: 1, Points: 56)
+# Polygon 99: West Coast - Gulf of California (Level: 1, Points: 56)
     -113.843106      32.281250
     -114.353407      32.093750
     -114.908082      31.879464
@@ -1929,7 +1952,7 @@
     -111.912837      33.781250
     -113.843106      32.281250
 
-# Polygon 99: White Sea (Level: 1, Points: 9)
+# Polygon 100: White Sea (Level: 1, Points: 9)
       39.620536      67.212066
       34.382440      67.047532
       31.927083      67.541133
@@ -1939,7 +1962,7 @@
       42.075893      65.566728
       40.438988      66.718464
       39.620536      67.212066
-# Polygon 100: Sea of Okhotsk (Level: 1, Points: 16)
+# Polygon 101: Sea of Okhotsk (Level: 1, Points: 16)
      165.401786      62.989031
      156.205357      62.038391
      143.169643      59.990859
@@ -1957,7 +1980,7 @@
      165.848214      62.623400
      165.401786      62.989031
 
-# Polygon 101: Sea of Okhotsk - Penzhina Bay (Level: 1, Points: 7)
+# Polygon 102: Sea of Okhotsk - Penzhina Bay (Level: 1, Points: 7)
      159.500000      61.500000
      162.000000      61.500000
      165.000000      62.500000
@@ -1966,42 +1989,42 @@
      159.500000      62.500000
      159.500000      61.500000
 
-# Polygon 102: Sea of Okhotsk - Gizhigin Bay (Level: 1, Points: 5)
+# Polygon 103: Sea of Okhotsk - Gizhigin Bay (Level: 1, Points: 5)
      156.500000      60.500000
      160.500000      60.500000
      160.500000      62.500000
      156.500000      62.500000
      156.500000      60.500000
 
-# Polygon 103: Sea of Okhotsk - Taui Bay (Level: 1, Points: 5)
+# Polygon 104: Sea of Okhotsk - Taui Bay (Level: 1, Points: 5)
      149.000000      59.000000
      151.500000      59.000000
      151.500000      60.000000
      149.000000      60.000000
      149.000000      59.000000
 
-# Polygon 104: Sea of Okhotsk - Udskaya Guba (Level: 1, Points: 5)
+# Polygon 105: Sea of Okhotsk - Udskaya Guba (Level: 1, Points: 5)
      134.800000      54.200000
      136.800000      54.200000
      136.800000      55.500000
      134.800000      55.500000
      134.800000      54.200000
 
-# Polygon 105: Sea of Okhotsk - Guba Yakshina (Level: 1, Points: 5)
+# Polygon 106: Sea of Okhotsk - Guba Yakshina (Level: 1, Points: 5)
      137.200000      54.800000
      138.200000      54.800000
      138.200000      55.200000
      137.200000      55.200000
      137.200000      54.800000
 
-# Polygon 106: Sea of Okhotsk - Zaliv Akademii (Level: 1, Points: 5)
+# Polygon 107: Sea of Okhotsk - Zaliv Akademii (Level: 1, Points: 5)
      137.500000      53.300000
      139.000000      53.300000
      139.000000      54.500000
      137.500000      54.500000
      137.500000      53.300000
 
-# Polygon 107: Sea of Japan (Level: 1, Points: 12)
+# Polygon 108: Sea of Japan (Level: 1, Points: 12)
      140.133929      53.263254
      132.008929      44.122486
      126.473214      39.003656
@@ -2015,7 +2038,7 @@
      142.723214      52.824497
      140.133929      53.263254
 
-# Polygon 108: Japan - Uchiura Bay (Level: 1, Points: 6)
+# Polygon 109: Japan - Uchiura Bay (Level: 1, Points: 6)
      140.350000      42.250000
      140.550000      42.000000
      140.950000      42.000000
@@ -2023,7 +2046,7 @@
      140.350000      42.600000
      140.350000      42.250000
 
-# Polygon 109: Japan - Mutsu Bay (Level: 1, Points: 7)
+# Polygon 110: Japan - Mutsu Bay (Level: 1, Points: 7)
      140.600000      41.350000
      140.680000      41.350000
      141.350000      41.150000
@@ -2032,7 +2055,7 @@
      140.550000      41.100000
      140.600000      41.350000
 
-# Polygon 110: Japan - Tokyo Bay (Level: 1, Points: 7)
+# Polygon 111: Japan - Tokyo Bay (Level: 1, Points: 7)
      139.670000      35.250000
      139.780000      35.250000
      140.150000      35.600000
@@ -2041,7 +2064,7 @@
      139.600000      35.350000
      139.670000      35.250000
 
-# Polygon 111: Japan - Ise Bay (Level: 1, Points: 7)
+# Polygon 112: Japan - Ise Bay (Level: 1, Points: 7)
      136.880000      34.620000
      136.980000      34.620000
      137.100000      35.100000
@@ -2050,7 +2073,7 @@
      136.800000      34.500000
      136.880000      34.620000
 
-# Polygon 112: Japan - Osaka Bay (Level: 1, Points: 7)
+# Polygon 113: Japan - Osaka Bay (Level: 1, Points: 7)
      134.930000      34.250000
      135.050000      34.250000
      135.550000      34.700000
@@ -2059,7 +2082,7 @@
      134.850000      34.350000
      134.930000      34.250000
 
-# Polygon 113: Japan - Seto Inland Sea (Level: 1, Points: 7)
+# Polygon 114: Japan - Seto Inland Sea (Level: 1, Points: 7)
      130.900000      33.900000
      132.000000      33.500000
      135.000000      34.100000
@@ -2068,7 +2091,7 @@
      131.000000      34.100000
      130.900000      33.900000
 
-# Polygon 114: Japan - Yamaguchi Bay (Level: 1, Points: 6)
+# Polygon 115: Japan - Yamaguchi Bay (Level: 1, Points: 6)
      131.350000      33.950000
      131.500000      33.950000
      131.500000      34.080000
@@ -2076,7 +2099,7 @@
      131.350000      33.950000
      131.350000      33.950000
 
-# Polygon 115: Japan - Ariake Sea (Level: 1, Points: 7)
+# Polygon 116: Japan - Ariake Sea (Level: 1, Points: 7)
      130.150000      32.550000
      130.300000      32.550000
      130.650000      33.150000
@@ -2085,7 +2108,7 @@
      130.050000      32.650000
      130.150000      32.550000
 
-# Polygon 116: Japan - Kagoshima Bay (Level: 1, Points: 7)
+# Polygon 117: Japan - Kagoshima Bay (Level: 1, Points: 7)
      130.630000      31.250000
      130.730000      31.250000
      130.850000      31.750000
@@ -2094,7 +2117,7 @@
      130.580000      31.250000
      130.630000      31.250000
 
-# Polygon 117: Japan - Omura Bay (Level: 1, Points: 7)
+# Polygon 118: Japan - Omura Bay (Level: 1, Points: 7)
      129.820000      33.020000
      129.880000      33.020000
      130.000000      33.050000
