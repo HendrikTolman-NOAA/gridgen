@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 103 active polygons set to 1 out of 124 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Brazil and Argentina coastal bays added)
-    assert len(active_polys) == 103
+    # user_polygons.flag has 101 active polygons set to 1 out of 123 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Samborombón Bay disabled; Brazil and Argentina coastal bays added)
+    assert len(active_polys) == 101
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 103 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 101 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -278,7 +278,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 124 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 123 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -288,7 +288,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 124
+    assert len(all_polys) == 123
 
     # Caspian Sea is now Polygon 1
     caspian_poly = None
@@ -322,7 +322,7 @@ def test_netherlands_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 124
+    assert len(all_polys) == 123
 
     nl_poly = next(p for p in all_polys if "Netherlands below sea level" in p.get("name", ""))
     ws_poly = next(p for p in all_polys if "Wester Schelde" in p.get("name", ""))
@@ -381,13 +381,13 @@ def test_oresund_polygon_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 124
+    assert len(all_polys) == 123
 
     oresund_poly = next(p for p in all_polys if "Oresund" in p.get("name", ""))
     assert oresund_poly is not None, "Oresund polygon must be present"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 103
+    assert len(active_polys) == 101
     assert any("Oresund" in p.get("name", "") for p in active_polys)
 
     # Test Oresund point (12.6°E, 55.68°N) near Copenhagen
@@ -405,7 +405,7 @@ def test_waddenzee_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 124
+    assert len(all_polys) == 123
 
     poly_east = next(p for p in all_polys if "Waddenzee East" in p.get("name", ""))
     poly_north = next(p for p in all_polys if "Waddenzee North" in p.get("name", ""))
@@ -436,7 +436,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 103
+    assert len(active_polys) == 101
 
     japan_names = [
         "Japan - Uchiura Bay",
@@ -471,7 +471,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 124
+    assert len(all_polys) == 123
 
     norway_names = [
         "Norway - Oslofjord",
@@ -534,7 +534,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     assert len(aland_poly["x"]) >= 24, "Aland / Turku polygon must have >= 24 points"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 103
+    assert len(active_polys) == 101
 
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
     active_uk = [p for p in active_polys if any(name in p.get("name", "") for name in uk_names)]
@@ -623,10 +623,10 @@ def test_brazil_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 124
+    assert len(all_polys) == 123
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 103
+    assert len(active_polys) == 101
 
     brazil_expected = [
         ("Brazil - Amazon Delta", True, (-50.80, 0.20)),
@@ -667,22 +667,21 @@ def test_brazil_polygons_loading_and_masking() -> None:
 
 
 def test_argentina_polygons_loading_and_masking() -> None:
-    """Test loading, active switches, and masking for Argentina coastal polygons (Samborombón Bay, Bahía Blanca, Golfo San Matías, Golfo Nuevo, Bahía Grande, Bahía de San Sebastián)."""
+    """Test loading, active switches, and masking for Argentina coastal polygons (Samborombón Bay, Bahía Blanca, Bahía Anegada, Golfo Nuevo, Bahía de San Sebastián)."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 124
+    assert len(all_polys) == 123
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 103
+    assert len(active_polys) == 101
 
     argentina_expected = [
-        ("Argentina - Samborombón Bay", True, (-57.10, -35.90)),
+        ("Argentina - Samborombón Bay", False, (-57.10, -35.90)),
         ("Argentina - Bahía Blanca", True, (-62.15, -39.00)),
-        ("Argentina - Golfo San Matías", True, (-64.50, -41.50)),
+        ("Argentina - Bahía Anegada", True, (-62.25, -40.30)),
         ("Argentina - Golfo Nuevo", True, (-64.65, -42.70)),
-        ("Argentina - Bahía Grande", True, (-68.80, -51.00)),
         ("Argentina - Bahía de San Sebastián", True, (-68.35, -53.20)),
     ]
 
@@ -702,3 +701,21 @@ def test_argentina_polygons_loading_and_masking() -> None:
         mask = np.ones_like(lon_grid, dtype=int)
         cleaned = clean_mask(lon_grid, lat_grid, mask, [poly_entry])
         assert cleaned[1, 1] == 0, f"Point {lon_pt}, {lat_pt} should be masked to 0 inside {name}"
+
+    # Specifically test that Golfo San José point is also enclosed in the Golfo Nuevo polygon
+    gn_poly = next(p for p in all_polys if "Golfo Nuevo" in p.get("name", ""))
+    lon_sj, lat_sj = create_regular_grid(
+        NX=3, NY=3, LON_START=-64.38, LON_END=-64.28, LAT_START=-42.38, LAT_END=-42.28
+    )
+    mask_sj = np.ones_like(lon_sj, dtype=int)
+    cleaned_sj = clean_mask(lon_sj, lat_sj, mask_sj, [gn_poly])
+    assert cleaned_sj[1, 1] == 0, "Golfo San José point should be masked by Golfo Nuevo contour"
+
+    # Specifically test that Bahía Anegada extends to the enclosing islands (e.g. San Blas / Isla del Jabalí point)
+    anegada_poly = next(p for p in all_polys if "Bahía Anegada" in p.get("name", ""))
+    lon_sb, lat_sb = create_regular_grid(
+        NX=3, NY=3, LON_START=-62.25, LON_END=-62.15, LAT_START=-40.60, LAT_END=-40.50
+    )
+    mask_sb = np.ones_like(lon_sb, dtype=int)
+    cleaned_sb = clean_mask(lon_sb, lat_sb, mask_sb, [anegada_poly])
+    assert cleaned_sb[1, 1] == 0, "San Blas enclosing island point should be masked by Bahía Anegada contour"
