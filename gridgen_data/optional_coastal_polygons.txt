@@ -1487,7 +1487,7 @@
      -43.260000     -22.880000
      -43.160000     -22.950000
 
-# Polygon 86: Brazil - Septiba Bay (Level: 1, Points: 10)
+# Polygon 86: Brazil - Septiba Bay and Baia de Ilha Grande (Level: 1, Points: 10)
      -44.650000     -23.350000
      -44.720000     -23.220000
      -44.320000     -23.010000
