@@ -69,7 +69,7 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 107 active polygons set to 1 out of 130 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Samborombón Bay disabled; Bahia Lomas disabled; Brazil, Argentina, and Chili coastal bays added)
+    # user_polygons.flag has 107 active polygons set to 1 out of 129 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Samborombón Bay disabled; Bahia Lomas disabled; Brazil, Argentina, and Chili coastal bays added)
     assert len(active_polys) == 107
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
@@ -278,7 +278,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 130 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 129 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -288,7 +288,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     # Caspian Sea is now Polygon 1
     caspian_poly = None
@@ -322,7 +322,7 @@ def test_netherlands_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     nl_poly = next(p for p in all_polys if "Netherlands below sea level" in p.get("name", ""))
     ws_poly = next(p for p in all_polys if "Wester Schelde" in p.get("name", ""))
@@ -381,7 +381,7 @@ def test_oresund_polygon_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     oresund_poly = next(p for p in all_polys if "Oresund" in p.get("name", ""))
     assert oresund_poly is not None, "Oresund polygon must be present"
@@ -405,7 +405,7 @@ def test_waddenzee_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     poly_east = next(p for p in all_polys if "Waddenzee East" in p.get("name", ""))
     poly_north = next(p for p in all_polys if "Waddenzee North" in p.get("name", ""))
@@ -471,7 +471,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     norway_names = [
         "Norway - Oslofjord",
@@ -623,7 +623,7 @@ def test_brazil_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert len(active_polys) == 107
@@ -672,7 +672,7 @@ def test_argentina_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert len(active_polys) == 107
@@ -725,9 +725,8 @@ def test_chili_polygons_loading_and_masking() -> None:
     """Test loading, active switches, and masking for Chili coastal polygons.
 
     Tests:
-    - Chili - Bahia Lomas (switch: 0 / off)
-    - Chili - Magellan Strait to Beagle Channel (switch: 1 / on)
-    - Chili - Gulf of Penas (switch: 1 / on)
+    - Chili - Magellan Strait to Beagle Channel (switch: 1 / on, incorporates Bahia Lomas)
+    - Chili - Gulf of Penas (switch: 1 / on, extended south to land masses)
     - Chili - Aisen Fjord (switch: 1 / on)
     - Chili - Gulf of Corcovado (switch: 1 / on)
     - Chili - Gulf of Ancud (switch: 1 / on)
@@ -737,13 +736,12 @@ def test_chili_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 130
+    assert len(all_polys) == 129
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert len(active_polys) == 107
 
     chili_expected = [
-        ("Chili - Bahia Lomas", False, (-69.10, -52.62)),
         ("Chili - Magellan Strait to Beagle Channel", True, (-70.90, -53.15)),
         ("Chili - Gulf of Penas", True, (-74.85, -47.25)),
         ("Chili - Aisen Fjord", True, (-73.00, -45.35)),
@@ -769,21 +767,16 @@ def test_chili_polygons_loading_and_masking() -> None:
         cleaned = clean_mask(lon_grid, lat_grid, mask, [poly_entry])
         assert cleaned[1, 1] == 0, f"Point {lon_pt}, {lat_pt} should be masked to 0 inside {name}"
 
-    # Specifically test that Bahia Lomas is NOT masked with default active polygons
+    # Specifically test that Bahia Lomas is included and masked by Magellan Strait to Beagle Channel
+    mag_poly = next(p for p in all_polys if "Magellan Strait to Beagle Channel" in p.get("name", ""))
     lon_lomas, lat_lomas = create_regular_grid(
         NX=3, NY=3, LON_START=-69.15, LON_END=-69.05, LAT_START=-52.67, LAT_END=-52.57
     )
     mask_default = np.ones_like(lon_lomas, dtype=int)
-    cleaned_default = clean_mask(lon_lomas, lat_lomas, mask_default, active_polys)
-    assert cleaned_default[1, 1] == 1, "Bahia Lomas point should remain unmasked (1) under default active polygons"
-
-    # Specifically test that Bahia Lomas IS masked when using all_polygons=True
-    cleaned_all = clean_mask(lon_lomas, lat_lomas, np.ones_like(lon_lomas, dtype=int), all_polys)
-    assert cleaned_all[1, 1] == 0, "Bahia Lomas point should be masked (0) when all_polygons=True"
+    cleaned_lomas = clean_mask(lon_lomas, lat_lomas, mask_default, [mag_poly])
+    assert cleaned_lomas[1, 1] == 0, "Bahia Lomas point should be masked by Magellan Strait to Beagle Channel"
 
     # Specifically test that Magellan Strait polygon contains multiple connected channels
-    # and explicitly excludes Bahia Lomas
-    mag_poly = next(p for p in all_polys if "Magellan Strait to Beagle Channel" in p.get("name", ""))
     test_mag_points = [
         ("Punta Arenas", -70.90, -53.15),
         ("Canal Whiteside", -70.25, -53.92),
@@ -803,6 +796,16 @@ def test_chili_polygons_loading_and_masking() -> None:
         cleaned_mag = clean_mask(lon_g, lat_g, np.ones_like(lon_g, dtype=int), [mag_poly])
         assert cleaned_mag[1, 1] == 0, f"{ch_name} point ({lon_c}, {lat_c}) should be masked by Magellan Strait to Beagle Channel"
 
-    # Verify Magellan Strait polygon does not mask Bahia Lomas point
-    cleaned_mag_lomas = clean_mask(lon_lomas, lat_lomas, np.ones_like(lon_lomas, dtype=int), [mag_poly])
-    assert cleaned_mag_lomas[1, 1] == 1, "Magellan Strait to Beagle Channel polygon must NOT mask Bahia Lomas point"
+    # Specifically test that Gulf of Penas polygon extends south to land masses
+    penas_poly = next(p for p in all_polys if "Gulf of Penas" in p.get("name", ""))
+    test_penas_points = [
+        ("Central Gulf of Penas", -74.85, -47.25),
+        ("Southern Gulf of Penas extension", -74.90, -47.80),
+        ("Approach to Guayaneco/Campana islands", -75.10, -48.00),
+    ]
+    for p_name, lon_p, lat_p in test_penas_points:
+        lon_g, lat_g = create_regular_grid(
+            NX=3, NY=3, LON_START=lon_p - 0.05, LON_END=lon_p + 0.05, LAT_START=lat_p - 0.05, LAT_END=lat_p + 0.05
+        )
+        cleaned_p = clean_mask(lon_g, lat_g, np.ones_like(lon_g, dtype=int), [penas_poly])
+        assert cleaned_p[1, 1] == 0, f"{p_name} point ({lon_p}, {lat_p}) should be masked by Gulf of Penas"
