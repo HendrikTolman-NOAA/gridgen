@@ -321,6 +321,61 @@ def test_plot_grid_from_external_directory_custom_out(tmp_path: Path):
     assert (tmp_path / out_jpg).exists()
 
 
+def test_plot_grid_from_external_directory_local_filename_alone(tmp_path: Path):
+    """Verify plot_grid.sh executed from external directory resolves input file from local directory when only filename is given."""
+    repo_root = Path(__file__).parent.parent
+    script_path = repo_root / "plot_grid.sh"
+
+    lon1d = np.array([10.0, 11.0, 12.0])
+    lat1d = np.array([20.0, 21.0, 22.0])
+    lon, lat = np.meshgrid(lon1d, lat1d)
+    depth = np.full((3, 3), 10.0)
+    mask = np.ones((3, 3), dtype=int)
+    ds = create_ugrid_dataset(lon, lat, depth, mask, title="Local File Only Test")
+
+    # Save to tmp_path with filename only
+    filename_alone = "local_grid_ugrid.nc"
+    nc_file = tmp_path / filename_alone
+    write_ugrid_nc(ds, str(nc_file))
+
+    # Run without directory path in -i: only filename given
+    result = subprocess.run(
+        [
+            str(script_path),
+            "-i",
+            filename_alone,
+            "-f",
+            "jpg",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}"
+    # Verify plot was generated in caller's directory (tmp_path)
+    assert (tmp_path / "local_grid.jpg").exists()
+
+    # Also test with default input file name (ww4_grid_ugrid.nc in local directory without -i option)
+    default_nc = tmp_path / "ww4_grid_ugrid.nc"
+    write_ugrid_nc(ds, str(default_nc))
+
+    result_default = subprocess.run(
+        [
+            str(script_path),
+            "-f",
+            "png",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result_default.returncode == 0, f"STDOUT: {result_default.stdout}\nSTDERR: {result_default.stderr}"
+    assert (tmp_path / "ww4_grid.png").exists()
+
+
 def test_plot_grid_show_in_headless_env(tmp_path: Path):
     """Verify plot_grid with show=True in headless environment skips show without UserWarning."""
     lon1d = np.array([10.0, 11.0, 12.0])
