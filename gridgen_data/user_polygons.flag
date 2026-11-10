@@ -77,35 +77,42 @@
 77 1 	 Columbia Gulf Coast
 78 1 	 Venezuela Gulf Coast - Lago de Maracaibo
 79 1 	 Venezuela Gulf Coast - Gulf of Paria
-80 1 	 Brazil East Coast - Amazon Delta
-81 1 	 Alaska - Cook Inlet
-82 1 	 Alaska - Prince William Sound
-83 1 	 Alaska - Yakutat Bay
-84 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
-85 1 	 Canada West Coast
-86 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
-87 1 	 US West Coast - Columbia River Estuary
-88 1 	 US West Coast - San Francisco Harbor
-89 1 	 West Coast - Lake Ojo de Liebre (Baja California)
-90 1 	 West Coast - Laguna S. Ignacio (Baja California)
-91 1 	 West Coast - Bay of Magdalena (Baja California)
-92 0 	 West Coast - Gulf of California (Baja California)
-93 1 	 White Sea
-94 0 	 Sea of Okhotsk
-95 1 	 Sea of Okhotsk - Penzhina Bay
-96 1 	 Sea of Okhotsk - Gizhigin Bay
-97 1 	 Sea of Okhotsk - Taui Bay
-98 1 	 Sea of Okhotsk - Udskaya Guba
-99 1 	 Sea of Okhotsk - Guba Yakshina
-100 1 	 Sea of Okhotsk - Zaliv Akademii
-101 0 	 Sea of Japan
-102 1 	 Japan - Uchiura Bay
-103 1 	 Japan - Mutsu Bay
-104 1 	 Japan - Tokyo Bay
-105 1 	 Japan - Ise Bay
-106 1 	 Japan - Osaka Bay
-107 1 	 Japan - Seto Inland Sea
-108 1 	 Japan - Yamaguchi Bay
-109 1 	 Japan - Ariake Sea
-110 1 	 Japan - Kagoshima Bay
-111 1 	 Japan - Omura Bay
+80 1 	 Brazil - Amazon Delta
+81 1 	 Brazil - Baja do Marajo
+82 1 	 Brazil - Baja do Sao Marcos
+83 1 	 Brazil - Baja de Sao Jose
+84 1 	 Brazil - Bay of All Saints
+85 1 	 Brazil - Guanabara Bay
+86 1 	 Brazil - Septiba Bay and Baia de Ilha Grande
+87 1 	 Brazil - Lagoa dos Patos
+88 1 	 Alaska - Cook Inlet
+89 1 	 Alaska - Prince William Sound
+90 1 	 Alaska - Yakutat Bay
+91 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
+92 1 	 Canada West Coast
+93 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
+94 1 	 US West Coast - Columbia River Estuary
+95 1 	 US West Coast - San Francisco Harbor
+96 1 	 West Coast - Lake Ojo de Liebre (Baja California)
+97 1 	 West Coast - Laguna S. Ignacio (Baja California)
+98 1 	 West Coast - Bay of Magdalena (Baja California)
+99 0 	 West Coast - Gulf of California (Baja California)
+100 1 	 White Sea
+101 0 	 Sea of Okhotsk
+102 1 	 Sea of Okhotsk - Penzhina Bay
+103 1 	 Sea of Okhotsk - Gizhigin Bay
+104 1 	 Sea of Okhotsk - Taui Bay
+105 1 	 Sea of Okhotsk - Udskaya Guba
+106 1 	 Sea of Okhotsk - Guba Yakshina
+107 1 	 Sea of Okhotsk - Zaliv Akademii
+108 0 	 Sea of Japan
+109 1 	 Japan - Uchiura Bay
+110 1 	 Japan - Mutsu Bay
+111 1 	 Japan - Tokyo Bay
+112 1 	 Japan - Ise Bay
+113 1 	 Japan - Osaka Bay
+114 1 	 Japan - Seto Inland Sea
+115 1 	 Japan - Yamaguchi Bay
+116 1 	 Japan - Ariake Sea
+117 1 	 Japan - Kagoshima Bay
+118 1 	 Japan - Omura Bay
