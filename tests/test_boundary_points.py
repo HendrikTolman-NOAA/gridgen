@@ -8,7 +8,7 @@
 # @author Aldgisl (Agentic AI), Hendrik Tolman
 # @author Jules (Agentic AI) (contributor)
 # @date Initial: 2026-10-06
-# @date Latest Update: 2026-11-03
+# @date Latest Update: 2026-11-10
 
 """Unit tests for defining input boundary points in regional grids."""
 
@@ -456,9 +456,13 @@ def test_arctic_active_file() -> None:
     assert poly.contains(Point(-73.0, 62.5)), "Hudson Strait should be inside"
     assert poly.contains(Point(-68.0, 59.5)), "Ungava Bay should be inside"
     assert poly.contains(Point(-80.0, 65.0)), "Foxe Channel should be inside"
+    assert poly.contains(Point(-174.3, 66.5)), "Kolyuchinskaya Bay should be inside"
+    assert poly.contains(Point(-174.0, 66.25)), "Southern head of Kolyuchinskaya Bay should be inside"
 
     # Check excluded points (outside Arctic Ocean basin)
     assert not poly.contains(Point(-168.5, 64.0)), "Pacific south of Bering Strait should be outside"
+    assert not poly.contains(Point(-179.1, 66.0)), "Kresta Bay should be outside"
+    assert not poly.contains(Point(-178.5, 66.35)), "Northern head of Kresta Bay should be outside"
     assert not poly.contains(Point(-85.0, 58.0)), "Central Hudson Bay should be outside"
     assert not poly.contains(Point(-80.0, 53.0)), "James Bay / Southern Hudson Bay should be outside"
     assert not poly.contains(Point(-87.0, 64.5)), "Roes Welcome Sound should be outside"
