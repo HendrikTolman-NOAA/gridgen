@@ -90,34 +90,41 @@
 90 1 	 Argentina - Bahía Anegada
 91 1 	 Argentina - Golfo Nuevo
 92 1 	 Argentina - Bahía de San Sebastián
-93 1 	 Alaska - Cook Inlet
-94 1 	 Alaska - Prince William Sound
-95 1 	 Alaska - Yakutat Bay
-96 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
-97 1 	 Canada West Coast
-98 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
-99 1 	 US West Coast - Columbia River Estuary
-100 1 	 US West Coast - San Francisco Harbor
-101 1 	 West Coast - Lake Ojo de Liebre (Baja California)
-102 1 	 West Coast - Laguna S. Ignacio (Baja California)
-103 1 	 West Coast - Bay of Magdalena (Baja California)
-104 0 	 West Coast - Gulf of California (Baja California)
-105 1 	 White Sea
-106 0 	 Sea of Okhotsk
-107 1 	 Sea of Okhotsk - Penzhina Bay
-108 1 	 Sea of Okhotsk - Gizhigin Bay
-109 1 	 Sea of Okhotsk - Taui Bay
-110 1 	 Sea of Okhotsk - Udskaya Guba
-111 1 	 Sea of Okhotsk - Guba Yakshina
-112 1 	 Sea of Okhotsk - Zaliv Akademii
-113 0 	 Sea of Japan
-114 1 	 Japan - Uchiura Bay
-115 1 	 Japan - Mutsu Bay
-116 1 	 Japan - Tokyo Bay
-117 1 	 Japan - Ise Bay
-118 1 	 Japan - Osaka Bay
-119 1 	 Japan - Seto Inland Sea
-120 1 	 Japan - Yamaguchi Bay
-121 1 	 Japan - Ariake Sea
-122 1 	 Japan - Kagoshima Bay
-123 1 	 Japan - Omura Bay
+93 0 	 Chili - Bahia Lomas
+94 1 	 Chili - Magellan Strait to Beagle Channel
+95 1 	 Chili - Gulf of Penas
+96 1 	 Chili - Aisen Fjord
+97 1 	 Chili - Gulf of Corcovado
+98 1 	 Chili - Gulf of Ancud
+99 1 	 Chili - Reloncavi Estuary
+100 1 	 Alaska - Cook Inlet
+101 1 	 Alaska - Prince William Sound
+102 1 	 Alaska - Yakutat Bay
+103 1 	 Alaska - Alexander Archipelago (Chatham Strait, Sitka)
+104 1 	 Canada West Coast
+105 1 	 US/Canada West Coast - Strait of Juan de Fuca + Puget Sound
+106 1 	 US West Coast - Columbia River Estuary
+107 1 	 US West Coast - San Francisco Harbor
+108 1 	 West Coast - Lake Ojo de Liebre (Baja California)
+109 1 	 West Coast - Laguna S. Ignacio (Baja California)
+110 1 	 West Coast - Bay of Magdalena (Baja California)
+111 0 	 West Coast - Gulf of California (Baja California)
+112 1 	 White Sea
+113 0 	 Sea of Okhotsk
+114 1 	 Sea of Okhotsk - Penzhina Bay
+115 1 	 Sea of Okhotsk - Gizhigin Bay
+116 1 	 Sea of Okhotsk - Taui Bay
+117 1 	 Sea of Okhotsk - Udskaya Guba
+118 1 	 Sea of Okhotsk - Guba Yakshina
+119 1 	 Sea of Okhotsk - Zaliv Akademii
+120 0 	 Sea of Japan
+121 1 	 Japan - Uchiura Bay
+122 1 	 Japan - Mutsu Bay
+123 1 	 Japan - Tokyo Bay
+124 1 	 Japan - Ise Bay
+125 1 	 Japan - Osaka Bay
+126 1 	 Japan - Seto Inland Sea
+127 1 	 Japan - Yamaguchi Bay
+128 1 	 Japan - Ariake Sea
+129 1 	 Japan - Kagoshima Bay
+130 1 	 Japan - Omura Bay
