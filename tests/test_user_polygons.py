@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 112 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 116 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
