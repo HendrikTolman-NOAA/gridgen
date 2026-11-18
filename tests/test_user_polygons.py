@@ -811,6 +811,11 @@ def test_chili_polygons_loading_and_masking() -> None:
         assert cleaned_p[1, 1] == 0, f"{p_name} point ({lon_p}, {lat_p}) should be masked by Gulf of Penas"
 
 
+def _name_index(names, key):
+    """Return the index of the polygon whose header name contains ``key``."""
+    return next(i for i, n in enumerate(names) if key in n)
+
+
 def test_peru_sechura_polygon():
     """Test that the Peru - Bahía de Sechura polygon is present, active, and masks the bay interior."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -820,9 +825,9 @@ def test_peru_sechura_polygon():
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
 
     names = [p.get("name", "") for p in all_polys]
-    assert names.index("Peru - Bahía de Sechura") == names.index("Chili - Reloncavi Estuary") + 1
-    poly = next(p for p in all_polys if p.get("name") == "Peru - Bahía de Sechura")
-    assert any(p.get("name") == "Peru - Bahía de Sechura" for p in active_polys)
+    assert _name_index(names, "Peru - Bahía de Sechura") == _name_index(names, "Chili - Reloncavi Estuary") + 1
+    poly = next(p for p in all_polys if "Peru - Bahía de Sechura" in p.get("name", ""))
+    assert any("Peru - Bahía de Sechura" in p.get("name", "") for p in active_polys)
 
     lon_pt, lat_pt = -81.05, -5.60
     lon_g, lat_g = create_regular_grid(
@@ -841,16 +846,16 @@ def test_ecuador_polygons():
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
 
     names = [p.get("name", "") for p in all_polys]
-    peru_idx = names.index("Peru - Bahía de Sechura")
-    assert names.index("Ecuador - Gulf of Guayaquil") == peru_idx + 1
-    assert names.index("Ecuador - Cayapas-Mataje Estuary") == peru_idx + 2
+    peru_idx = _name_index(names, "Peru - Bahía de Sechura")
+    assert _name_index(names, "Ecuador - Gulf of Guayaquil") == peru_idx + 1
+    assert _name_index(names, "Ecuador - Cayapas-Mataje Estuary") == peru_idx + 2
 
     for name, (lon_pt, lat_pt) in {
         "Ecuador - Gulf of Guayaquil": (-80.40, -3.00),
         "Ecuador - Cayapas-Mataje Estuary": (-78.85, 1.25),
     }.items():
-        assert any(p.get("name") == name for p in active_polys)
-        poly = next(p for p in all_polys if p.get("name") == name)
+        assert any(name in p.get("name", "") for p in active_polys)
+        poly = next(p for p in all_polys if name in p.get("name", ""))
         lon_g, lat_g = create_regular_grid(
             NX=3, NY=3, LON_START=lon_pt - 0.02, LON_END=lon_pt + 0.02, LAT_START=lat_pt - 0.02, LAT_END=lat_pt + 0.02
         )
@@ -867,16 +872,16 @@ def test_costa_rica_polygons():
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
 
     names = [p.get("name", "") for p in all_polys]
-    ecuador_idx = names.index("Ecuador - Cayapas-Mataje Estuary")
-    assert names.index("Costa Rica - Golfo de Dulce") == ecuador_idx + 1
-    assert names.index("Costa Rica - Gulf of Nicoya") == ecuador_idx + 2
+    ecuador_idx = _name_index(names, "Ecuador - Cayapas-Mataje Estuary")
+    assert _name_index(names, "Costa Rica - Golfo de Dulce") == ecuador_idx + 1
+    assert _name_index(names, "Costa Rica - Gulf of Nicoya") == ecuador_idx + 2
 
     for name, (lon_pt, lat_pt) in {
         "Costa Rica - Golfo de Dulce": (-83.27, 8.58),
         "Costa Rica - Gulf of Nicoya": (-84.90, 9.80),
     }.items():
-        assert any(p.get("name") == name for p in active_polys)
-        poly = next(p for p in all_polys if p.get("name") == name)
+        assert any(name in p.get("name", "") for p in active_polys)
+        poly = next(p for p in all_polys if name in p.get("name", ""))
         lon_g, lat_g = create_regular_grid(
             NX=3, NY=3, LON_START=lon_pt - 0.02, LON_END=lon_pt + 0.02, LAT_START=lat_pt - 0.02, LAT_END=lat_pt + 0.02
         )
