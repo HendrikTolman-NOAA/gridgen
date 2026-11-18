@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 116 active polygons set to 1 out of 138 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Samborombón Bay disabled; Bahia Lomas disabled; Brazil, Argentina, and Chili coastal bays added)
-    assert len(active_polys) == 116
+    # user_polygons.flag has 121 active polygons set to 1 out of 143 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Samborombón Bay disabled; Bahia Lomas disabled; Brazil, Argentina, and Chili coastal bays added)
+    assert len(active_polys) == 121
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 116 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 121 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -278,7 +278,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 138 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 143 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -288,7 +288,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     # Caspian Sea is now Polygon 1
     caspian_poly = None
@@ -322,7 +322,7 @@ def test_netherlands_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     nl_poly = next(p for p in all_polys if "Netherlands below sea level" in p.get("name", ""))
     ws_poly = next(p for p in all_polys if "Wester Schelde" in p.get("name", ""))
@@ -381,13 +381,13 @@ def test_oresund_polygon_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     oresund_poly = next(p for p in all_polys if "Oresund" in p.get("name", ""))
     assert oresund_poly is not None, "Oresund polygon must be present"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 116
+    assert len(active_polys) == 121
     assert any("Oresund" in p.get("name", "") for p in active_polys)
 
     # Test Oresund point (12.6°E, 55.68°N) near Copenhagen
@@ -405,7 +405,7 @@ def test_waddenzee_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     poly_east = next(p for p in all_polys if "Waddenzee East" in p.get("name", ""))
     poly_north = next(p for p in all_polys if "Waddenzee North" in p.get("name", ""))
@@ -436,7 +436,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 116
+    assert len(active_polys) == 121
 
     japan_names = [
         "Japan - Uchiura Bay",
@@ -471,7 +471,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     norway_names = [
         "Norway - Oslofjord",
@@ -534,7 +534,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     assert len(aland_poly["x"]) >= 24, "Aland / Turku polygon must have >= 24 points"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 116
+    assert len(active_polys) == 121
 
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
     active_uk = [p for p in active_polys if any(name in p.get("name", "") for name in uk_names)]
@@ -623,10 +623,10 @@ def test_brazil_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 116
+    assert len(active_polys) == 121
 
     brazil_expected = [
         ("Brazil - Amazon Delta", True, (-50.80, 0.20)),
@@ -672,10 +672,10 @@ def test_argentina_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 116
+    assert len(active_polys) == 121
 
     argentina_expected = [
         ("Argentina - Samborombón Bay", False, (-57.10, -35.90)),
@@ -736,10 +736,10 @@ def test_chili_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 138
+    assert len(all_polys) == 143
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 116
+    assert len(active_polys) == 121
 
     chili_expected = [
         ("Chili - Magellan Strait to Beagle Channel", True, (-70.90, -53.15)),
