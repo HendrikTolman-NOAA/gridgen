@@ -69,8 +69,8 @@ def test_load_repo_gridgen_data() -> None:
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
     assert isinstance(active_polys, list)
-    # user_polygons.flag has 110 active polygons set to 1 out of 132 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Samborombón Bay disabled; Bahia Lomas disabled; Brazil, Argentina, and Chili coastal bays added)
-    assert len(active_polys) == 110
+    # user_polygons.flag has 112 active polygons set to 1 out of 134 total (Orkney, Inner Hebrides enabled; Shetland, Faroe, Hebrides disabled; Samborombón Bay disabled; Bahia Lomas disabled; Brazil, Argentina, and Chili coastal bays added)
+    assert len(active_polys) == 112
 
     txt_file = os.path.join(gridgen_data_dir, "optional_coastal_polygons.txt")
     assert os.path.exists(txt_file)
@@ -207,7 +207,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res1 = subprocess.run(cmd1, capture_output=True, text=True, check=False)
     assert res1.returncode == 0
-    assert "Loaded 110 active user-defined coastal polygons." in res1.stdout
+    assert "Loaded 112 active user-defined coastal polygons." in res1.stdout
 
     # 2. Local polygons run
     local_poly_dir = tmp_path / "local_run"
@@ -278,7 +278,7 @@ def test_cli_automatic_user_polygons_and_local_flags(tmp_path) -> None:
     ]
     res4 = subprocess.run(cmd4, capture_output=True, text=True, check=False)
     assert res4.returncode == 0
-    assert "Loaded 132 active user-defined coastal polygons." in res4.stdout
+    assert "Loaded 134 active user-defined coastal polygons." in res4.stdout
 
 
 def test_caspian_sea_polygon_loading_and_masking() -> None:
@@ -288,7 +288,7 @@ def test_caspian_sea_polygon_loading_and_masking() -> None:
 
     # Load all polygons using all_polygons=True
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     # Caspian Sea is now Polygon 1
     caspian_poly = None
@@ -322,7 +322,7 @@ def test_netherlands_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     nl_poly = next(p for p in all_polys if "Netherlands below sea level" in p.get("name", ""))
     ws_poly = next(p for p in all_polys if "Wester Schelde" in p.get("name", ""))
@@ -381,13 +381,13 @@ def test_oresund_polygon_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     oresund_poly = next(p for p in all_polys if "Oresund" in p.get("name", ""))
     assert oresund_poly is not None, "Oresund polygon must be present"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 110
+    assert len(active_polys) == 112
     assert any("Oresund" in p.get("name", "") for p in active_polys)
 
     # Test Oresund point (12.6°E, 55.68°N) near Copenhagen
@@ -405,7 +405,7 @@ def test_waddenzee_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     poly_east = next(p for p in all_polys if "Waddenzee East" in p.get("name", ""))
     poly_north = next(p for p in all_polys if "Waddenzee North" in p.get("name", ""))
@@ -436,7 +436,7 @@ def test_japan_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 110
+    assert len(active_polys) == 112
 
     japan_names = [
         "Japan - Uchiura Bay",
@@ -471,7 +471,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     norway_names = [
         "Norway - Oslofjord",
@@ -534,7 +534,7 @@ def test_norway_and_uk_polygons_loading_and_masking() -> None:
     assert len(aland_poly["x"]) >= 24, "Aland / Turku polygon must have >= 24 points"
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 110
+    assert len(active_polys) == 112
 
     active_norway = [p for p in active_polys if any(name in p.get("name", "") for name in norway_names)]
     active_uk = [p for p in active_polys if any(name in p.get("name", "") for name in uk_names)]
@@ -623,10 +623,10 @@ def test_brazil_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 110
+    assert len(active_polys) == 112
 
     brazil_expected = [
         ("Brazil - Amazon Delta", True, (-50.80, 0.20)),
@@ -672,10 +672,10 @@ def test_argentina_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 110
+    assert len(active_polys) == 112
 
     argentina_expected = [
         ("Argentina - Samborombón Bay", False, (-57.10, -35.90)),
@@ -736,10 +736,10 @@ def test_chili_polygons_loading_and_masking() -> None:
     gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
 
     all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
-    assert len(all_polys) == 132
+    assert len(all_polys) == 134
 
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
-    assert len(active_polys) == 110
+    assert len(active_polys) == 112
 
     chili_expected = [
         ("Chili - Magellan Strait to Beagle Channel", True, (-70.90, -53.15)),
@@ -811,6 +811,11 @@ def test_chili_polygons_loading_and_masking() -> None:
         assert cleaned_p[1, 1] == 0, f"{p_name} point ({lon_p}, {lat_p}) should be masked by Gulf of Penas"
 
 
+def _name_index(names, key):
+    """Return the index of the polygon whose header name contains ``key``."""
+    return next(i for i, n in enumerate(names) if key in n)
+
+
 def test_peru_sechura_polygon():
     """Test that the Peru - Bahía de Sechura polygon is present, active, and masks the bay interior."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -820,9 +825,9 @@ def test_peru_sechura_polygon():
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
 
     names = [p.get("name", "") for p in all_polys]
-    assert names.index("Peru - Bahía de Sechura") == names.index("Chili - Reloncavi Estuary") + 1
-    poly = next(p for p in all_polys if p.get("name") == "Peru - Bahía de Sechura")
-    assert any(p.get("name") == "Peru - Bahía de Sechura" for p in active_polys)
+    assert _name_index(names, "Peru - Bahía de Sechura") == _name_index(names, "Chili - Reloncavi Estuary") + 1
+    poly = next(p for p in all_polys if "Peru - Bahía de Sechura" in p.get("name", ""))
+    assert any("Peru - Bahía de Sechura" in p.get("name", "") for p in active_polys)
 
     lon_pt, lat_pt = -81.05, -5.60
     lon_g, lat_g = create_regular_grid(
@@ -841,16 +846,42 @@ def test_ecuador_polygons():
     active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
 
     names = [p.get("name", "") for p in all_polys]
-    peru_idx = names.index("Peru - Bahía de Sechura")
-    assert names.index("Ecuador - Gulf of Guayaquil") == peru_idx + 1
-    assert names.index("Ecuador - Cayapas-Mataje Estuary") == peru_idx + 2
+    peru_idx = _name_index(names, "Peru - Bahía de Sechura")
+    assert _name_index(names, "Ecuador - Gulf of Guayaquil") == peru_idx + 1
+    assert _name_index(names, "Ecuador - Cayapas-Mataje Estuary") == peru_idx + 2
 
     for name, (lon_pt, lat_pt) in {
         "Ecuador - Gulf of Guayaquil": (-80.40, -3.00),
         "Ecuador - Cayapas-Mataje Estuary": (-78.85, 1.25),
     }.items():
-        assert any(p.get("name") == name for p in active_polys)
-        poly = next(p for p in all_polys if p.get("name") == name)
+        assert any(name in p.get("name", "") for p in active_polys)
+        poly = next(p for p in all_polys if name in p.get("name", ""))
+        lon_g, lat_g = create_regular_grid(
+            NX=3, NY=3, LON_START=lon_pt - 0.02, LON_END=lon_pt + 0.02, LAT_START=lat_pt - 0.02, LAT_END=lat_pt + 0.02
+        )
+        cleaned = clean_mask(lon_g, lat_g, np.ones_like(lon_g, dtype=int), [poly])
+        assert cleaned[1, 1] == 0
+
+
+def test_costa_rica_polygons():
+    """Test that the Costa Rica polygons follow Ecuador (south to north), are active, and mask their interiors."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gridgen_data_dir = os.path.join(repo_root, "gridgen_data")
+
+    all_polys = load_user_polygons(ref_dir=gridgen_data_dir, all_polygons=True)
+    active_polys = load_user_polygons(ref_dir=gridgen_data_dir)
+
+    names = [p.get("name", "") for p in all_polys]
+    ecuador_idx = _name_index(names, "Ecuador - Cayapas-Mataje Estuary")
+    assert _name_index(names, "Costa Rica - Golfo de Dulce") == ecuador_idx + 1
+    assert _name_index(names, "Costa Rica - Gulf of Nicoya") == ecuador_idx + 2
+
+    for name, (lon_pt, lat_pt) in {
+        "Costa Rica - Golfo de Dulce": (-83.27, 8.58),
+        "Costa Rica - Gulf of Nicoya": (-84.90, 9.80),
+    }.items():
+        assert any(name in p.get("name", "") for p in active_polys)
+        poly = next(p for p in all_polys if name in p.get("name", ""))
         lon_g, lat_g = create_regular_grid(
             NX=3, NY=3, LON_START=lon_pt - 0.02, LON_END=lon_pt + 0.02, LAT_START=lat_pt - 0.02, LAT_END=lat_pt + 0.02
         )
